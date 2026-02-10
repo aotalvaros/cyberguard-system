@@ -4,8 +4,12 @@ import Joi from 'joi';
 import { logger } from '../config/logger';
 import { config } from '../config/env';
 import { LoginRequest, LoginResponse } from '../types';
+import { bruteForceDetection } from '../middlewares/bruteforce.middleware';
 
 const router = Router();
+
+// Aplicar detección de fuerza bruta
+router.use(bruteForceDetection);
 
 // ⚠️ HUMAN CHECK:
 // Credenciales desde variables de entorno, no hardcodeadas.
