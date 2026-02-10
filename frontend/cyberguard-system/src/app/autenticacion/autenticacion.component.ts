@@ -49,7 +49,8 @@ export class AutenticacionComponent {
       next: (res) => {
         this.loading = false;
         this.success = 'Authentication successful';
-        setTimeout(() => this.router.navigate(['/']), 600);
+        // Navigate to dashboard which will validate role
+        setTimeout(() => this.router.navigate(['/dashboard']), 10);
       },
       error: (err) => {
         this.loading = false;
