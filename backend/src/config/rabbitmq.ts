@@ -17,7 +17,7 @@ export async function connectRabbitMQ(): Promise<void> {
     const conn = await amqp.connect(config.rabbitmqUrl);  // Conecta al servidor
     const ch = await conn.createChannel();                 // Crea un canal
     
-    connection = conn;
+    connection = conn as any;
     channel = ch;
 
     // Configurar exchange principal
@@ -66,8 +66,8 @@ export async function publishEvent(routingKey: string, data: any): Promise<void>
 
 export async function closeRabbitMQ(): Promise<void> {
   try {
-    await channel?.close();
-    await connection?.close();
+    if (channel) await channel.close();
+    if (connection) await (connection as any).close();
     logger.info('RabbitMQ connection closed gracefully');
   } catch (error: any) {
     logger.error('Error closing RabbitMQ', { error: error.message });

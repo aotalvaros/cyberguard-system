@@ -7,6 +7,7 @@ import { logger } from './config/logger';
 import { connectRabbitMQ, closeRabbitMQ } from './config/rabbitmq';
 import { errorHandler } from './middlewares/error.middleware';
 import authRoutes from './controllers/auth.controller';
+import threatRoutes from './controllers/threat.controller';
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,
   message: 'Too many requests from this IP'
 });
 app.use('/api/', limiter);
@@ -34,9 +35,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-
-// TODO: Agregar en próxima feature
-// app.use('/api/threats', threatRoutes);
+app.use('/api/threats', threatRoutes);
 
 // Error handler
 app.use(errorHandler);
