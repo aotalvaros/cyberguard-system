@@ -6,6 +6,7 @@ import { config } from './config/env';
 import { logger } from './config/logger';
 import { connectRabbitMQ, closeRabbitMQ } from './config/rabbitmq';
 import { errorHandler } from './middlewares/error.middleware';
+import authRoutes from './controllers/auth.controller';
 
 const app = express();
 
@@ -31,8 +32,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// TODO: Agregar rutas en próximas features
-// app.use('/api/auth', authRoutes);
+// Routes
+app.use('/api/auth', authRoutes);
+
+// TODO: Agregar en próxima feature
 // app.use('/api/threats', threatRoutes);
 
 // Error handler
