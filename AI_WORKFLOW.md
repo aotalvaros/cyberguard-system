@@ -1,5 +1,72 @@
 # 🤖 AI Workflow - CyberGuard System
 
+---
+
+## 📋 Bitácora de Inicio del Proyecto
+
+**Proyecto:** Sistema de Detección y Respuesta a Amenazas (CyberGuard)  
+**Inicio:** Febrero 2026  
+**Stack:** Node.js, TypeScript, RabbitMQ, Angular, Docker
+
+### Fase de Inicialización
+
+#### Commit 1️⃣: Scaffolding Base del Proyecto
+- ✅ Estructura multiservicio: Backend, Frontend, Worker
+- ✅ Configuración de TypeScript en backend
+- ✅ Angular 19+ para frontend
+- ✅ Docker Compose para orquestación local
+- **Estado:** Proyecto monorepo listo para desarrollo
+
+#### Commit 2️⃣: Definición de Arquitectura
+- ✅ Patrón Event-Driven con RabbitMQ
+- ✅ Microservicios: API Gateway, Threat Detector, Logger, Notifier
+- ✅ Análisis de amenazas en tiempo real
+- ✅ Comunicación asíncrona entre servicios
+- **Estado:** Arquitectura documentada y validada
+
+#### Commit 3️⃣: Implementación de Backend Base
+- ✅ Servidor Express con TypeScript
+- ✅ Controladores: Auth, Threat Management
+- ✅ Middlewares: Autenticación, Protección contra Fuerza Bruta
+- ✅ Servicio de almacenamiento de amenazas (In-Memory)
+- **Estado:** API REST funcional con validación de seguridad
+
+#### Commit 4️⃣: Configuración de Seguridad
+- ✅ Variables de entorno para credenciales
+- ✅ Middleware de autenticación JWT
+- ✅ Rate limiting contra ataques de fuerza bruta
+- ✅ Guía de seguridad obligatoria (SECURITY_GUIDELINES.md)
+- **Estado:** Sistema hardened contra vulnerabilidades comunes
+
+#### Commit 5️⃣: Testing e Integración
+- ✅ Tests unitarios con Jest (auth, middlewares, servicios)
+- ✅ Cobertura de casos críticos (validación, errores)
+- ✅ Configuración de RabbitMQ
+- **Estado:** Suite de tests implementada y ejecutándose
+
+#### Commit 6️⃣: Frontend Funcional
+- ✅ Módulo de autenticación (login/registro)
+- ✅ Integración con API Backend
+- ✅ Componentes Angular standalone
+- ✅ Rutas configuradas
+- **Estado:** UI básica en desarrollo
+
+#### Commit 7️⃣: Establecimiento de Workflow IA  
+- ✅ Este documento (AI_WORKFLOW.md) creado como guía obligatoria
+- ✅ Metodología de "Prompting por Capas" definida
+- ✅ Protocolos de validación QA establecidos
+- ✅ Comentarios centinela (HUMAN CHECK) implementados
+- **Estado:** Guía de desarrollo con IA lista para uso
+
+### Estado Actual: Operacional
+- Backend listo para extensión
+- Frontend en desarrollo
+- Arquitectura de microsericios preparada
+- Documentación de seguridad implementada
+- Workflow IA definido y operativo
+
+---
+
 ## Estrategia de Interacción con IA
 
 ### Metodología: Prompting por Capas
