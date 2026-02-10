@@ -1,9 +1,6 @@
-export class Environment {
-    
-    
-    
-    
-    baseUrl = 'http://localhost:3200/api/auth';
 
+export const environment = {
+    baseUrl: 'http://localhost:3000/api/auth'
+};
 
-}
+export type Environment = typeof environment;
