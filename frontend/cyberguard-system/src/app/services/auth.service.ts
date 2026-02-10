@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Environment } from '../../../../cyberguard-system/environment';
+import { environment } from '../../../environment';
 
 export interface LoginResponse {
   token: string;
@@ -14,10 +14,10 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  constructor(private http: HttpClient, private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.environment.baseUrl}/login`, { username, password });
+    return this.http.post<LoginResponse>(`${environment.baseUrl}/login`, { username, password });
   }
 
   logout() {
