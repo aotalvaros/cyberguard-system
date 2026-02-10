@@ -6,7 +6,7 @@ dotenv.config();
 // ⚠️ HUMAN CHECK:
 // Validamos las variables de entorno críticas al inicio.
 // La IA no incluía esta validación obligatoria.
-const requiredEnvVars = ['PORT', 'RABBITMQ_URL', 'JWT_SECRET'];
+const requiredEnvVars = ['PORT', 'RABBITMQ_URL', 'JWT_SECRET', 'ADMIN_USERNAME', 'ADMIN_PASSWORD'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -20,5 +20,7 @@ export const config = {
   rabbitmqUrl: process.env.RABBITMQ_URL!,
   jwtSecret: process.env.JWT_SECRET!,
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:4200'],
-  nodeEnv: process.env.NODE_ENV || 'development'
+  nodeEnv: process.env.NODE_ENV || 'development',
+  adminUsername: process.env.ADMIN_USERNAME!,
+  adminPassword: process.env.ADMIN_PASSWORD!
 };
