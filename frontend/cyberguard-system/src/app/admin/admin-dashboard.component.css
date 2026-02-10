@@ -1,0 +1,64 @@
+.dashboard-root {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 16px;
+}
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dash-header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+.actions .btn {
+  background: #111827;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+.card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+}
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tag {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.payload {
+  white-space: pre-wrap;
+  font-size: 12px;
+  color: #111827;
+  margin: 0;
+}
+.empty {
+  grid-column: 1/-1;
+  text-align: center;
+  color: #6b7280;
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 8px;
+}

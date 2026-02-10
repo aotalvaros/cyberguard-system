@@ -1,0 +1,19 @@
+<div class="dashboard-root">
+  <header class="dash-header">
+    <h1>Admin Dashboard</h1>
+    <div class="actions">
+      <button class="btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <section class="feed">
+    <div *ngIf="messages.length === 0" class="empty">No messages yet — waiting for events...</div>
+    <div *ngFor="let m of messages" class="card">
+      <div class="meta">
+        <span class="tag">{{ m.payload.routingKey || m.payload.routing }}</span>
+        <time>{{ m.receivedAt }}</time>
+      </div>
+      <pre class="payload">{{ m.payload | json }}</pre>
+    </div>
+  </section>
+</div>
