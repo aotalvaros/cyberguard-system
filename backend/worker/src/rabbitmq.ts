@@ -1,5 +1,5 @@
 import * as amqp from 'amqplib';
-import { logger } from '../../producer/src/config/logger';
+import { logger } from './logger';
 import { RABBITMQ_URL, EXCHANGE, TOPIC } from './config';
 
 let connection: any = null;
