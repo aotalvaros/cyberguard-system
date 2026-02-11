@@ -51,8 +51,8 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ALLOWED_ORIGINS=http://localhost:4200
 
 # Credenciales de usuario hardcodeado
-ADMIN_USERNAME=1111
-ADMIN_PASSWORD=1111
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=cyberguard2024
 ```
 
 ### 3. Levantar RabbitMQ
@@ -97,8 +97,8 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "username": "111",
-  "password": "111"
+  "username": "admin",
+  "password": "cyberguard2024"
 }
 ```
 
@@ -231,8 +231,8 @@ npm run test:coverage
 POST http://localhost:3000/api/auth/login
 
 {
-  "username": "111",
-  "password": "111"
+  "username": "admin",
+  "password": "cyberguard2024"
 }
 ```
 Copia el `token` de la respuesta.
@@ -280,6 +280,13 @@ Luego lista amenazas (Paso 3) y verás una de tipo `intrusion` con `autoDetected
 7. Click **"Bind"**
 8. Reporta una amenaza desde Postman
 9. En `test-queue` → Click **"Get messages"** → Verás el evento publicado
+
+### 3. Historial WebSocket (Worker)
+
+El worker guarda historial en Redis para replays al reconectar. El dashboard puede limpiar el historial compartido por WebSocket:
+
+- **Clear all**: envía `{ "type": "clear-all" }` → borra Redis y notifica a todos los clientes
+- **Delete one**: envía `{ "type": "delete-one", "id": "<messageId>" }` → elimina un item en Redis y sincroniza a los clientes
 
 ---
 

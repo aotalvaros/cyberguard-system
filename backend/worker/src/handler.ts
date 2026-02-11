@@ -1,4 +1,4 @@
-import { logger } from '../../src/config/logger';
+import { logger } from '../../producer/src/config/logger';
 
 export function buildPayload(data: any, routingKey: string) {
   return {
