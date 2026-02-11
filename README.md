@@ -65,7 +65,7 @@ cyberguard-system/
 
 #### 1. Clonar el repositorio
 ```bash
-git clone <repo-url>
+git clone <[repo-url](https://github.com/aotalvaros/cyberguard-system)>
 cd cyberguard-system
 ```
 
