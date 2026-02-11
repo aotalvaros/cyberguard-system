@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { logger } from '../../producer/src/config/logger';
+import { logger } from './logger';
 
 let redisClient: ReturnType<typeof createClient> | null = null;
 const HISTORY_KEY = 'cg:ws:history';

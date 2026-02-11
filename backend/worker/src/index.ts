@@ -2,7 +2,7 @@ import { startWebSocket, broadcast, closeWebSocket } from './websocket';
 import { connectAndConsume, closeRabbit } from './rabbitmq';
 import { handleMessage } from './handler';
 import { WS_PORT } from './config';
-import { logger } from '../../producer/src/config/logger';
+import { logger } from './logger';
 import { connectRedis, saveToRedis, getHistoryFromRedis, closeRedis } from './redis';
 
 async function main() {

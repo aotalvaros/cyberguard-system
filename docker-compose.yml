@@ -17,6 +17,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - cyberguard-network
 
   redis:
     image: redis:7-alpine
@@ -31,7 +33,71 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - cyberguard-network
+
+  backend:
+    build:
+      context: ./backend/producer
+      dockerfile: Dockerfile
+    container_name: cyberguard-backend
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      ALLOWED_ORIGINS: http://localhost:4200,http://localhost
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cyberguard2024}
+    ports:
+      - "3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend/worker
+      dockerfile: Dockerfile
+    container_name: cyberguard-worker
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      WORKER_WS_PORT: 8081
+      WORKER_EXCHANGE: cyberguard.events
+      WORKER_TOPIC: "#"
+    ports:
+      - "8081:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend/cyberguard-system
+      dockerfile: Dockerfile
+    container_name: cyberguard-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+      - worker
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
 
 volumes:
   rabbitmq_data:
   redis_data:
+
+networks:
+  cyberguard-network:
+    driver: bridge

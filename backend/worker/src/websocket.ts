@@ -1,5 +1,5 @@
 import WebSocket, { Server } from 'ws';
-import { logger } from '../../producer/src/config/logger';
+import { logger } from './logger';
 import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById } from './redis';
 
 let wss: Server | null = null;
