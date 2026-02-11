@@ -43,6 +43,7 @@ cyberguard-system/
 - **Runtime**: Node.js 20+
 - **Framework**: Express.js
 - **Validación**: Joi
+- **Persistencia** : Redis
 - **Autenticación**: JWT (usuario en variables de entorno)
 - **Cliente RabbitMQ**: amqplib
 
