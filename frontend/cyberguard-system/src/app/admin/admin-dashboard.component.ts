@@ -24,10 +24,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       return;
     }
     this.ws.connect();
-    this.sub = this.ws.messages$.subscribe((m) => {
-      // keep newest on top
-      this.messages.unshift({ receivedAt: new Date().toISOString(), payload: m });
-      if (this.messages.length > 50) this.messages.pop();
+    this.sub = this.ws.messages$.subscribe((list) => {
+      // `list` is an array of payloads (newest first)
+      this.messages = (list || []).slice(0, 50);
     });
   }
 

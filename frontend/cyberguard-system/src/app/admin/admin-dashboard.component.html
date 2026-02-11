@@ -10,10 +10,10 @@
     <div *ngIf="messages.length === 0" class="empty">No messages yet — waiting for events...</div>
     <div *ngFor="let m of messages" class="card">
       <div class="meta">
-        <span class="tag">{{ m.payload.routingKey || m.payload.routing }}</span>
-        <time>{{ m.receivedAt }}</time>
+        <span class="tag">{{ m.routingKey || m.routing || m.payload?.routingKey }}</span>
+        <time>{{ m.receivedAt || m.timestamp }}</time>
       </div>
-      <pre class="payload">{{ m.payload | json }}</pre>
+      <pre class="payload">{{ m | json }}</pre>
     </div>
   </section>
 </div>
