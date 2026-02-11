@@ -2,16 +2,20 @@
   <header class="dash-header">
     <h1>Admin Dashboard</h1>
     <div class="actions">
+      <button class="btn btn-danger" (click)="clearAll()">Limpiar Todo</button>
       <button class="btn" (click)="logout()">Logout</button>
     </div>
   </header>
 
   <section class="feed">
     <div *ngIf="messages.length === 0" class="empty">No messages yet — waiting for events...</div>
-    <div *ngFor="let m of messages" class="card">
-      <div class="meta">
-        <span class="tag">{{ m.routingKey || m.routing || m.payload?.routingKey }}</span>
-        <time>{{ m.receivedAt || m.timestamp }}</time>
+    <div *ngFor="let m of messages; let i = index" class="card">
+      <div class="card-header">
+        <div class="meta">
+          <span class="tag">{{ m.routingKey || m.routing || m.payload?.routingKey }}</span>
+          <time>{{ m.receivedAt || m.timestamp }}</time>
+        </div>
+        <button class="btn-delete" (click)="deleteMessage(i)" title="Eliminar">×</button>
       </div>
       <pre class="payload">{{ m | json }}</pre>
     </div>

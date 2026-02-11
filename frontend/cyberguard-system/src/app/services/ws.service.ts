@@ -37,7 +37,6 @@ export class WsService {
             if (this.history.length >= this.historyCapacity) break;
           }
         }
-        this.messagesSubject.next([...this.history]);
         console.debug('WsService: loaded history from localStorage', { count: this.history.length });
       }
     } catch (e) {
@@ -78,7 +77,6 @@ export class WsService {
 
   connect() {
     if (this.connected) return;
-    this.loadFromStorage();
     this.createSocket();
   }
 
@@ -145,5 +143,25 @@ export class WsService {
       // swallow
     }
   }
-  constructor(private zone: NgZone) {}
+
+  deleteMessage(index: number) {
+    this.history.splice(index, 1);
+    this.persistToStorage();
+    this.messagesSubject.next([...this.history]);
+  }
+
+  clearAll() {
+    this.history = [];
+    this.seenIds.clear();
+    this.persistToStorage();
+    this.messagesSubject.next([]);
+  }
+
+  constructor(private zone: NgZone) {
+    // Load from storage on service initialization
+    this.loadFromStorage();
+    if (this.history.length > 0) {
+      this.messagesSubject.next([...this.history]);
+    }
+  }
 }
