@@ -43,7 +43,7 @@ cyberguard-system/
 - **Runtime**: Node.js 20+
 - **Framework**: Express.js
 - **Validación**: Joi
-- **Autenticación**: JWT (usuario hardcodeado)
+- **Autenticación**: JWT (usuario en variables de entorno)
 - **Cliente RabbitMQ**: amqplib
 
 ### Broker
@@ -79,9 +79,9 @@ Esto levanta:
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 
 ### 4. Próximos pasos
-- Implementar Backend (Producer)
-- Implementar Worker (Consumer)
-- Implementar Frontend (Angular Dashboard)
+- Configurar variables de entorno
+- Levantar servicios (backend, worker, frontend)
+- Ejecutar pruebas y completar evidencias QA
 
 ---
 
@@ -89,11 +89,13 @@ Esto levanta:
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App (Pendiente)
-├── backend/           # Node.js API Producer (Pendiente)
-├── worker/            # Node.js Consumer (Pendiente)
+├── frontend/          # Angular App
+├── backend/           # Node.js API Producer
+├── worker/            # Node.js Consumer
 ├── docs/              # Documentación
-│   └── SECURITY_GUIDELINES.md
+│   ├── SECURITY_GUIDELINES.md
+│   ├── QA_EVIDENCE.md
+│   └── images/
 ├── docker-compose.yml # RabbitMQ
 ├── AI_WORKFLOW.md     # Estrategia de trabajo con IA
 ├── README.md
@@ -138,8 +140,22 @@ refactor(scope): descripción
 ---
 
 ## 🧪 Testing
+### Backend (Producer)
+```bash
+cd backend/producer
+npm test
+```
 
-Pendiente de implementación.
+### Frontend (Angular)
+```bash
+cd frontend/cyberguard-system
+npm test
+```
+
+### QA Evidencias
+- Registro formal de QA: [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+- Criterios de aceptacion, seguridad y estres documentados por QA
+- Capturas y adjuntos en [docs/images](docs/images)
 
 ---
 
@@ -164,6 +180,28 @@ npm run docker:logs     # Ver logs de RabbitMQ
 - ✅ Helmet.js para headers de seguridad
 - ✅ JWT para autenticación
 - ✅ Logs sin datos sensibles
+
+---
+
+## 🧪 QA: Criterios, Seguridad y Estres
+
+### Criterios de Aceptacion (resumen)
+- Login: respuestas 200/400/401 segun payload y credenciales
+- Threats: POST protegido con JWT y validacion Joi
+- WebSocket: entrega de alertas en tiempo real y limpieza
+
+### Checklist de Seguridad
+- Basado en [docs/SECURITY_GUIDELINES.md](docs/SECURITY_GUIDELINES.md)
+- Validado en cada PR por QA
+
+### Pruebas de Estres (ejemplo)
+```bash
+npx autocannon -c 50 -d 30 -p 10 http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -b '{"username":"admin","password":"cyberguard2024"}'
+```
+
+Evidencia completa en [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
 
 ---
 
@@ -227,6 +265,26 @@ async function processMessage(msg, retryCount = 0) {
 
 ---
 
+## 🐞 Bugs Simulados y Soluciones (QA)
+
+### Bug 1: Respuesta 500 expone stack trace
+**Impacto:** Filtra detalles internos al cliente.
+
+**Solucion:** Middleware de errores retorna mensaje generico y loguea de forma segura.
+
+### Bug 2: CORS abierto con '*'
+**Impacto:** Riesgo de consumo desde origenes no confiables.
+
+**Solucion:** `ALLOWED_ORIGINS` en variables de entorno y lista explicita.
+
+### Bug 3: JWT sin expiracion
+**Impacto:** Sesiones indefinidas si el token se filtra.
+
+**Solucion:** Expiracion corta + refresh token.
+
+
+---
+
 ## 📝 Comentarios Centinela (Human Checks)
 
 Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
@@ -265,4 +323,4 @@ Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
 
 ---
 
-**Última actualización**: [Fecha]
+**Última actualización**: 11 de febrero de 2026
