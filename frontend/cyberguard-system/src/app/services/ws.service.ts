@@ -103,6 +103,17 @@ export class WsService {
     this.socket.onmessage = (ev) => {
       try {
         const parsed = JSON.parse(ev.data);
+        if (parsed?.type === 'clear-all') {
+          this.history = [];
+          this.seenIds.clear();
+          this.persistToStorage();
+          this.zone.run(() => { this.messagesSubject.next([]); });
+          return;
+        }
+        if (parsed?.type === 'delete-one' && typeof parsed.id === 'string') {
+          this.removeById(parsed.id);
+          return;
+        }
         // keep newest first
         const id = this.getMessageId(parsed);
         if (id && this.seenIds.has(id)) {
@@ -145,6 +156,11 @@ export class WsService {
   }
 
   deleteMessage(index: number) {
+    const target = this.history[index];
+    const id = this.getMessageId(target);
+    if (id) {
+      this.send({ type: 'delete-one', id });
+    }
     this.history.splice(index, 1);
     this.persistToStorage();
     this.messagesSubject.next([...this.history]);
@@ -155,6 +171,18 @@ export class WsService {
     this.seenIds.clear();
     this.persistToStorage();
     this.messagesSubject.next([]);
+  }
+
+  requestClearAll() {
+    this.send({ type: 'clear-all' });
+  }
+
+  private removeById(id: string) {
+    if (!id) return;
+    this.history = this.history.filter((item) => this.getMessageId(item) !== id);
+    this.seenIds.delete(id);
+    this.persistToStorage();
+    this.zone.run(() => { this.messagesSubject.next([...this.history]); });
   }
 
   constructor(private zone: NgZone) {

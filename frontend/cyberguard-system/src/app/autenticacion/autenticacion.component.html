@@ -11,7 +11,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form">
       <div class="field">
         <label>
-          <span class="label-text">Usuario</span>
+          <span class="label-text">Username</span>
           <div class="input-with-icon">
             <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 21v-1c0-2.761 4.477-5 9-5s9 2.239 9 5v1" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <input formControlName="username" placeholder="Your username" autocomplete="username" />
@@ -21,7 +21,7 @@
 
       <div class="field">
         <label>
-          <span class="label-text">Contraseña</span>
+          <span class="label-text">Password</span>
           <div class="input-with-icon">
             <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#6b7280" stroke-width="1.2"/><path d="M7 11V8a5 5 0 0110 0v3" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Password" autocomplete="current-password" />
