@@ -142,10 +142,8 @@ Usa mocks apropiados y aserciones específicas."
 ### Documentos que SIEMPRE se proporcionan a la IA:
 
 1. **README.md** - Visión general del sistema
-2. **ARCHITECTURE.md** - Diagrama y decisiones arquitectónicas
-3. **API_CONTRACTS.md** - Contratos de mensajes RabbitMQ
-4. **SECURITY_GUIDELINES.md** - Checklist de seguridad obligatorio
-5. **Este archivo (AI_WORKFLOW.md)** - Para mantener consistencia
+2. **SECURITY_GUIDELINES.md** - Checklist de seguridad obligatorio
+3. **Este archivo (AI_WORKFLOW.md)** - Para mantener consistencia
 
 ### Contexto Mínimo por Interacción:
 ```
