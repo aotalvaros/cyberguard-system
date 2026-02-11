@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WsService } from '../services/ws.service';
 import { AuthService } from '../services/auth.service';
@@ -16,7 +16,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   messages: any[] = [];
   private sub: Subscription | null = null;
 
-  constructor(private ws: WsService, private auth: AuthService, private router: Router) {}
+  constructor(private ws: WsService, private auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if (!this.auth.isAdmin()) {
@@ -27,12 +27,23 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.sub = this.ws.messages$.subscribe((list) => {
       // `list` is an array of payloads (newest first)
       this.messages = (list || []).slice(0, 50);
+      this.cdr.markForCheck();
     });
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.ws.disconnect();
+  }
+
+  deleteMessage(index: number) {
+    this.ws.deleteMessage(index);
+  }
+
+  clearAll() {
+    if (confirm('¿Eliminar todas las alertas?')) {
+      this.ws.clearAll();
+    }
   }
 
   logout() {

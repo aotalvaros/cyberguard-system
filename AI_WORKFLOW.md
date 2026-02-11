@@ -58,10 +58,26 @@
 - ✅ Comentarios centinela (HUMAN CHECK) implementados
 - **Estado:** Guía de desarrollo con IA lista para uso
 
+#### Commit 8️⃣: Worker y Sistema de Notificaciones en Tiempo Real
+- ✅ Worker Node.js implementado para consumir RabbitMQ
+- ✅ WebSocket Server integrado en worker (puerto 8081)
+- ✅ Persistencia de historial con Redis (máx 200 alertas)
+- ✅ Cliente WebSocket en Angular con reconexión automática
+- ✅ Dashboard de administrador con alertas en tiempo real
+- ✅ Sincronización entre Redis y localStorage del navegador
+- ✅ Funcionalidad de eliminación individual y limpieza masiva de alertas
+- ✅ Deduplicación de mensajes con hash de contenido
+- ✅ Detección de cambios optimizada con ChangeDetectorRef
+- **Responsable:** Cloud Architect & Backend Developer
+- **Estado:** Sistema de notificaciones completo y funcional
+
 ### Estado Actual: Operacional
 - Backend listo para extensión
-- Frontend en desarrollo
-- Arquitectura de microsericios preparada
+- Frontend con dashboard de administrador funcional
+- Worker consumiendo RabbitMQ y emitiendo por WebSocket
+- Redis persistiendo historial de alertas
+- Sistema de notificaciones en tiempo real operativo
+- Arquitectura de microservicios preparada
 - Documentación de seguridad implementada
 - Workflow IA definido y operativo
 
@@ -134,6 +150,31 @@ Explica la topología antes de generar código."
 - Validación de payloads maliciosos
 Usa mocks apropiados y aserciones específicas."
 ```
+
+### 5. Sistema de Notificaciones en Tiempo Real (Implementado)
+**Prompt Real Usado:**
+```
+"Tengo un sistema donde el backend valida logins sospechosos y los encola en RabbitMQ.
+Necesito:
+1. Un worker que consuma de RabbitMQ y emita por WebSocket
+2. Persistir historial en Redis (máx 200 alertas)
+3. Cliente Angular que se suscriba al WebSocket
+4. Sincronizar con localStorage para sobrevivir recargas
+5. Deduplicación de mensajes
+6. Botón para eliminar alertas individuales y limpiar todo
+
+Problema detectado: Al recargar la página no se mostraban las alertas aunque
+están en localStorage.
+
+Solución aplicada: Cargar historial en el constructor del servicio antes de
+que el componente se suscriba al BehaviorSubject."
+```
+
+**Resultado:**
+- ✅ Worker funcional con Redis
+- ✅ WebSocket con reconexión automática
+- ✅ Dashboard con alertas persistentes
+- ✅ Eliminación de alertas implementada
 
 ---
 
@@ -237,5 +278,5 @@ Este documento es **vivo** y debe actualizarse cuando:
 - El QA encuentre un patrón recurrente de error de IA
 - Se adopte una nueva herramienta o práctica
 
-**Última actualización**: [Fecha]  
-**Responsable**: [Nombre del equipo]
+**Última actualización**: Febrero 2026  
+**Responsable**: Equipo CyberGuard (Cloud Architect & Backend Developer + Frontend Developer & QA Engineer)
