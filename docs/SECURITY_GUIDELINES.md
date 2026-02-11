@@ -165,23 +165,36 @@ try {
 
 ---
 
-## 7. Rate Limiting
+## 7. Rate Limiting & Brute Force Protection
 
+### Express Rate Limiter
 ```javascript
 import rateLimit from 'express-rate-limit';
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
   max: 100, // 100 requests
-  message: 'Too many requests'
+  message: 'Too many requests',
+  skip: (req) => req.user?.isAdmin === true
 });
 
 app.use('/api/', limiter);
 ```
 
+### Brute Force Protection (Ver `backend/src/middlewares/bruteforce.middleware.ts`)
+```javascript
+// ⚠️ HUMAN CHECK:
+// Middleware específico para ataques de fuerza bruta en login
+import { bruteForceLimiter } from './middlewares/bruteforce.middleware';
+
+app.post('/auth/login', bruteForceLimiter, authController.login);
+```
+
 **Validación QA**:
 - [ ] Rate limiting en endpoints públicos
 - [ ] Límites apropiados por endpoint
+- [ ] Middleware de fuerza bruta aplicado en `/auth/login`
+- [ ] Exponential backoff implementado
 
 ---
 
@@ -227,34 +240,201 @@ logger.info('User login', {
 
 ---
 
-## 10. Dependencies
+## 10. Password Hashing
+
+### ❌ NUNCA
+```javascript
+const user = {
+  email: req.body.email,
+  password: req.body.password // Sin hashear
+};
+```
+
+### ✅ SIEMPRE
+```javascript
+import bcrypt from 'bcrypt';
+
+const hashedPassword = await bcrypt.hash(req.body.password, 10);
+const user = {
+  email: req.body.email,
+  password: hashedPassword
+};
+
+// Al autenticar:
+const isPasswordValid = await bcrypt.compare(inputPassword, user.password);
+```
+
+**Validación QA**:
+- [ ] Contraseñas hasheadas con bcrypt (rounds: 10+)
+- [ ] Nunca almacenar contraseñas en texto plano
+- [ ] Comparación usando `bcrypt.compare()`
+
+---
+
+## 11. RabbitMQ Security (Event-Driven)
+
+### Configuración Segura (Ver `backend/src/config/rabbitmq.ts`)
+```javascript
+// ⚠️ HUMAN CHECK:
+// Credenciales deben venir de variables de entorno
+const connection = await amqp.connect({
+  hostname: process.env.RABBITMQ_HOST,
+  port: parseInt(process.env.RABBITMQ_PORT),
+  username: process.env.RABBITMQ_USER,
+  password: process.env.RABBITMQ_PASSWORD,
+  vhost: process.env.RABBITMQ_VHOST || '/'
+});
+```
+
+### Publicación de Mensajes Seguros (Ver `backend/src/services/threat.service.ts`)
+```javascript
+const message = {
+  threatId: threat.id,
+  severity: threat.severity,
+  timestamp: new Date().toISOString()
+};
+
+// Validar antes de enviar
+if (!message.threatId || !message.severity) {
+  throw new Error('Invalid threat message payload');
+}
+
+await channel.publish('threats', '', JSON.stringify(message), {
+  persistent: true, // Sobrevive reinicio de RabbitMQ
+  contentType: 'application/json'
+});
+```
+
+**Validación QA**:
+- [ ] Credenciales RabbitMQ en variables de entorno
+- [ ] Mensajes persistentes en exchanges críticos
+- [ ] Validación de payloads antes de publicar
+- [ ] Dead Letter Queues implementadas para fallos
+
+---
+
+## 12. Audit Logging
+
+### ✅ Eventos a Registrar (Ver `backend/src/config/logger.ts`)
+```javascript
+import logger from '../config/logger';
+
+// Acciones críticas de seguridad
+logger.info('Auth event', {
+  action: 'LOGIN_ATTEMPT',
+  userId: user.id,
+  email: maskEmail(user.email),
+  ip: req.ip,
+  success: true,
+  timestamp: new Date().toISOString()
+});
+
+logger.warn('Security event', {
+  action: 'BRUTE_FORCE_DETECTED',
+  ip: req.ip,
+  attempts: failedAttempts,
+  timestamp: new Date().toISOString()
+});
+```
+
+**Eventos Obligatorios:**
+- [ ] Intentos de login (exitosos y fallidos)
+- [ ] Detección de fuerza bruta
+- [ ] Creación/modificación de amenazas
+- [ ] Errores de validación
+- [ ] Cambios en permisos
+- [ ] Acceso a datos sensibles
+
+**Validación QA**:
+- [ ] Logs estructurados en JSON
+- [ ] Timestamps en UTC
+- [ ] Sin datos sensibles (passwords, tokens)
+- [ ] Logs separados por nivel (INFO, WARN, ERROR)
+
+---
+
+## 13. Dependencies & Vulnerability Scanning
 
 ```bash
 npm audit
 npm audit fix
+npm install npm-check-updates -g
+ncu --upgrade
 ```
 
 **Validación QA**:
 - [ ] Sin vulnerabilidades críticas/altas
 - [ ] Dependencias actualizadas
 - [ ] Usar `package-lock.json`
+- [ ] Revisar changelogs antes de actualizar
 
 ---
 
 ## Checklist Pre-Merge
 
+**OBLIGATORIO antes de merge a develop:**
+
+**Secrets & Credenciales:**
 - [ ] Secrets en variables de entorno
+- [ ] `.env.example` documentado
+- [ ] No hay credenciales en histórico de git
+
+**Validación de Inputs:**
 - [ ] Inputs validados con Joi/Zod
-- [ ] Sin SQL injection (usar ORM)
+- [ ] Límites de tamaño definidos
+- [ ] Tipos de datos verificados
 - [ ] XSS prevenido (sanitización)
-- [ ] JWT con expiración
-- [ ] Errores no exponen detalles
+
+**Seguridad de Datos:**
+- [ ] Sin SQL injection (usar ORM/Prisma)
+- [ ] Contraseñas hasheadas con bcrypt
+- [ ] JWT con expiración (15-30 min)
+- [ ] Tokens refresh implementados
+
+**Manejo de Errores:**
+- [ ] Errores no exponen detalles internos
+- [ ] Stack traces no se loguean al cliente
+- [ ] Mensajes genéricos al usuario
+
+**Rate Limiting & Protección:**
 - [ ] Rate limiting configurado
-- [ ] CORS restrictivo
+- [ ] Protección de fuerza bruta en login
+- [ ] CORS restrictivo (no usar `*`)
+
+**Logging & Auditoría:**
 - [ ] Logs sin datos sensibles
+- [ ] Eventos críticos registrados
+- [ ] Logs estructurados (JSON)
+
+**RabbitMQ (si aplica):**
+- [ ] Credenciales en variables de entorno
+- [ ] Mensajes persistentes
+- [ ] Dead Letter Queues configuradas
+
+**Dependencias:**
 - [ ] `npm audit` sin issues críticos
-- [ ] Mínimo 5 comentarios `// ⚠️ HUMAN CHECK:`
+- [ ] Dependencies actualizadas
+- [ ] `package-lock.json` comprometido
+
+**Comentarios Centinela:**
+- [ ] Mínimo 5 comentarios `// ⚠️ HUMAN CHECK:` por servicio
+- [ ] Justificación de decisiones de seguridad
 
 ---
 
-**Última actualización**: [Fecha]
+## Archivos Clave del Proyecto
+
+- 🔐 `backend/src/middlewares/auth.middleware.ts` - Validación JWT
+- 🚫 `backend/src/middlewares/bruteforce.middleware.ts` - Protección de fuerza bruta
+- 🛡️ `backend/src/controllers/auth.controller.ts` - Lógica de autenticación
+- 🐰 `backend/src/config/rabbitmq.ts` - Conexión segura a RabbitMQ
+- 📝 `backend/src/config/logger.ts` - Logging estructurado
+- 🧪 `backend/src/__tests__/auth.middleware.test.ts` - Tests de seguridad
+- 📋 `docs/SECURITY_GUIDELINES.md` - Este documento
+- 🤖 `AI_WORKFLOW.md` - Marco de desarrollo con IA
+
+---
+
+**Última actualización**: 10 de Febrero de 2026  
+**Responsable**: Equipo CyberGuard  
+**Próxima revisión**: Marzo 2026

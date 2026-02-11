@@ -18,8 +18,17 @@ const TIME_WINDOW = 5 * 60 * 1000; // 5 minutos
 // La IA no implementaba detección automática de fuerza bruta.
 // Agregamos tracking de intentos fallidos por IP y auto-reporte.
 export function bruteForceDetection(req: Request, res: Response, next: NextFunction) {
-  const ip = req.ip || req.socket.remoteAddress || 'unknown';
-  
+  const ip = req.ip || 'unknown';
+  const attempt = loginAttempts.get(ip);
+
+
+  if (attempt && attempt.reported && (Date.now() - attempt.firstAttempt < TIME_WINDOW)) {
+    logger.warn('Blocking request from blacklisted IP', { ip });
+    return res.status(403).json({ 
+      error: 'Access denied due to multiple failed attempts. Try again later.' 
+    });
+  }
+
   // Solo interceptar respuestas 401 del login
   const originalJson = res.json.bind(res);
   

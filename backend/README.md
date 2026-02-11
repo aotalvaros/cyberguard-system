@@ -1,6 +1,12 @@
 # Backend - CyberGuard System
 
-Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real.
+Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real con arquitectura Event-Driven.
+
+**📚 Documentación Relacionada:**
+- 🤖 [AI_WORKFLOW.md](../AI_WORKFLOW.md) - Marco de desarrollo con IA (Prompting por Capas)
+- 🛡️ [SECURITY_GUIDELINES.md](../docs/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio
+
+---
 
 ## 🚀 Stack Tecnológico
 
@@ -283,67 +289,130 @@ Luego lista amenazas (Paso 3) y verás una de tipo `intrusion` con `autoDetected
 backend/
 ├── src/
 │   ├── config/
-│   │   ├── env.ts              # Validación de variables de entorno
-│   │   ├── logger.ts           # Configuración de Winston
-│   │   └── rabbitmq.ts         # Conexión y publicación a RabbitMQ
+│   │   ├── env.ts              # Validación de variables de entorno ⚠️
+│   │   ├── logger.ts           # Logging estructurado con Winston
+│   │   └── rabbitmq.ts         # Conexión segura a RabbitMQ ⚠️
 │   ├── controllers/
-│   │   ├── auth.controller.ts  # Endpoint de login
-│   │   └── threat.controller.ts # Endpoint de amenazas
+│   │   ├── auth.controller.ts  # Endpoint de login + JWT ⚠️
+│   │   └── threat.controller.ts # Endpoints de amenazas
 │   ├── middlewares/
-│   │   ├── auth.middleware.ts  # Validación de JWT
-│   │   └── error.middleware.ts # Manejo global de errores
+│   │   ├── auth.middleware.ts  # Validación JWT ⚠️
+│   │   ├── bruteforce.middleware.ts # Protección contra ataques 🛡️
+│   │   └── error.middleware.ts # Manejo seguro de errores
 │   ├── services/
-│   │   └── threat.service.ts   # Lógica de negocio de amenazas
+│   │   ├── threat.service.ts   # Lógica de negocio + eventos
+│   │   └── threat.store.ts     # Almacenamiento en memoria
 │   ├── types/
 │   │   └── index.ts            # Interfaces TypeScript
 │   ├── __tests__/
 │   │   ├── auth.controller.test.ts
 │   │   ├── auth.middleware.test.ts
-│   │   └── threat.controller.test.ts
-│   └── server.ts               # Punto de entrada
+│   │   ├── bruteforce.middleware.test.ts
+│   │   ├── threat.controller.test.ts
+│   │   └── threat.store.test.ts
+│   └── server.ts               # Punto de entrada Express
+├── worker/                      # Worker asincrónico (Consumer)
+│   ├── src/
+│   │   ├── config.ts
+│   │   ├── handler.ts
+│   │   ├── rabbitmq.ts
+│   │   ├── websocket.ts
+│   │   └── index.ts
+│   └── package.json
 ├── .env.example
 ├── .gitignore
 ├── jest.config.js
 ├── package.json
 ├── tsconfig.json
 └── README.md
+
+⚠️ = Contiene comentarios "HUMAN CHECK" (validación de seguridad requerida)
+🛡️ = Componente crítico de seguridad
 ```
 
 ---
 
 ## 🛡️ Seguridad
 
-### Implementado:
-- ✅ Credenciales en variables de entorno (no hardcodeadas)
-- ✅ Validación de inputs con Joi
-- ✅ JWT con expiración (8h)
-- ✅ Rate limiting (100 req/15min)
-- ✅ CORS configurado
-- ✅ Helmet.js para headers de seguridad
-- ✅ Logs sin datos sensibles
-- ✅ Separación de validación usuario/contraseña
-- ✅ Detección automática de fuerza bruta (5 intentos fallidos)
-- ✅ Almacenamiento de amenazas en memoria
+**📖 Lee [SECURITY_GUIDELINES.md](../docs/SECURITY_GUIDELINES.md) ANTES de hacer cambios de seguridad.**
 
-### Human Checks:
-Busca comentarios `// ⚠️ HUMAN CHECK:` en:
-- `config/env.ts` - Validación de variables de entorno
-- `config/rabbitmq.ts` - Manejo de conexión
-- `controllers/auth.controller.ts` - Validación de credenciales y JWT
-- `middlewares/auth.middleware.ts` - Manejo de errores de token
-- `services/threat.service.ts` - Routing key dinámico
+### ✅ Implementado:
+1. **Secrets Management**: Credenciales en variables de entorno
+2. **Input Validation**: Validación con Joi
+3. **Password Hashing**: Bcrypt (rounds: 10+)
+4. **JWT Security**: Expiración 15-30 min + refresh tokens
+5. **Rate Limiting**: 100 req/15min + brute force protection
+6. **CORS**: Configurado restrictivo (sin `*`)
+7. **Helmet.js**: Headers de seguridad
+8. **Logging**: Estructurado, sin datos sensibles
+9. **RabbitMQ**: Credenciales en env, mensajes persistentes
+10. **Error Handling**: Mensajes genéricos, no expone detalles
+11. **Auto-Detection**: Fuerza bruta en login (5 intentos)
+12. **Audit Trail**: Eventos críticos registrados
+
+### ⚠️ Human Checks Obligatorios:
+Estos archivos contienen lógica crítica que requiere validación manual:
+
+```
+✅ MUST REVIEW (Antes de merge):
+- src/config/env.ts              # Variables de entorno
+- src/config/rabbitmq.ts         # Conexión a RabbitMQ
+- src/controllers/auth.controller.ts  # Autenticación
+- src/middlewares/auth.middleware.ts  # Validación JWT
+- src/middlewares/bruteforce.middleware.ts  # Protección
+- src/services/threat.service.ts # Publicación de eventos
+```
+
+### Checklist Pre-Merge:
+Sigue el checklist completo en [SECURITY_GUIDELINES.md#checklist-pre-merge](../docs/SECURITY_GUIDELINES.md#checklist-pre-merge)
 
 ---
 
-## 🔄 Scripts Disponibles
+## 🤖 Desarrollo con IA
+
+### Marco de Trabajo: AI_WORKFLOW.md
+
+Este proyecto utiliza **Prompting por Capas** para interacción con IA:
+
+1. **Capa 1**: Contexto arquitectónico (microservicios, RabbitMQ, seguridad)
+2. **Capa 2**: Especificación funcional (caso de uso, criterios de aceptación)
+3. **Capa 3**: Validación técnica (resiliencia, patrones, trade-offs)
+4. **Capa 4**: Refinamiento humano (Human Checks obligatorios)
+
+### Estructura de Prompts al IA:
+```
+"Contexto: Sistema distribuido de alertas de ciberseguridad.
+Stack: Node.js, TypeScript, RabbitMQ, Docker.
+Patrón: Event-Driven con CQRS.
+
+Requisito de seguridad: [TEMA]
+Explica tu solución antes de generar código."
+```
+
+### Validación de Código:
+- ✅ Código generado por IA requiere **Human Check** en lógica crítica
+- ✅ Busca comentarios `// ⚠️ HUMAN CHECK:` en cada archivo
+- ✅ QA valida contra [SECURITY_GUIDELINES.md](../docs/SECURITY_GUIDELINES.md)
+
+📚 **Lee [AI_WORKFLOW.md](../AI_WORKFLOW.md) para detalles completos.**
+
+---
 
 ```bash
+# Desarrollo
 npm run dev          # Modo desarrollo con hot-reload
+
+# Build
 npm run build        # Compilar TypeScript a JavaScript
 npm start            # Ejecutar versión compilada
-npm test             # Ejecutar tests
-npm run test:watch   # Tests en modo watch
-npm run test:coverage # Tests con cobertura
+
+# Testing
+npm test             # Ejecutar todos los tests
+npm run test:watch   # Tests en modo watch (cambios en tiempo real)
+npm run test:coverage # Coverage de tests
+
+# Verificación
+npm audit            # Escanear vulnerabilidades en dependencias
 ```
 
 ---
@@ -361,7 +430,24 @@ npm run test:coverage # Tests con cobertura
 
 ### Error: "Token expired" o "Invalid token"
 - Genera un nuevo token haciendo login nuevamente
-- Los tokens expiran en 8 horas
+- Los tokens expiran en 15-30 minutos (ver `JWT_SECRET` en `.env`)
 
+### Error: "Brute force detected"
+- Espera 15 minutos o elimina el usuario de la lista de bloqueos
+- Los intentos fallidos se resetean automáticamente
 
-**Última actualización**: 2024-01-15
+---
+
+## 📞 Soporte
+
+**Problemas comunes:**
+- 🔐 Seguridad: Ver [SECURITY_GUIDELINES.md](../docs/SECURITY_GUIDELINES.md)
+- 🤖 Desarrollo con IA: Ver [AI_WORKFLOW.md](../AI_WORKFLOW.md)
+- 📝 Logs: Revisar `src/config/logger.ts`
+- 🧪 Tests: Ejecutar `npm run test:coverage`
+
+---
+
+**Última actualización**: 10 de Febrero de 2026  
+**Equipo**: CyberGuard  
+**Próxima revisión**: Marzo 2026
