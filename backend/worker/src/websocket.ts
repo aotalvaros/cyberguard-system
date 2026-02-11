@@ -1,6 +1,6 @@
 import WebSocket, { Server } from 'ws';
-import { logger } from '../../src/config/logger';
-import { getHistoryFromRedis } from './redis';
+import { logger } from '../../producer/src/config/logger';
+import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById } from './redis';
 
 let wss: Server | null = null;
 
@@ -23,6 +23,24 @@ export function startWebSocket(port: number) {
     } catch (err: any) {
       logger.error('Failed to send history', { error: err?.message });
     }
+
+    socket.on('message', async (raw) => {
+      try {
+        const msg = JSON.parse(raw.toString());
+        if (msg?.type === 'clear-all') {
+          await clearHistoryFromRedis();
+          broadcast({ type: 'clear-all', clearedAt: new Date().toISOString() });
+          return;
+        }
+
+        if (msg?.type === 'delete-one' && typeof msg.id === 'string') {
+          await removeHistoryItemById(msg.id);
+          broadcast({ type: 'delete-one', id: msg.id, deletedAt: new Date().toISOString() });
+        }
+      } catch (err: any) {
+        logger.warn('WebSocket message ignored', { error: err?.message });
+      }
+    });
 
     socket.on('close', () => logger.info('WebSocket client disconnected'));
     socket.on('error', (err: any) => logger.error('WebSocket client error', { error: err?.message }));
