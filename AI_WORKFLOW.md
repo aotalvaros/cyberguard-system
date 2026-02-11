@@ -231,6 +231,17 @@ El QA Engineer debe verificar en CADA Pull Request:
 - [ ] **Dependencies**: No hay paquetes con vulnerabilidades conocidas
 - [ ] **Human Checks**: Existen comentarios `// ⚠️ HUMAN CHECK:` en lógica crítica
 
+### Evidencia QA
+El QA Engineer debe registrar evidencias de ejecucion y hallazgos en:
+- [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+
+Incluye:
+- Criterios de aceptacion validados
+- Checklist de seguridad (segun [docs/SECURITY_GUIDELINES.md](docs/SECURITY_GUIDELINES.md))
+- Pruebas de estres con metricas
+- Bugs encontrados y solucion aplicada
+- Capturas y adjuntos en [docs/images](docs/images)
+
 ### 📝 Comentarios Centinela Obligatorios
 
 En cada bloque de lógica compleja, agregar:
@@ -248,6 +259,27 @@ En cada bloque de lógica compleja, agregar:
 3. Validación y sanitización de inputs
 4. Manejo de errores críticos
 5. Procesamiento de datos sensibles
+
+---
+
+## 🐞 Log de Bugs (Simulado)
+
+**Nota:** Casos simulados para entrenamiento QA y documentacion.
+
+1) **Exposicion de stack trace**
+- Hallazgo: Error 500 respondia `error.stack` al cliente.
+- Riesgo: Filtracion de rutas internas y detalles de librerias.
+- Solucion: Middleware retorna mensaje generico y loguea solo `error.message`.
+
+2) **CORS permisivo**
+- Hallazgo: `origin: '*'` en CORS.
+- Riesgo: Consumo desde origenes no confiables.
+- Solucion: `ALLOWED_ORIGINS` en env y lista controlada.
+
+3) **JWT sin expiracion**
+- Hallazgo: `jwt.sign(payload, secret)` sin `expiresIn`.
+- Riesgo: Sesiones indefinidas.
+- Solucion: `expiresIn: '15m'` + refresh token.
 
 ---
 
