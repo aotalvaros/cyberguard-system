@@ -56,6 +56,17 @@ export class RabbitMQProvider {
 
 ---
 
+### 🔬 Metodología de Evaluación
+Para garantizar la objetividad y profundidad de esta auditoría, se aplicaron las siguientes técnicas:
+
+1.  **Arquitectura (RabbitMQ):** Análisis de código estático en la capa de infraestructura (`rabbitmq.ts`) y auditoría de flujo de datos para validar el uso de *delivery guarantees* (Confirm Channels).
+2.  **Calidad & Human Checks:** Cross-referencing entre el código fuente y el `AI_WORKFLOW.md` para detectar discrepancias entre la documentación y la ejecución técnica real.
+3.  **Docker & Infra:** Inspección de `Dockerfile` para cumplimiento de seguridad (No-root, Multi-stage) y análisis de orquestación en `docker-compose.yml` para validar *healthchecks* y aislamiento.
+4.  **Seguridad (OWASP):** Auditoría selectiva de controladores y middlewares buscando vulnerabilidades de autenticación, inyección y gestión de secretos.
+5.  **Git Flow:** Inspección forense del historial de commits (`git log --graph`) para evaluar la semántica, atomicidad de cambios y flujo de colaboración entre miembros del equipo.
+
+---
+
 ### 🏁 Veredicto Final
 **ESTADO: RECHAZADO (REQUIERE REFACTORIZACIÓN INMEDIATA).**
 Aunque el proyecto "parece" profesional por fuera (TypeScript, Docker, Joi), las entrañas revelan una arquitectura frágil con fallos de seguridad básicos (contraseñas en plano) y cuellos de botella de performance que harían fallar el sistema en un entorno de producción real bajo carga de ciberseguridad. Es un prototipo funcional, no un sistema listo para producción.
