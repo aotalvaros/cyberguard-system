@@ -70,3 +70,13 @@ Para garantizar la objetividad y profundidad de esta auditoría, se aplicaron la
 ### 🏁 Veredicto Final
 **ESTADO: RECHAZADO (REQUIERE REFACTORIZACIÓN INMEDIATA).**
 Aunque el proyecto "parece" profesional por fuera (TypeScript, Docker, Joi), las entrañas revelan una arquitectura frágil con fallos de seguridad básicos (contraseñas en plano) y cuellos de botella de performance que harían fallar el sistema en un entorno de producción real bajo carga de ciberseguridad. Es un prototipo funcional, no un sistema listo para producción.
+
+---
+
+### 📝 Anexos: Bitácora de Auditoría
+- **Sesión 1:** Descubrimiento de infraestructura y levantamiento de contenedores.
+- **Sesión 2:** Análisis de seguridad de endpoints y lógica de autenticación (Detección de Plaintext Auth).
+- **Sesión 3:** Evaluación de mensajería asíncrona y resiliencia de RabbitMQ.
+- **Sesión 4:** Auditoría de historial de Git y flujo de colaboración.
+- **Sesión 5:** Consolidación de hallazgos críticos y propuestas de optimización.
+
