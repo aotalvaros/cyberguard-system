@@ -3,7 +3,7 @@
 | Criterio | 1 - Deficiente (Manual/Caótico) | 3 - Aceptable (Funcional) | 5 - Excelente (Cultura AI-First) | Puntuación |
 |-----------|----------------------------------|----------------------------|-----------------------------------|------------|
 | **Estrategia de IA (AI_WORKFLOW.md)** | Inexistente o es una copia genérica. No explica la metodología de prompting. | Describe herramientas, pero carece de profundidad sobre cómo iteraron con la IA. | Documento vivo y detallado. Define protocolos claros, roles de IA y flujo de trabajo. | **5** |
-| **Calidad del Código & HUMAN CHECK** | Código sucio (boilerplate). Sin comentarios de "Human Check" o mal usados. | Código funcional con los 5 "Human Check" requeridos, pero con errores triviales (ej. cambiar nombres). | Código limpio y optimizado. Los "Human Check" demuestran criterio arquitectónico real (lógica de negocio, seguridad, hilos). | **4** |
+| **Calidad del Código & HUMAN CHECK** | Código sucio (boilerplate). Sin comentarios de "Human Check" o mal usados. | Código funcional con los 5 "Human Check" requeridos, pero con errores triviales (ej. cambiar nombres). | Código limpio y optimizado. Los "Human Check" demuestran criterio arquitectónico real (lógica de negocio, seguridad, hilos). | **3** |
 | **Transparencia ("Lo que la IA hizo mal")** | Sección vacía o dice "La IA hizo todo bien" (Falso positivo). | Menciona errores genéricos (sintaxis) sin profundidad técnica. | Expone "alucinaciones" peligrosas (ej. credenciales hardcodeadas, inyección) y cómo el humano lo corrigió. (Alineado al Principio 04). | **5** |
 | **Arquitectura & Docker** | El docker-compose no levanta. RabbitMQ falla o no conecta. | Levanta, pero la configuración es frágil (puertos quemados, sin variables de entorno). | Despliegue robusto. Uso de variables de entorno, volúmenes y políticas de retry sugeridas por IA. | **5** |
 | **Git Flow & Colaboración** | Commits gigantes ("Update code"). Trabajo de una sola persona evidente. | Uso básico de ramas. Mensajes de commit manuales y simples. | Historial limpio. Mensajes semánticos (posiblemente generados por IA). Evidencia clara de trabajo en células. | **3** |
@@ -26,7 +26,7 @@
 - Validación estricta de mensajes WebSocket
 - Manejo seguro de tipos para evitar runtime errors
 
-### Puntuación Final: 4.4/5
+### Puntuación Final: 4/5
 Excelente base arquitectónica con mejoras significativas en seguridad y tipo-seguridad. Git Flow funcional pero con espacio de mejora en prácticas de colaboración.
 
 ---
