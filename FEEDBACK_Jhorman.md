@@ -7,6 +7,7 @@
 | **Calidad & Human Checks** | 3 | Los "Human Checks" son valiosos pero insuficientes para compensar la falta de Inyección de Dependencias y el uso de anti-patrones como el `ThreatStore` que ordena `O(n log n)` en cada lectura. |
 | **Docker & Infra** | 1 | No sigue el principio de "Least Privilege" (corre como root). Dockerfile ineficiente (sin multi-stage) y Healthcheck "mentiroso" que no valida la conexión real a RabbitMQ. |
 | **Seguridad (OWASP/Audit)** | 1 | **Hallazgo Increíble:** Comparación de contraseñas en texto plano. Vulnerabilidad de enumeración de usuarios y Rate Limiting ineficiente en despliegues distribuidos (local memory map). |
+| **Git Flow & Colaboración** | 5 | **Excelente:** Historial limpio con mensajes semánticos (Conventional Commits), uso correcto de Pull Requests y clara división de tareas por HU/Rama. |
 
 ---
 
