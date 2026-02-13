@@ -2,9 +2,9 @@
 
 | Criterio | 1 - Deficiente (Manual/Caótico) | 3 - Aceptable (Funcional) | 5 - Excelente (Cultura AI-First) | Puntuación |
 |-----------|----------------------------------|----------------------------|-----------------------------------|------------|
-| **Estrategia de IA (AI_WORKFLOW.md)** | Inexistente o es una copia genérica. No explica la metodología de prompting. | Describe herramientas, pero carece de profundidad sobre cómo iteraron con la IA. | Documento vivo y detallado. Define protocolos claros, roles de IA y flujo de trabajo. | **5** |
-| **Calidad del Código & HUMAN CHECK** | Código sucio (boilerplate). Sin comentarios de "Human Check" o mal usados. | Código funcional con los 5 "Human Check" requeridos, pero con errores triviales (ej. cambiar nombres). | Código limpio y optimizado. Los "Human Check" demuestran criterio arquitectónico real (lógica de negocio, seguridad, hilos). | **3** |
-| **Transparencia ("Lo que la IA hizo mal")** | Sección vacía o dice "La IA hizo todo bien" (Falso positivo). | Menciona errores genéricos (sintaxis) sin profundidad técnica. | Expone "alucinaciones" peligrosas (ej. credenciales hardcodeadas, inyección) y cómo el humano lo corrigió. (Alineado al Principio 04). | **5** |
+| **Estrategia de IA (AI_WORKFLOW.md)** | Inexistente o es una copia genérica. No explica la metodología de prompting. | Describe herramientas, pero carece de profundidad sobre cómo iteraron con la IA. | Documento vivo y detallado. Define protocolos claros, roles de IA y flujo de trabajo. | **3** |
+| **Calidad del Código & HUMAN CHECK** | Código sucio (boilerplate). Sin comentarios de "Human Check" o mal usados. | Código funcional con los 5 "Human Check" requeridos, pero con errores triviales (ej. cambiar nombres). | Código limpio y optimizado. Los "Human Check" demuestran criterio arquitectónico real (lógica de negocio, seguridad, hilos). | **1** |
+| **Transparencia ("Lo que la IA hizo mal")** | Sección vacía o dice "La IA hizo todo bien" (Falso positivo). | Menciona errores genéricos (sintaxis) sin profundidad técnica. | Expone "alucinaciones" peligrosas (ej. credenciales hardcodeadas, inyección) y cómo el humano lo corrigió. (Alineado al Principio 04). | **3** |
 | **Arquitectura & Docker** | El docker-compose no levanta. RabbitMQ falla o no conecta. | Levanta, pero la configuración es frágil (puertos quemados, sin variables de entorno). | Despliegue robusto. Uso de variables de entorno, volúmenes y políticas de retry sugeridas por IA. | **5** |
 | **Git Flow & Colaboración** | Commits gigantes ("Update code"). Trabajo de una sola persona evidente. | Uso básico de ramas. Mensajes de commit manuales y simples. | Historial limpio. Mensajes semánticos (posiblemente generados por IA). Evidencia clara de trabajo en células. | **3** |
 
@@ -73,10 +73,9 @@ Mejoras enfocadas en seguridad, rendimiento y mantenibilidad sin sobre-ingenier�
 
 ### 🔧 Cambios Recomendados (Críticos):
 
-1. **redis.ts línea 30**: Corregir `process.env.REDIS_URL` → `process.env.REDIS_URL`
-2. **Performance**: Reemplazar removeHistoryItemById con Redis Sets para O(1) en lugar de O(n)
-3. **Resiliencia**: Agregar circuit breaker para Redis
-4. **Optimización**: Cache de JSON.stringify para operaciones repetitivas
+1. **Performance**: Reemplazar removeHistoryItemById con Redis Sets para O(1) en lugar de O(n)
+2. **Resiliencia**: Agregar circuit breaker para Redis
+3. **Optimización**: Cache de JSON.stringify para operaciones repetitivas
 
 ### 📋 Cambios No Requeridos:
 El código actual cumple funcionalmente. Los cambios sugeridos son optimizaciones, no correcciones de bugs críticos.
