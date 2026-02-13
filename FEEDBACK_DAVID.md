@@ -73,10 +73,9 @@ Mejoras enfocadas en seguridad, rendimiento y mantenibilidad sin sobre-ingenier�
 
 ### 🔧 Cambios Recomendados (Críticos):
 
-1. **redis.ts línea 30**: Corregir `process.env.REDIS_URL` → `process.env.REDIS_URL`
-2. **Performance**: Reemplazar removeHistoryItemById con Redis Sets para O(1) en lugar de O(n)
-3. **Resiliencia**: Agregar circuit breaker para Redis
-4. **Optimización**: Cache de JSON.stringify para operaciones repetitivas
+1. **Performance**: Reemplazar removeHistoryItemById con Redis Sets para O(1) en lugar de O(n)
+2. **Resiliencia**: Agregar circuit breaker para Redis
+3. **Optimización**: Cache de JSON.stringify para operaciones repetitivas
 
 ### 📋 Cambios No Requeridos:
 El código actual cumple funcionalmente. Los cambios sugeridos son optimizaciones, no correcciones de bugs críticos.
