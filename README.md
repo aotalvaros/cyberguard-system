@@ -210,14 +210,16 @@ cd backend/producer
 npm test
 ```
 
-### Frontend (Angular)
+### Frontend (Angular + Vitest)
 ```bash
 cd frontend/cyberguard-system
-npm test
+npm test                 # Ejecutar tests con Vitest
+npm run test:demo        # Demo tests (detección de bugs)
 ```
 
 ### QA Evidencias
-- Registro formal de QA: [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+- **Auditoría QA Final**: [FEEDBACK_TEAM-4-QA.md](FEEDBACK_TEAM-4-QA.md) - Evaluación AI-First (23.5/25)
+- Registro histórico: [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
 - Criterios de aceptacion, seguridad y estres documentados por QA
 - Capturas y adjuntos en [docs/images](docs/images)
 
