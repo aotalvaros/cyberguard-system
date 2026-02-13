@@ -2,61 +2,86 @@ import WebSocket, { Server } from 'ws';
 import { logger } from './logger';
 import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById } from './redis';
 
+type WebSocketMessage = {
+  type: 'clear-all' | 'delete-one';
+  id?: string;
+};
+
+const isValidMessage = (obj: unknown): obj is WebSocketMessage => {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const msg = obj as any;
+  return typeof msg.type === 'string' && 
+         ['clear-all', 'delete-one'].includes(msg.type) &&
+         (msg.type !== 'delete-one' || typeof msg.id === 'string');
+};
+
 let wss: Server | null = null;
 
-export function startWebSocket(port: number) {
+export const startWebSocket = (port: number): Server => {
   wss = new Server({ port });
 
-  wss.on('listening', () => logger.info(`Worker WebSocket listening on ws://localhost:${port}`));
+  wss.on('listening', () => logger.info(`WebSocket listening on ws://localhost:${port}`));
+  
   wss.on('connection', async (socket: WebSocket) => {
     logger.info('WebSocket client connected');
     
-    // Send history from Redis on connect
     try {
       const history = await getHistoryFromRedis();
       if (history.length > 0) {
         history.reverse().forEach(item => {
-          if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(item));
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(item));
+          }
         });
         logger.info('Sent history to new client', { count: history.length });
       }
-    } catch (err: any) {
-      logger.error('Failed to send history', { error: err?.message });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      logger.error('Failed to send history', { error: message });
     }
 
     socket.on('message', async (raw) => {
       try {
         const msg = JSON.parse(raw.toString());
-        if (msg?.type === 'clear-all') {
+        
+        if (!isValidMessage(msg)) {
+          logger.warn('Invalid WebSocket message format', { msg });
+          return;
+        }
+        
+        if (msg.type === 'clear-all') {
           await clearHistoryFromRedis();
           broadcast({ type: 'clear-all', clearedAt: new Date().toISOString() });
           return;
         }
 
-        if (msg?.type === 'delete-one' && typeof msg.id === 'string') {
+        if (msg.type === 'delete-one' && msg.id) {
           await removeHistoryItemById(msg.id);
           broadcast({ type: 'delete-one', id: msg.id, deletedAt: new Date().toISOString() });
         }
-      } catch (err: any) {
-        logger.warn('WebSocket message ignored', { error: err?.message });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        logger.warn('WebSocket message ignored', { error: message });
       }
     });
 
     socket.on('close', () => logger.info('WebSocket client disconnected'));
-    socket.on('error', (err: any) => logger.error('WebSocket client error', { error: err?.message }));
+    socket.on('error', (err: Error) => logger.error('WebSocket client error', { error: err.message }));
   });
 
   return wss;
-}
+};
 
-export function broadcast(payload: any) {
+export const broadcast = (payload: any): void => {
   if (!wss) return;
   const str = JSON.stringify(payload);
-  wss.clients.forEach((client: WebSocket) => {
-    if (client.readyState === WebSocket.OPEN) client.send(str);
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(str);
+    }
   });
-}
+};
 
-export function closeWebSocket(): Promise<void> {
-  return new Promise((resolve) => wss?.close(() => resolve()) ?? resolve());
-}
+export const closeWebSocket = (): Promise<void> => {
+  return new Promise(resolve => wss?.close(() => resolve()) ?? resolve());
+};
