@@ -20,6 +20,13 @@ El backend cumple los requisitos funcionales del MVP y cuenta con suite de testi
 
 El patron actual es **Transaction Script** con dependencias directas. Se recomienda migrar a **Arquitectura Hexagonal** para desacoplar dominio de infraestructura.
 
+**¿Por qué se usó?:**
+
+✅ MVP rápido: Implementación directa sin capas complejas
+✅ Equipo pequeño: Solo 2 desarrolladores
+✅ Funcionalidad simple: CRUD básico + mensajería
+❌ Pero genera deuda técnica: Acoplamiento directo a infraestructura
+
 **Mejoras Recientes (Febrero 2026):**
 - ✅ Suite completa de tests unitarios (120+ casos)
 - ✅ Cobertura de codigo: 40% → 85%+
@@ -496,3 +503,31 @@ WHERE t.severity = 'critical';
 - **P3 (Nice to have):** 6-9 horas
 
 **Total:** 26-39 horas de trabajo para resolver deuda tecnica completa
+
+
+---
+
+## 9. Análisis del Worker - Deuda Técnica Crítica 
+
+### Estado Actual
+**Cobertura de Tests:** 0% (vs 85%+ del Producer)  
+**Calificación:** 2/5 - Funcional en desarrollo, NO listo para producción
+
+### 9.1 Errores de Arquitectura - Worker
+
+#### 9.1.1 NACK sin Requeue - Pérdida de Mensajes Críticos
+
+**Archivo:** `backend/worker/src/rabbitmq.ts` línea 29
+
+**Problema:** Cuando falla el procesamiento de un mensaje, se descarta permanentemente sin reintento ni Dead Letter Exchange.
+
+```typescript
+// ACTUAL - Mensaje se pierde
+await ch.consume(q.queue, async (msg) => {
+  try {
+    await onMessage(data, msg.fields.routingKey, msg);
+    ch.ack(msg);
+  } catch (err) {
+    ch.nack(msg, false, false); // ❌ NO requeue, NO DLX
+  }
+});
