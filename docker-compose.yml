@@ -80,19 +80,19 @@ services:
       - cyberguard-network
     restart: unless-stopped
 
-  frontend:
-    build:
-      context: ./frontend/cyberguard-system
-      dockerfile: Dockerfile
-    container_name: cyberguard-frontend
-    ports:
-      - "4200:80"
-    depends_on:
-      - backend
-      - worker
-    networks:
-      - cyberguard-network
-    restart: unless-stopped
+  # frontend:
+  #   build:
+  #     context: ./frontend/cyberguard-system
+  #     dockerfile: Dockerfile
+  #   container_name: cyberguard-frontend
+  #   ports:
+  #     - "4200:80"
+  #   depends_on:
+  #     - backend
+  #     - worker
+  #   networks:
+  #     - cyberguard-network
+  #   restart: unless-stopped
 
 volumes:
   rabbitmq_data:
