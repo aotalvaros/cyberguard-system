@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach, afterAll } from '@jest/globals';
 
 describe('Environment Configuration', () => {
   const originalEnv = process.env;
@@ -24,8 +24,9 @@ describe('Environment Configuration', () => {
     delete process.env.PORT;
     delete process.env.RABBITMQ_URL;
     delete process.env.JWT_SECRET;
-    delete process.env.ADMIN_USERNAME;
-    delete process.env.ADMIN_PASSWORD;
+    delete process.env.FIREBASE_API_KEY;
+    delete process.env.FIREBASE_AUTH_DOMAIN;
+    delete process.env.FIREBASE_PROJECT_ID;
     delete process.env.ALLOWED_ORIGINS;
     delete process.env.NODE_ENV;
   });
@@ -45,8 +46,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
 
       // Mock logger ANTES de importar env
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -60,9 +62,8 @@ describe('Environment Configuration', () => {
       expect(config.port).toBe(3000);
       expect(config.rabbitmqUrl).toBe('amqp://localhost:5672');
       expect(config.jwtSecret).toBe('test-secret');
-      expect(config.adminUsername).toBe('admin');
-      expect(config.adminPassword).toBe('password123');
       expect(mockProcessExit).not.toHaveBeenCalled();
+
     });
 
     it('should parse custom port number', async () => {
@@ -70,8 +71,7 @@ describe('Environment Configuration', () => {
       process.env.PORT = '8080';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+
 
       jest.unstable_mockModule('../../../config/logger', () => ({
         logger: mockLogger
@@ -89,8 +89,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       process.env.ALLOWED_ORIGINS = 'http://localhost:4200,http://localhost:3000,https://example.com';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -113,8 +114,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       // ALLOWED_ORIGINS not set
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -133,8 +135,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       // NODE_ENV not set
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -153,8 +156,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       process.env.NODE_ENV = 'production';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -175,8 +179,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       process.env.ALLOWED_ORIGINS = 'https://production.example.com';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -195,8 +200,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://user:password@rabbitmq:5672/vhost';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
         logger: mockLogger
@@ -214,8 +220,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'super$ecret!@#key_2024';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
         logger: mockLogger
@@ -233,8 +240,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
       process.env.ALLOWED_ORIGINS = 'http://localhost:4200, http://localhost:3000';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
@@ -256,8 +264,9 @@ describe('Environment Configuration', () => {
       process.env.PORT = '3000.5';  // Invalid but parseInt handles it
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-      process.env.ADMIN_USERNAME = 'admin';
-      process.env.ADMIN_PASSWORD = 'password123';
+      process.env.FIREBASE_API_KEY = '111aaa';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
 
       jest.unstable_mockModule('../../../config/logger', () => ({
         logger: mockLogger

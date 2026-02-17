@@ -1,21 +1,8 @@
+import { AuthResult } from './../../../domain/ports/AuthProvider';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import express from 'express';
 import request from 'supertest';
-import jwt from 'jsonwebtoken';
 
-// ============================================================================
-// MOCKS - Configurados ANTES de las importaciones
-// ============================================================================
-
-const mockConfig = {
-  jwtSecret: 'test-jwt-secret-key-for-testing',
-  port: 3000,
-  rabbitmqUrl: 'amqp://mock:5672',
-  adminUsername: 'admin',
-  adminPassword: 'cyberguard2024',
-  allowedOrigins: ['http://localhost:4200'],
-  nodeEnv: 'test'
-};
 
 const mockLogger = {
   info: jest.fn(),
@@ -26,10 +13,14 @@ const mockLogger = {
 
 const mockBruteForceDetection = jest.fn((req: express.Request, res: express.Response, next: express.NextFunction) => next());
 
-// Mock de módulos usando jest.mock en lugar de jest.unstable_mockModule
-jest.mock('../../../config/env', () => ({
-  config: mockConfig
-}));
+// Mock del AuthService
+const mockLogin = jest.fn<(credentials: { username: string; password: string }) => Promise<AuthResult>>();
+const mockAuthService = {
+  login: mockLogin
+};
+
+// Mock de la factory que crea el AuthService
+const mockCreateAuthService = jest.fn(() => mockAuthService);
 
 jest.mock('../../../config/logger', () => ({
   logger: mockLogger
@@ -39,37 +30,40 @@ jest.mock('../../../middlewares/bruteforce.middleware', () => ({
   bruteForceDetection: mockBruteForceDetection
 }));
 
-jest.mock('../../../config/rabbitmq', () => ({
-  publishEvent: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
-  getChannel: jest.fn().mockReturnValue(null),
-  connectRabbitMQ: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
-  closeRabbitMQ: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
+jest.mock('../../../infrastructure/factories/AuthServiceFactory', () => ({
+  createAuthService: mockCreateAuthService
 }));
 
-jest.mock('../../../services/threat.service', () => ({
-  ThreatService: jest.fn().mockImplementation(() => ({
-    createThreat: jest.fn<() => Promise<{ id: string }>>().mockResolvedValue({ id: 'mock-threat-id' }),
-    getThreat: jest.fn<() => Promise<null>>().mockResolvedValue(null),
-    updateThreat: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
-  }))
-}));
-
+// ============================================================================
+// IMPORTACIONES (después de los mocks)
+// ============================================================================
 
 import authRoutes from '../../../controllers/auth.controller';
-import  '../../../config/logger';
+import '../../../config/logger';
 
+// ============================================================================
+// SUITE DE PRUEBAS
+// ============================================================================
 
-describe('Auth Controller', () => {
+describe('Auth Controller with AuthService', () => {
   let app: express.Application;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Reset mock implementations
+    mockLogin.mockReset();
+    mockBruteForceDetection.mockImplementation((req, res, next) => next());
+    
     app = express();
     app.use(express.json());
     app.use('/api/auth', authRoutes);
   });
 
-  
+  // ==========================================================================
+  // VALIDACIÓN DE ENTRADA
+  // ==========================================================================
+
   describe('POST /api/auth/login - Input Validation', () => {
     it('should return 400 when username is missing', async () => {
       const response = await request(app)
@@ -79,6 +73,7 @@ describe('Auth Controller', () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('username');
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
     it('should return 400 when password is missing', async () => {
@@ -89,15 +84,16 @@ describe('Auth Controller', () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('password');
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
-    it('should return 400 when both username and password are missing', async () => {
+    it('should return 400 when both fields are missing', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({});
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
     it('should return 400 when username is too short (less than 3 characters)', async () => {
@@ -107,6 +103,7 @@ describe('Auth Controller', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('3 characters');
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
     it('should return 400 when password is too short (less than 6 characters)', async () => {
@@ -116,6 +113,25 @@ describe('Auth Controller', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('6 characters');
+      expect(mockLogin).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when username is empty string', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: '', password: 'test123456' });
+
+      expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when password is empty string', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'admin', password: '' });
+
+      expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
     it('should return 400 when body is malformed JSON', async () => {
@@ -125,402 +141,431 @@ describe('Auth Controller', () => {
         .send('{"invalid": json}');
 
       expect(response.status).toBe(400);
-    });
-
-    it('should return 400 when username is empty string', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: '', password: 'test123456' });
-
-      expect(response.status).toBe(400);
-    });
-
-    it('should return 400 when password is empty string', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: '' });
-
-      expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
     });
   });
 
   // ==========================================================================
-  // AUTENTICACIÓN Y AUTORIZACIÓN
+  // AUTENTICACIÓN EXITOSA
   // ==========================================================================
-  
-  describe('POST /api/auth/login - Authentication', () => {
-    it('should return 401 for non-existent username', async () => {
+
+  describe('POST /api/auth/login - Successful Authentication', () => {
+    it('should return 200 with token and user when AuthService returns success', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: {
+          username: 'admin',
+          role: 'admin',
+          id: 'user-id-123'
+        },
+        token: 'jwt-token-abc123'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'wronguser', password: 'cyberguard2024' });
-
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Invalid credentials');
-    });
-
-    it('should return 401 for invalid password with valid username', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrongpassword' });
-
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Invalid password');
-    });
-
-    it('should return 401 for case-sensitive username mismatch', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'Admin', password: 'cyberguard2024' });
-
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Invalid credentials');
-    });
-
-    it('should return 401 for case-sensitive password mismatch', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'CYBERGUARD2024' });
-
-      expect(response.status).toBe(401);
-    });
-
-    it('should return 200 with token for valid credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+        .send({ username: 'admin', password: 'correct-password' });
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('token');
-      expect(response.body).toHaveProperty('user');
-      expect(typeof response.body.token).toBe('string');
-      expect(response.body.token.length).toBeGreaterThan(0);
+      expect(response.body).toEqual({
+        token: 'jwt-token-abc123',
+        user: {
+          username: 'admin',
+          role: 'admin'
+        }
+      });
     });
 
-    it('should return correct user information on successful login', async () => {
+    it('should call AuthService.login with correct credentials', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'testuser', role: 'user', id: 'user-id-123' },
+        token: 'token',
+        error: undefined
+      });
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'testuser', password: 'testpass123' });
+
+      expect(mockLogin).toHaveBeenCalledTimes(1);
+      expect(mockLogin).toHaveBeenCalledWith({
+        username: 'testuser',
+        password: 'testpass123'
+      });
+    });
+
+    it('should return token generated by AuthService', async () => {
+      const expectedToken = 'unique-jwt-token-xyz789';
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: expectedToken
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+        .send({ username: 'user', password: 'password123' });
 
-      expect(response.status).toBe(200);
+      expect(response.body.token).toBe(expectedToken);
+    });
+
+    it('should return user information from AuthService', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: {
+          username: 'john.doe',
+          role: 'moderator',
+          id: 'user-id-123'
+        },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'john.doe', password: 'password123' });
+
       expect(response.body.user).toEqual({
-        username: 'admin',
-        role: 'admin'
+        username: 'john.doe',
+        role: 'moderator'
       });
     });
-  });
 
-  // ==========================================================================
-  // VALIDACIÓN DE TOKEN JWT
-  // ==========================================================================
-  
-  describe('POST /api/auth/login - JWT Token Validation', () => {
-    it('should return a valid JWT token structure', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+    it('should work with different user roles', async () => {
+      const roles = ['admin', 'user', 'moderator', 'guest'];
 
-      expect(response.status).toBe(200);
-      const token = response.body.token;
-      const parts = token.split('.');
-      
-      expect(parts.length).toBe(3);
+      for (const role of roles) {
+        jest.clearAllMocks();
+
+        mockLogin.mockResolvedValue({
+          success: true,
+          user: { username: 'testuser', role, id: 'user-id-123' },
+          token: 'token'
+        });
+
+        const response = await request(app)
+          .post('/api/auth/login')
+          .send({ username: 'testuser', password: 'password123' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.user.role).toBe(role);
+      }
     });
 
-    it('should create token with correct payload', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const token = response.body.token;
-      const decoded = jwt.decode(token) as any;
-      
-      expect(decoded).toHaveProperty('username', 'admin');
-      expect(decoded).toHaveProperty('role', 'admin');
-      expect(decoded).toHaveProperty('exp');
-      expect(decoded).toHaveProperty('iat');
-    });
-
-    it('should create token that can be verified with correct secret', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const token = response.body.token;
-      
-      expect(() => {
-        jwt.verify(token, mockConfig.jwtSecret);
-      }).not.toThrow();
-    });
-
-    it('should create token with 8 hour expiration', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const token = response.body.token;
-      const decoded = jwt.decode(token) as any;
-      
-      const expirationTime = decoded.exp - decoded.iat;
-      const eightHoursInSeconds = 8 * 60 * 60;
-      
-      expect(expirationTime).toBe(eightHoursInSeconds);
-    });
-
-  });
-
-
-  describe('POST /api/auth/login - Logging', () => {
-    it('should log failed login attempt when user not found', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'wronguser', password: 'password123' });
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Failed login attempt - user not found',
-        expect.objectContaining({ username: 'wronguser' })
-      );
-    });
-
-    it('should log failed login attempt when password is incorrect', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrongpassword' });
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Failed login attempt - invalid password',
-        expect.objectContaining({ username: 'admin' })
-      );
-    });
-
-    it('should log successful login', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'User logged in',
-        expect.objectContaining({ username: 'admin' })
-      );
-    });
-
-    it('should log exactly once for failed user attempt', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'wronguser', password: 'password123' });
-
-      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
-      expect(mockLogger.info).not.toHaveBeenCalled();
-    });
-
-    it('should log exactly once for failed password attempt', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrongpassword' });
-
-      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
-      expect(mockLogger.info).not.toHaveBeenCalled();
-    });
-
-    it('should log exactly once for successful login', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      expect(mockLogger.info).toHaveBeenCalledTimes(1);
-      expect(mockLogger.warn).not.toHaveBeenCalled();
-    });
-
-    it('should not log password in any log entry', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const allLogCalls = [
-        ...mockLogger.info.mock.calls,
-        ...mockLogger.warn.mock.calls,
-        ...mockLogger.error.mock.calls
-      ];
-
-      allLogCalls.forEach(call => {
-        const logString = JSON.stringify(call);
-        expect(logString).not.toContain('cyberguard2024');
+    it('should set correct content-type header', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
       });
-    });
-  });
 
-  // ==========================================================================
-  // SEGURIDAD
-  // ==========================================================================
-  
-  describe('POST /api/auth/login - Security', () => {
-    it('should not expose password in successful response', async () => {
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const responseString = JSON.stringify(response.body);
-      expect(responseString).not.toContain('cyberguard2024');
-      expect(responseString).not.toContain('password');
-      expect(response.body.user).not.toHaveProperty('password');
-    });
-
-    it('should not expose password in error response', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrongpassword' });
-
-      const responseString = JSON.stringify(response.body);
-      expect(responseString).not.toContain('wrongpassword');
-      expect(responseString).not.toContain('cyberguard2024');
-    });
-
-    it('should not expose internal error details or stack traces', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrong' });
-
-      expect(response.body).not.toHaveProperty('stack');
-      expect(response.body).not.toHaveProperty('stackTrace');
-      const responseString = JSON.stringify(response.body);
-      expect(responseString).not.toContain('.ts:');
-    });
-
-    it('should return generic error message for wrong username', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'wronguser', password: 'cyberguard2024' });
-
-      expect(response.body.error).toBe('Invalid credentials');
-    });
-
-    it('should use different error messages internally', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'wronguser', password: 'cyberguard2024' });
-
-      const wrongUserCall = mockLogger.warn.mock.calls[0];
-
-      jest.clearAllMocks();
-
-      await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'wrongpassword' });
-
-      const wrongPasswordCall = mockLogger.warn.mock.calls[0];
-
-      expect(wrongUserCall[0]).not.toBe(wrongPasswordCall[0]);
-    });
-
-    it('should not expose JWT secret', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
-
-      const responseString = JSON.stringify(response.body);
-      expect(responseString).not.toContain(mockConfig.jwtSecret);
-    });
-
-    it('should set proper content-type header', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+        .send({ username: 'user', password: 'password123' });
 
       expect(response.headers['content-type']).toMatch(/application\/json/);
     });
+  });
 
-    it('should handle SQL injection attempt', async () => {
+  // ==========================================================================
+  // AUTENTICACIÓN FALLIDA
+  // ==========================================================================
+
+  describe('POST /api/auth/login - Failed Authentication', () => {
+    it('should return 401 when AuthService returns failure', async () => {
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: "admin' OR '1'='1", password: 'cyberguard2024' });
+        .send({ username: 'admin', password: 'wrong-password' });
 
       expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        error: 'Invalid credentials'
+      });
     });
 
-    it('should handle XSS attempt', async () => {
+    it('should return error message from AuthService', async () => {
+      const errorMessage = 'Account is locked';
+
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: errorMessage
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: '<script>alert("xss")</script>', password: 'password123456' });
+        .send({ username: 'locked-user', password: 'password123' });
 
       expect(response.status).toBe(401);
+      expect(response.body.error).toBe(errorMessage);
+    });
+
+    it('should handle different error messages from AuthService', async () => {
+      const errorMessages = [
+        'Invalid credentials',
+        'User not found',
+        'Account disabled',
+        'Authentication failed'
+      ];
+
+      for (const errorMsg of errorMessages) {
+        jest.clearAllMocks();
+
+        mockLogin.mockResolvedValue({
+          success: false,
+          error: errorMsg
+        });
+
+        const response = await request(app)
+          .post('/api/auth/login')
+          .send({ username: 'user', password: 'password123' });
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe(errorMsg);
+      }
+    });
+
+    it('should not include token in failure response', async () => {
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'wrong' });
+
+      expect(response.body).not.toHaveProperty('token');
+      expect(response.body).not.toHaveProperty('user');
+    });
+
+    it('should not include user in failure response', async () => {
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'wrong' });
+
+      expect(response.body).not.toHaveProperty('user');
     });
   });
 
   // ==========================================================================
-  // MIDDLEWARE
+  // MIDDLEWARE DE BRUTE FORCE
   // ==========================================================================
-  
-  describe('POST /api/auth/login - Brute Force Protection', () => {
+
+  describe('Brute Force Protection', () => {
     it('should apply brute force detection middleware', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
       await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+        .send({ username: 'user', password: 'password123' });
 
       expect(mockBruteForceDetection).toHaveBeenCalled();
+    });
+
+    it('should call brute force middleware before validation', async () => {
+      const callOrder: string[] = [];
+
+      mockBruteForceDetection.mockImplementation((req, res, next) => {
+        callOrder.push('bruteforce');
+        next();
+      });
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'password123' });
+
+      expect(callOrder[0]).toBe('bruteforce');
     });
   });
 
   // ==========================================================================
   // EDGE CASES
   // ==========================================================================
-  
-  describe('POST /api/auth/login - Edge Cases', () => {
-    it('should handle username with trailing spaces', async () => {
+
+  describe('Edge Cases', () => {
+    it('should handle username with special characters', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user@example.com', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin ', password: 'cyberguard2024' });
+        .send({ username: 'user@example.com', password: 'password123' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(200);
+      expect(mockLogin).toHaveBeenCalledWith({
+        username: 'user@example.com',
+        password: 'password123'
+      });
     });
 
     it('should handle very long username', async () => {
-      const longUsername = 'a'.repeat(1000);
+      const longUsername = 'a'.repeat(100);
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: longUsername, role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: longUsername, password: 'cyberguard2024' });
+        .send({ username: longUsername, password: 'password123' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(200);
     });
 
     it('should handle very long password', async () => {
-      const longPassword = 'a'.repeat(1000);
+      const longPassword = 'a'.repeat(100);
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: longPassword });
+        .send({ username: 'testuser', password: longPassword });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(200);
     });
 
-    it('should handle null values', async () => {
+    it('should handle unicode characters in username', async () => {
+      const unicodeUsername = "用户名";
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: unicodeUsername, role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: unicodeUsername, password: 'password123' });
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should handle exactly 3 character username (boundary)', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'abc', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'abc', password: 'password123' });
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should handle exactly 6 character password (boundary)', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'testuser', password: '123456' });
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should handle null values in request body', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({ username: null, password: null });
 
       expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
-    it('should handle numeric values', async () => {
+    it('should handle numeric values instead of strings', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({ username: 12345, password: 67890 });
 
       expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
     });
 
-    it('should handle array values', async () => {
+    it('should handle array values instead of strings', async () => {
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: ['admin'], password: ['cyberguard2024'] });
+        .send({ username: ['admin'], password: ['password'] });
 
       expect(response.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
     });
   });
 
   // ==========================================================================
-  // CONSISTENCIA
+  // RESPONSE CONSISTENCY
   // ==========================================================================
-  
-  describe('POST /api/auth/login - Response Consistency', () => {
+
+  describe('Response Structure Consistency', () => {
+    it('should return consistent success structure', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'password123' });
+
+      expect(response.body).toHaveProperty('token');
+      expect(response.body).toHaveProperty('user');
+      expect(response.body.user).toHaveProperty('username');
+      expect(response.body.user).toHaveProperty('role');
+      expect(response.body).not.toHaveProperty('error');
+      expect(response.body).not.toHaveProperty('success');
+    });
+
     it('should return consistent error structure', async () => {
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'wrong' });
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body).not.toHaveProperty('token');
+      expect(response.body).not.toHaveProperty('user');
+      expect(response.body).not.toHaveProperty('success');
+    });
+
+    it('should return consistent validation error structure', async () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({ username: 'ab' });
@@ -528,17 +573,130 @@ describe('Auth Controller', () => {
       expect(response.body).toHaveProperty('error');
       expect(typeof response.body.error).toBe('string');
       expect(response.body).not.toHaveProperty('token');
+      expect(response.body).not.toHaveProperty('user');
     });
 
-    it('should return consistent success structure', async () => {
+    it('should always return JSON content-type', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
       const response = await request(app)
         .post('/api/auth/login')
-        .send({ username: 'admin', password: 'cyberguard2024' });
+        .send({ username: 'user', password: 'password123' });
 
-      expect(response.body).toHaveProperty('token');
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('username');
-      expect(response.body.user).toHaveProperty('role');
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+    });
+  });
+
+  // ==========================================================================
+  // SECURITY
+  // ==========================================================================
+
+  describe('Security', () => {
+    it('should not expose password in any response', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'secret-password-123' });
+
+      const responseString = JSON.stringify(response.body);
+      expect(responseString).not.toContain('secret-password-123');
+      expect(responseString).not.toContain('password');
+    });
+
+    it('should not expose internal error details', async () => {
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'wrong' });
+
+      expect(response.body).not.toHaveProperty('stack');
+      expect(response.body).not.toHaveProperty('stackTrace');
+    });
+
+    it('should not include success field in response (implementation detail)', async () => {
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: { username: 'user', role: 'user', id: 'user-id-123' },
+        token: 'token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user', password: 'password123' });
+
+      // El campo 'success' es interno del AuthService, no debe exponerse
+      expect(response.body).not.toHaveProperty('success');
+    });
+  });
+
+  // ==========================================================================
+  // INTEGRATION FLOW
+  // ==========================================================================
+
+  describe('Complete Integration Flow', () => {
+    it('should execute complete successful login flow', async () => {
+      const credentials = {
+        username: 'integration-test-user',
+        password: 'integration-test-pass'
+      };
+
+      mockLogin.mockResolvedValue({
+        success: true,
+        user: {
+          username: 'integration-test-user',
+          role: 'admin',
+          id: 'integration-test-user-id'
+        },
+        token: 'integration-test-token'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send(credentials);
+
+      // Verificar respuesta
+      expect(response.status).toBe(200);
+      expect(response.body.token).toBe('integration-test-token');
+      expect(response.body.user.username).toBe('integration-test-user');
+      
+      // Verificar que AuthService fue llamado correctamente
+      expect(mockLogin).toHaveBeenCalledWith(credentials);
+      
+      // Verificar que brute force middleware se ejecutó
+      expect(mockBruteForceDetection).toHaveBeenCalled();
+    });
+
+    it('should execute complete failed login flow', async () => {
+      const credentials = {
+        username: 'wrong-user',
+        password: 'wrong-password'
+      };
+
+      mockLogin.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send(credentials);
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toBe('Invalid credentials');
+      expect(mockLogin).toHaveBeenCalledWith(credentials);
     });
   });
 });

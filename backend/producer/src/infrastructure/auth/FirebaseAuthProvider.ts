@@ -1,4 +1,3 @@
-// Crear: src/infrastructure/auth/FirebaseAuthProvider.ts
 import { getAuth, signInWithEmailAndPassword, Auth } from 'firebase/auth';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { AuthProvider, AuthResult, LoginCredentials, User } from '../../domain/ports/AuthProvider';
