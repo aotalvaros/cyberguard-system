@@ -14,6 +14,15 @@ const threatService = new ThreatService();
 const MAX_ATTEMPTS = 5;
 const TIME_WINDOW = 5 * 60 * 1000; // 5 minutos
 
+export function resetBruteForceState(): void {
+  loginAttempts.clear();
+}
+
+// ✅ NUEVA FUNCIÓN: Obtener estado (útil para debugging en tests)
+export function getBruteForceState(): Map<string, LoginAttempt> {
+  return new Map(loginAttempts);
+}
+
 // ⚠️ HUMAN CHECK:
 // La IA no implementaba detección automática de fuerza bruta.
 // Agregamos tracking de intentos fallidos por IP y auto-reporte.
@@ -94,3 +103,4 @@ setInterval(() => {
     }
   }
 }, 10 * 60 * 1000);
+
