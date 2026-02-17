@@ -6,7 +6,14 @@ dotenv.config();
 // ⚠️ HUMAN CHECK:
 // Validamos las variables de entorno críticas al inicio.
 // La IA no incluía esta validación obligatoria.
-const requiredEnvVars = ['PORT', 'RABBITMQ_URL', 'JWT_SECRET', 'ADMIN_USERNAME', 'ADMIN_PASSWORD'];
+const requiredEnvVars = [
+  'PORT',
+  'RABBITMQ_URL',
+  'JWT_SECRET',
+  'FIREBASE_API_KEY',
+  'FIREBASE_AUTH_DOMAIN',
+  'FIREBASE_PROJECT_ID'
+];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -21,6 +28,8 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET!,
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:4200'],
   nodeEnv: process.env.NODE_ENV || 'development',
-  adminUsername: process.env.ADMIN_USERNAME!,
-  adminPassword: process.env.ADMIN_PASSWORD!
+
+  firebaseApiKey: process.env.FIREBASE_API_KEY!,
+  firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN!,
+  firebaseProjectId: process.env.FIREBASE_PROJECT_ID!,
 };
