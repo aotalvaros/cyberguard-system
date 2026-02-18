@@ -48,3 +48,5 @@ backend/prisma/migrations/
 # Temporary files
 tmp/
 temp/
+
+.github/
