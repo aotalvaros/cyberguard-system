@@ -82,9 +82,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend/cyberguard-system
+      context: ./frontend/cyberguard-system-app
       dockerfile: Dockerfile
     container_name: cyberguard-frontend
+    environment:
+      API_URL: http://localhost:3000
+      WS_URL: ws://localhost:8081
     ports:
       - "4200:80"
     depends_on:
