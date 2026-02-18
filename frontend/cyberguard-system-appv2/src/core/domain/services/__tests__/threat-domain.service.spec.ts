@@ -26,7 +26,7 @@ describe('ThreatDomainService', () => {
     service = TestBed.inject(ThreatDomainService);
   });
 
-  it('should report threat', (done) => {
+  it('should report threat', () => {
     const threat: ThreatRequest = {
       type: ThreatType.MALWARE,
       severity: ThreatSeverity.HIGH,
@@ -37,9 +37,8 @@ describe('ThreatDomainService', () => {
     mockRepository.reportThreat.mockReturnValue(of({ threatId: '123' }));
 
     service.reportThreat(threat).subscribe(result => {
-      expect(result.threatId).toBe('123');
+      expect(result?.threatId).toBe('123');
       expect(mockRepository.reportThreat).toHaveBeenCalledWith(threat);
-      done();
     });
   });
 

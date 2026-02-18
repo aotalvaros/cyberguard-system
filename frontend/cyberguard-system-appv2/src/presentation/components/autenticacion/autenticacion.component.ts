@@ -3,8 +3,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { finalize, timeout } from 'rxjs';
-import { AuthService } from '../../../core/infrastructure/services/auth.service';
+import { LoginUseCase } from '../../../core/application/use-cases/login.use-case';
 
+// ⚠️ HUMAN CHECK:
+// Autenticación refactorizada para usar LoginUseCase
 @Component({
   selector: 'app-autenticacion',
   standalone: true,
@@ -14,7 +16,7 @@ import { AuthService } from '../../../core/infrastructure/services/auth.service'
 })
 export class AutenticacionComponent {
   private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
+  private loginUseCase = inject(LoginUseCase);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -35,7 +37,7 @@ export class AutenticacionComponent {
 
     const { username, password } = this.loginForm.value;
 
-    this.authService.login(username!, password!)
+    this.loginUseCase.execute({ username: username!, password: password! })
       .pipe(
         timeout(10000),
         finalize(() => {

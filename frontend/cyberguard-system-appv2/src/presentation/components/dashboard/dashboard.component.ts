@@ -2,13 +2,16 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AuthService } from '../../../core/infrastructure/services/auth.service';
-import { ThreatService } from '../../../core/infrastructure/services/threat.service';
+import { ReportThreatUseCase } from '../../../core/application/use-cases/report-threat.use-case';
+import { LogoutUseCase } from '../../../core/application/use-cases/logout.use-case';
+import { GetCurrentUserUseCase } from '../../../core/application/use-cases/get-current-user.use-case';
 import { ThreatType } from '../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../core/domain/models/threat-severity.enum';
 import { ThreatRequest } from '../../../core/domain/models/threat-request.model';
 import { AlertsComponent } from '../alerts/alerts.component';
 
+// ⚠️ HUMAN CHECK:
+// Dashboard refactorizado para usar Use Cases en lugar de servicios directos
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -17,12 +20,13 @@ import { AlertsComponent } from '../alerts/alerts.component';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
-  private authService = inject(AuthService);
+  private reportThreatUseCase = inject(ReportThreatUseCase);
+  private logoutUseCase = inject(LogoutUseCase);
+  private getCurrentUserUseCase = inject(GetCurrentUserUseCase);
   private router = inject(Router);
   private fb = inject(FormBuilder);
-  private threatService = inject(ThreatService);
 
-  user = this.authService.getCurrentUser();
+  user = this.getCurrentUserUseCase.execute();
 
   threatTypes = Object.values(ThreatType);
   severityLevels = Object.values(ThreatSeverity);
@@ -61,7 +65,7 @@ export class DashboardComponent {
       description: formValue.description!
     };
 
-    this.threatService.reportThreat(threat).subscribe({
+    this.reportThreatUseCase.execute(threat).subscribe({
       next: (response) => {
         this.loading = false;
         this.success = `Amenaza reportada exitosamente. ID: ${response.threatId}`;
@@ -78,7 +82,7 @@ export class DashboardComponent {
   }
 
   logout(): void {
-    this.authService.logout();
+    this.logoutUseCase.execute();
     this.router.navigate(['/autenticacion']);
   }
 }

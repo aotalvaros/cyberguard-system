@@ -82,7 +82,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend/cyberguard-system-app
+      context: ./frontend/cyberguard-system-appv2
       dockerfile: Dockerfile
     container_name: cyberguard-frontend
     environment:

@@ -1,4 +1,4 @@
-import { ThreatRequest } from '../../../core/domain/models/threat-request.model';
+import { ThreatRequest } from '../../core/domain/models/threat-request.model';
 
 // ⚠️ HUMAN CHECK:
 // Strategy Pattern para validación específica por tipo de amenaza
