@@ -1,7 +1,7 @@
 import { AuthService } from '../../application/services/AuthService';
-import { config } from '../../config/env';
-import { FirebaseAuthProvider } from '../auth/FirebaseAuthProvider';
-import { JWTTokenService } from '../auth/JWTTokenService';
+import { config } from '../config/env';
+import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
+import { JWTTokenService } from '../providers/JWTTokenService';
 
 // Tomorrow: PostgreSQLAuthProvider
 // import { PostgreSQLAuthProvider } from '../auth/PostgreSQLAuthProvider';

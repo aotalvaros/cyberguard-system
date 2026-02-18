@@ -39,7 +39,338 @@ El patron actual es **Transaction Script** con dependencias directas. Se recomie
 
 ## 1. Errores de Arquitectura
 
-### 1.1 Estado Global Mutable en RabbitMQ
+### 1.1 Estructura de Carpetas NO sigue Arquitectura Hexagonal
+
+**Problema:** La estructura actual organiza código por tipo técnico (controllers, services, config) en lugar de por capas arquitectónicas (domain, application, infrastructure).
+
+**Estructura ACTUAL (Transaction Script):**
+```
+backend/producer/src/
+├── config/           # ❌ Infraestructura mezclada
+├── controllers/      # ❌ HTTP + Lógica de negocio fuera de infrastructure
+├── services/         # ❌ Dominio + Infraestructura mezclados
+├── middlewares/      # ❌ Fuera de infrastructure/http
+├── domain/
+│   └── ports/        # ✅ Interfaces (parcialmente implementado)
+├── infrastructure/
+│   ├── auth/         # ✅ Adaptadores de autenticación
+│   ├── event-publishers/ # ✅ Adaptadores de eventos
+│   └── factories/    # ✅ Composición de dependencias
+└── types/
+```
+
+**Estructura PROPUESTA (Hexagonal Architecture):**
+```
+backend/producer/src/
+├── domain/                    # ✅ CORE - Sin dependencias externas
+│   ├── entities/
+│   │   ├── Threat.ts
+│   │   └── User.ts
+│   ├── value-objects/
+│   │   ├── ThreatType.ts
+│   │   └── Severity.ts
+│   ├── repositories/          # Ports (Interfaces) para persistencia
+│   │   ├── ThreatRepository.ts
+│   │   └── UserRepository.ts
+│   └── services/              # Lógica de dominio pura
+│       └── ThreatValidator.ts
+│
+├── application/               # ✅ Casos de Uso (Orquestación)
+│   └── use-cases/
+│       ├── auth/
+│       │   ├── LoginUseCase.ts
+│       │   └── RefreshTokenUseCase.ts
+│       └── threats/
+│           ├── ReportThreatUseCase.ts
+│           └── ListThreatsUseCase.ts
+│
+├── infrastructure/            # ✅ ADAPTADORES (Implementaciones)
+│   ├── http/                  # Adaptadores de ENTRADA
+│   │   ├── controllers/
+│   │   │   ├── AuthController.ts
+│   │   │   └── ThreatController.ts
+│   │   ├── middlewares/
+│   │   │   ├── AuthMiddleware.ts
+│   │   │   └── BruteForceMiddleware.ts
+│   │   └── routes/
+│   │       └── index.ts
+│   │
+│   ├── persistence/           # Adaptadores de SALIDA (Repositorios)
+│   │   ├── InMemoryThreatRepository.ts
+│   │   ├── PostgresUserRepository.ts
+│   │   └── mappers/
+│   │
+│   ├── providers/             # Adaptadores de SALIDA (Servicios externos)
+│   │   ├── RabbitMQEventPublisher.ts
+│   │   ├── BcryptHashProvider.ts
+│   │   ├── JWTTokenProvider.ts
+│   │   └── RedisRateLimitStore.ts
+│   │
+│   ├── config/
+│   │   ├── env.ts
+│   │   ├── logger.ts
+│   │   └── database.ts
+│   │
+│   └── factories/
+│       └── ServiceFactory.ts  # Composition Root
+│
+└── server.ts                  # Entry Point
+```
+
+**Flujo de una Petición HTTP:**
+```
+[HTTP Request POST /api/threats] 
+    ↓
+[infrastructure/http/controllers/ThreatController.ts]  # Adaptador de entrada
+    ↓
+[application/use-cases/ReportThreatUseCase.ts]         # Caso de uso
+    ↓
+[domain/entities/Threat.ts]                            # Lógica de negocio pura
+    ↓
+[domain/repositories/ThreatRepository.ts]              # Port (Interface)
+    ↓
+[infrastructure/persistence/InMemoryThreatRepository.ts] # Adaptador de salida
+```
+
+**Beneficios de la Refactorización:**
+- ✅ **Dominio independiente**: Sin imports de bibliotecas externas (Express, RabbitMQ, etc.)
+- ✅ **Testabilidad**: Mockear interfaces (ports) en lugar de módulos concretos
+- ✅ **Flexibilidad**: Cambiar RabbitMQ → Kafka solo modificando `infrastructure/providers/`
+- ✅ **Claridad**: Código organizado por responsabilidad arquitectónica
+- ✅ **Ports & Adapters**: Clara separación entre interfaces y implementaciones
+
+**Ejemplo Práctico:**
+```typescript
+// ❌ ANTES - Acoplamiento directo
+// services/threat.service.ts
+import { publishEvent } from '../config/rabbitmq';
+
+export class ThreatService {
+  async reportThreat(data: ThreatRequest) {
+    const event = this.buildEvent(data);
+    await publishEvent('threat.detected', event); // Dependencia directa a RabbitMQ
+  }
+}
+
+// ✅ DESPUÉS - Inversión de Dependencias
+// domain/repositories/EventPublisher.ts (Port)
+export interface EventPublisher {
+  publish(topic: string, event: DomainEvent): Promise<void>;
+}
+
+// application/use-cases/ReportThreatUseCase.ts
+export class ReportThreatUseCase {
+  constructor(
+    private eventPublisher: EventPublisher,  // ✅ Depende de abstracción
+    private threatRepository: ThreatRepository
+  ) {}
+
+  async execute(data: ThreatRequest): Promise<Threat> {
+    const threat = Threat.create(data);
+    await this.threatRepository.save(threat);
+    await this.eventPublisher.publish('threat.detected', threat.toEvent());
+    return threat;
+  }
+}
+
+// infrastructure/providers/RabbitMQEventPublisher.ts (Adapter)
+export class RabbitMQEventPublisher implements EventPublisher {
+  async publish(topic: string, event: DomainEvent): Promise<void> {
+    await publishEvent(topic, event);
+  }
+}
+```
+
+**Impacto:** Alto - Mejora mantenibilidad, testabilidad y escalabilidad  
+**Esfuerzo:** 8-10 horas (Refactorización completa de estructura + migración de archivos)  
+**Prioridad:** P1
+
+---
+
+### 1.2 Usuario Hardcodeado con Contraseña en Texto Plano
+
+**Archivo:** `backend/producer/src/config/env.ts`
+
+**Problema:** El sistema depende de un único usuario administrador definido en variables de entorno, con la contraseña almacenada en texto plano accessible desde la configuración.
+
+```typescript
+// ACTUAL - Usuario hardcodeado en .env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123  // ❌ Texto plano en archivo de configuración
+
+// Cargado en memoria
+export const config = {
+  adminUsername: process.env.ADMIN_USERNAME!,
+  adminPassword: process.env.ADMIN_PASSWORD!,  // ❌ Expuesto en objeto config
+  // ...
+};
+```
+
+**Limitaciones Críticas:**
+1. ❌ **Sin soporte multiusuario**: Solo 1 administrador puede acceder al sistema
+2. ❌ **Sin hashing**: Contraseña en texto plano en `.env` y memoria del proceso
+3. ❌ **Sin auditoría**: No hay registro de quién accedió, cuándo ni desde dónde
+4. ❌ **Sin bloqueo persistente**: El `bruteforce.middleware.ts` usa `Map` en memoria (se pierde al reiniciar)
+5. ❌ **Sin rotación de credenciales**: Cambiar contraseña requiere reiniciar la aplicación
+6. ❌ **Violación OWASP A02:2021**: Fallas Criptográficas
+7. ❌ **Violación PCI DSS 8.2.1**: Contraseñas deben estar hasheadas con algoritmo fuerte
+
+**Riesgo Real:**
+- Si un atacante obtiene acceso al archivo `.env` (via Git leak, backup expuesto, etc.), puede leer la contraseña directamente
+- Un proceso malicioso con acceso a la memoria puede leer `config.adminPassword`
+- Logs accidentales pueden exponer las credenciales
+
+**Solución Propuesta:**
+Migrar a base de datos PostgreSQL con bcrypt (ver sección 6 del reporte para implementación completa).
+
+```typescript
+// PROPUESTO - Con base de datos y hashing
+interface User {
+  id: string;
+  username: string;
+  passwordHash: string;  // ✅ Bcrypt hash (ej: $2b$10$N9qo8uL...)
+  role: string;
+  isLocked: boolean;
+  failedAttempts: number;
+  lastLogin: Date;
+  createdAt: Date;
+}
+
+// application/use-cases/LoginUseCase.ts
+export class LoginUseCase {
+  constructor(
+    private userRepository: UserRepository,
+    private hashProvider: HashProvider,
+    private tokenProvider: TokenProvider
+  ) {}
+
+  async execute(credentials: LoginRequest): Promise<AuthResult> {
+    const user = await this.userRepository.findByUsername(credentials.username);
+    
+    if (!user) {
+      // ✅ Mismo mensaje para prevenir enumeración de usuarios
+      return { success: false, error: 'Invalid credentials' };
+    }
+
+    if (user.isLocked) {
+      return { success: false, error: 'Account locked. Contact administrator.' };
+    }
+
+    // ✅ Comparación de tiempo constante con bcrypt
+    const isValid = await this.hashProvider.compare(
+      credentials.password, 
+      user.passwordHash
+    );
+    
+    if (!isValid) {
+      await this.userRepository.incrementFailedAttempts(user.id);
+      return { success: false, error: 'Invalid credentials' };
+    }
+
+    // Resetear intentos fallidos
+    await this.userRepository.resetFailedAttempts(user.id);
+    
+    // Generar token JWT
+    const token = this.tokenProvider.generate({ 
+      userId: user.id, 
+      username: user.username, 
+      role: user.role 
+    });
+    
+    return { success: true, token, user };
+  }
+}
+```
+
+**Impacto:** Crítico - Bloquea producción según estándares OWASP y PCI DSS  
+**Esfuerzo:** 6-8 horas (Incluye migración a PostgreSQL completa)  
+**Prioridad:** P0 (Blocker)
+
+---
+
+### 1.3 BruteForceMiddleware Instancia ThreatService Sin Dependencias
+
+**Archivo:** `backend/producer/src/middlewares/bruteforce.middleware.ts`
+
+**Problema:** El middleware intenta instanciar `ThreatService` directamente sin pasar el argumento `EventPublisher` requerido por el constructor refactorizado.
+
+```typescript
+// ACTUAL - Instanciación incorrecta tras refactorización
+const threatService = new ThreatService();  // ❌ Falta argumento EventPublisher
+
+async function trackFailedAttempt(ip: string, username?: string) {
+  if (attempt.count >= MAX_ATTEMPTS && !attempt.reported) {
+    await threatService.reportThreat({
+      type: 'intrusion',
+      severity: 'high',
+      sourceIp: ip,
+      description: `Brute force attack detected: ${attempt.count} failed login attempts`
+    });
+  }
+}
+```
+
+**Error en Tiempo de Ejecución:**
+```
+TypeError: Cannot read property 'publish' of undefined
+    at ThreatService.reportThreat (threat.service.ts:15)
+```
+
+**Causa Raíz:**
+Tras implementar Dependency Injection en `ThreatService`, el constructor ahora requiere un `EventPublisher`:
+
+```typescript
+// services/threat.service.ts (refactorizado)
+export class ThreatService {
+  constructor(private eventPublisher: EventPublisher) {}  // ✅ DI aplicada
+  
+  async reportThreat(data: ThreatRequest): Promise<string> {
+    // ...
+    await this.eventPublisher.publish(routingKey, event);  // Requiere eventPublisher
+  }
+}
+```
+
+**Solución:** Usar `ServiceFactory` para obtener instancia con dependencias inyectadas.
+
+```typescript
+// PROPUESTO - Usar Factory Pattern
+import { ServiceFactory } from '../infrastructure/factories/ServiceFactory';
+
+let threatService: ThreatService;
+
+function getThreatService(): ThreatService {
+  if (!threatService) {
+    threatService = ServiceFactory.getThreatService();  // ✅ Obtiene instancia con DI
+  }
+  return threatService;
+}
+
+async function trackFailedAttempt(ip: string, username?: string) {
+  if (attempt.count >= MAX_ATTEMPTS && !attempt.reported) {
+    const service = getThreatService();  // ✅ Lazy initialization
+    await service.reportThreat({
+      type: 'intrusion',
+      severity: 'high',
+      sourceIp: ip,
+      description: `Brute force attack detected: ${attempt.count} failed login attempts`
+    });
+  }
+}
+```
+
+**Beneficio Adicional:**
+- ✅ **Singleton reutilizado**: Una sola instancia de `ThreatService` para todo el middleware
+- ✅ **Lazy initialization**: Solo se crea cuando se detecta un ataque de fuerza bruta
+- ✅ **Consistencia**: Usa el mismo patrón que los controllers
+
+**Impacto:** Alto - Rompe funcionalidad de detección de ataques de fuerza bruta  
+**Esfuerzo:** 15 minutos  
+**Prioridad:** P0 (Blocker - Bug en producción)
+
+---
+
+### 1.4 Estado Global Mutable en RabbitMQ
 
 **Archivo:** `backend/producer/src/config/rabbitmq.ts`
 
@@ -77,7 +408,7 @@ class RabbitMQProvider {
 
 ---
 
-### 1.2 Publisher sin Confirmacion (Fire and Forget)
+### 1.5 Publisher sin Confirmacion (Fire and Forget)
 
 **Archivo:** `backend/producer/src/config/rabbitmq.ts`
 
@@ -105,7 +436,7 @@ await new Promise((resolve, reject) => {
 
 ---
 
-### 1.3 Acoplamiento Directo a Infraestructura
+### 1.6 Acoplamiento Directo a Infraestructura
 
 **Archivos:** `threat.service.ts`, `bruteforce.middleware.ts`
 
@@ -148,7 +479,7 @@ class ThreatService {
 
 ---
 
-### 1.4 ThreatStore con Complejidad O(n log n) en Cada Lectura
+### 1.7 ThreatStore con Complejidad O(n log n) en Cada Lectura
 
 **Archivo:** `backend/producer/src/services/threat.store.ts`
 
@@ -480,9 +811,12 @@ WHERE t.severity = 'critical';
 
 | Item | Severidad | Esfuerzo | Prioridad |
 |------|-----------|----------|-----------|
+| BruteForceMiddleware sin DI | Critica | 15min | P0 |
+| Usuario hardcodeado con texto plano | Critica | 6-8h | P0 |
 | Autenticacion sin hashing | Critica | 1-2h | P0 |
 | Publisher sin confirmacion | Critica | 1-2h | P0 |
 | Enumeracion de usuarios | Media | 15min | P0 |
+| Estructura NO Hexagonal | Alta | 8-10h | P1 |
 | Estado global RabbitMQ | Alta | 2-3h | P1 |
 | Inversion de dependencias | Alta | 4-6h | P1 |
 | Rate limiting a Redis | Alta | 2-3h | P1 |
@@ -494,12 +828,24 @@ WHERE t.severity = 'critical';
 | Tests de integracion | Media | 4-6h | P3 |
 
 ---
-
-## 8. Estimacion Total
-
-- **P0 (Blocker produccion):** 2-4 horas
-- **P1 (Deuda critica):** 14-20 horas
+9-13 horas
+  - BruteForceMiddleware sin DI: 15 min
+  - Usuario hardcodeado: 6-8h
+  - Auth sin hashing: 1-2h  
+  - Publisher sin confirmación: 1-2h
+  - Enumeración de usuarios: 15 min
+  
+- **P1 (Deuda critica):** 22-31 horas
+  - Estructura NO Hexagonal: 8-10h
+  - Estado global RabbitMQ: 2-3h
+  - Inversión de dependencias: 4-6h
+  - Rate limiting a Redis: 2-3h
+  - Migración a PostgreSQL: 6-8h
+  
 - **P2 (Mejoras importantes):** 4-6 horas
+- **P3 (Nice to have):** 6-9 horas
+
+**Total:** 41-5 importantes):** 4-6 horas
 - **P3 (Nice to have):** 6-9 horas
 
 **Total:** 26-39 horas de trabajo para resolver deuda tecnica completa

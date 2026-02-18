@@ -1,6 +1,6 @@
 import { AuthProvider, LoginCredentials, AuthResult } from '../../domain/ports/AuthProvider';
 import { TokenService } from '../../domain/ports/TokenService';
-import { logger } from '../../config/logger';
+import { logger } from '../../infrastructure/config/logger';
 
 export class AuthService {
   constructor(

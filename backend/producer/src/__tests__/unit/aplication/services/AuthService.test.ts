@@ -9,7 +9,7 @@ const mockLogger = {
   debug: jest.fn()
 };
 
-jest.mock('../../../../config/logger', () => ({
+jest.mock('../../../../infrastructure/config/logger', () => ({
   logger: mockLogger
 }));
 

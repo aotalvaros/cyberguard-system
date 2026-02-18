@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from './config/env';
-import { logger } from './config/logger';
-import { connectRabbitMQ, closeRabbitMQ } from './config/rabbitmq';
-import { errorHandler } from './middlewares/error.middleware';
-import authRoutes from './controllers/auth.controller';
-import threatRoutes from './controllers/threat.controller';
+import { config } from './infrastructure/config/env';
+import { logger } from './infrastructure/config/logger';
+import { connectRabbitMQ, closeRabbitMQ } from './infrastructure/config/rabbitmq';
+import { errorHandler } from './infrastructure/http/middlewares/error.middleware';
+import authRoutes from './infrastructure/http/controllers/auth.controller';
+import threatRoutes from './infrastructure/http/controllers/threat.controller';
 
 const app = express();
 

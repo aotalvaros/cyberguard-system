@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ThreatDetectedEvent } from '../../../types';
 
-import { threatStore } from '../../../services/threat.store';
+import { threatStore } from '../../../infrastructure/persistence/threat.store';
 
 describe('ThreatStore', () => {
   beforeEach(() => {
