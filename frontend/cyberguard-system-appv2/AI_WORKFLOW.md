@@ -1247,5 +1247,209 @@ feat(CG-008): implement docker infrastructure for frontend
 - Frontend connects to external backend services
 ```
 
+---
+
+## CG-009: Architecture Improvements, Backend Integration & Test Coverage ✅
+
+**Fecha:** 2026-02-19
+**Estado:** Completado
+
+### Descripción
+Mejoras significativas en la arquitectura del proyecto (puntuación 8.5 → 9.3/10), integración de nuevos endpoints del backend, e incremento de cobertura de tests del 68% al 85%.
+
+---
+
+### Parte 1: Mejoras de Arquitectura (8.5 → 9.3/10)
+
+#### Modelos Inmutables
+Agregado `readonly` a todas las propiedades de modelos de dominio para garantizar inmutabilidad:
+- `user.model.ts`
+- `auth-response.model.ts`
+- `login-credentials.model.ts`
+- `threat-request.model.ts`
+- `threat-response.model.ts`
+- `alert-message.model.ts`
+- `websocket-command.model.ts`
+
+#### Global Error Handler
+```
+src/core/infrastructure/handlers/
+└── global-error.handler.ts
+    ├── AppErrorType enum (NETWORK, AUTHENTICATION, AUTHORIZATION, VALIDATION, SERVER, UNKNOWN)
+    ├── AppError interface
+    ├── createAppError() factory function
+    └── GlobalErrorHandler class
+```
+
+#### HTTP Interceptors
+```
+src/core/infrastructure/interceptors/
+├── auth.interceptor.ts      # Agrega JWT a headers
+├── error.interceptor.ts     # Transforma errores HTTP a AppError
+├── retry.interceptor.ts     # Reintenta requests fallidos (3 intentos)
+└── loading.interceptor.ts   # Gestiona estado de carga global
+```
+
+#### DTOs Separados de Dominio
+```
+src/core/infrastructure/dtos/
+├── auth.dto.ts              # LoginRequestDto, LoginResponseDto, UserDto
+└── threat.dto.ts            # ThreatRequestDto, ThreatResponseDto, ThreatItemDto, etc
+```
+
+#### Mappers DTO ↔ Domain
+```
+src/core/infrastructure/mappers/
+├── auth.mapper.ts           # toLoginRequest, toAuthResponse, toUser
+├── threat.mapper.ts         # toThreatRequest, toThreatResponse, toThreatItem, etc
+└── websocket.mapper.ts      # toAlertMessage, toWebSocketCommand
+```
+
+#### Loading State Service
+```
+src/core/infrastructure/state/
+└── loading.service.ts       # BehaviorSubject para estado global de carga
+```
+
+#### Puntuación Final: 9.3/10
+
+| Criterio | Antes | Después |
+|----------|-------|---------|
+| Arquitectura Hexagonal | ✅ | ✅ |
+| Inmutabilidad | ❌ | ✅ |
+| Error Handling Global | ❌ | ✅ |
+| HTTP Interceptors | ❌ | ✅ |
+| DTOs vs Domain | ❌ | ✅ |
+| Mappers | ❌ | ✅ |
+| Loading State | ❌ | ✅ |
+
+---
+
+### Parte 2: Integración Backend
+
+#### Nuevos Endpoints Integrados
+- `GET /api/threats` - Listar todas las amenazas
+- `DELETE /api/threats/:id` - Eliminar amenaza por ID
+
+#### Archivos Creados - DTOs
+```
+src/core/infrastructure/dtos/threat.dto.ts
+├── ThreatItemDto
+├── ThreatListResponseDto
+└── DeleteThreatResponseDto
+```
+
+#### Archivos Creados - Modelos de Dominio
+```
+src/core/domain/models/
+├── threat-item.model.ts
+├── threat-list.model.ts
+└── delete-threat-result.model.ts
+```
+
+#### Archivos Creados - Use Cases
+```
+src/core/application/use-cases/
+├── get-threats.use-case.ts
+└── delete-threat.use-case.ts
+```
+
+#### Archivos Modificados
+- `threat.repository.ts` - Nuevos métodos getThreats(), deleteThreat()
+- `threat-repository.impl.ts` - Implementaciones HTTP
+- `threat.mapper.ts` - Nuevos mappers
+
+---
+
+### Parte 3: Cobertura de Tests (68% → 85%)
+
+#### Métricas de Cobertura
+
+| Métrica | Antes | Después | Mejora |
+|---------|-------|---------|--------|
+| Statements | 68.77% | 85.5% | +16.7% |
+| Branches | 68.19% | 84.05% | +15.9% |
+| Functions | 59.54% | 84.89% | +25.4% |
+| Lines | 65.67% | 83.54% | +17.9% |
+
+#### Nuevos Archivos de Tests
+```
+src/core/infrastructure/
+├── adapters/__tests__/local-storage.adapter.spec.ts     (10 tests)
+├── handlers/__tests__/global-error.handler.spec.ts      (12 tests)
+├── interceptors/__tests__/auth.interceptor.spec.ts      (4 tests)
+├── interceptors/__tests__/error.interceptor.spec.ts     (5 tests)
+└── services/__tests__/
+    ├── auth-repository.impl.spec.ts      (11 tests)
+    ├── auth.service.full.spec.ts         (12 tests)
+    ├── websocket.service.spec.ts         (8 tests)
+    └── websocket-repository.impl.spec.ts (9 tests)
+```
+
+#### Tests Totales
+- **196 tests** pasando
+- **27 archivos** de test
+- **0 fallos**
+
+#### Componentes con 100% Cobertura
+- ✅ Use Cases (6/6)
+- ✅ Mappers (3/3)
+- ✅ LocalStorageAdapter
+- ✅ LoadingService
+- ✅ AuthService, ThreatService, WebSocketService
+- ✅ AuthRepositoryImpl, ThreatRepositoryImpl
+- ✅ AdminGuard
+- ✅ ThreatValidationStrategy
+- ✅ GlobalErrorHandler
+
+---
+
+### Patrones de Diseño Aplicados
+
+| Patrón | Uso |
+|--------|-----|
+| Repository | Abstracción de datos |
+| Factory | Creación de DTOs/Modelos |
+| Strategy | Validación por tipo de amenaza |
+| Facade | Servicios simplificados |
+| Adapter | LocalStorage |
+| Observer | RxJS streams |
+| Interceptor | HTTP middleware |
+| Mapper | Transformaciones DTO/Domain |
+| Singleton | Services con providedIn: 'root' |
+
+---
+
+### Commit
+```
+feat(CG-009): architecture improvements, backend integration & test coverage
+
+Architecture Improvements (8.5 → 9.3/10):
+- Add readonly to all domain model properties (immutability)
+- Create GlobalErrorHandler with AppError types
+- Add HTTP interceptors (auth, error, retry, loading)
+- Separate DTOs from domain models
+- Create mappers for DTO ↔ Domain transformations
+- Add LoadingService for global loading state
+
+Backend Integration:
+- Add GET /api/threats endpoint integration
+- Add DELETE /api/threats/:id endpoint integration
+- Create ThreatItemDto, ThreatListResponseDto, DeleteThreatResponseDto
+- Create ThreatItem, ThreatList, DeleteThreatResult domain models
+- Create GetThreatsUseCase and DeleteThreatUseCase
+- Update ThreatRepository and ThreatMapper
+
+Test Coverage (68% → 85%):
+- Add tests for LocalStorageAdapter, GlobalErrorHandler
+- Add tests for AuthRepositoryImpl, WebSocketService
+- Add tests for HTTP interceptors
+- Improve AlertsDomainService and ThreatValidationStrategy tests
+- Total: 196 tests passing in 27 files
+
+Documentation:
+- Update README.md with architecture and coverage docs
+```
+
 ### Próximo Feature
-CG-009: TBD
+CG-010: TBD

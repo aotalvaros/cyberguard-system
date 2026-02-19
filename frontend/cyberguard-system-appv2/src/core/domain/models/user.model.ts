@@ -1,4 +1,4 @@
 export interface User {
-  username: string;
-  role: string;
+  readonly username: string;
+  readonly role: string;
 }

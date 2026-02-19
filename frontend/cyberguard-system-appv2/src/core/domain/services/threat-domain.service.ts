@@ -3,6 +3,9 @@ import { Observable } from 'rxjs';
 import { ThreatRepository } from '../ports/threat.repository';
 import { ThreatRequest } from '../models/threat-request.model';
 import { ThreatResponse } from '../models/threat-response.model';
+import { ThreatList } from '../models/threat-list.model';
+import { ThreatItem } from '../models/threat-item.model';
+import { DeleteThreatResult } from '../models/delete-threat-result.model';
 import { ThreatSeverity } from '../models/threat-severity.enum';
 import { ThreatType } from '../models/threat-type.enum';
 
@@ -18,7 +21,20 @@ export class ThreatDomainService {
     return this.threatRepository.reportThreat(threat);
   }
 
+  getThreats(): Observable<ThreatList> {
+    return this.threatRepository.getThreats();
+  }
+
+  deleteThreat(threatId: string): Observable<DeleteThreatResult> {
+    return this.threatRepository.deleteThreat(threatId);
+  }
+
   isCriticalThreat(threat: ThreatRequest): boolean {
+    const criticalTypes = [ThreatType.RANSOMWARE, ThreatType.DDOS];
+    return threat.severity === ThreatSeverity.CRITICAL || criticalTypes.includes(threat.type);
+  }
+
+  isCriticalThreatItem(threat: ThreatItem): boolean {
     const criticalTypes = [ThreatType.RANSOMWARE, ThreatType.DDOS];
     return threat.severity === ThreatSeverity.CRITICAL || criticalTypes.includes(threat.type);
   }
@@ -42,7 +58,30 @@ export class ThreatDomainService {
     return severityScores[threat.severity] * typeMultipliers[threat.type];
   }
 
+  calculateThreatItemScore(threat: ThreatItem): number {
+    const severityScores = {
+      [ThreatSeverity.LOW]: 1,
+      [ThreatSeverity.MEDIUM]: 2,
+      [ThreatSeverity.HIGH]: 3,
+      [ThreatSeverity.CRITICAL]: 4
+    };
+
+    const typeMultipliers = {
+      [ThreatType.RANSOMWARE]: 1.5,
+      [ThreatType.DDOS]: 1.3,
+      [ThreatType.MALWARE]: 1.2,
+      [ThreatType.INTRUSION]: 1.1,
+      [ThreatType.PHISHING]: 1.0
+    };
+
+    return severityScores[threat.severity] * typeMultipliers[threat.type];
+  }
+
   sortThreatsBySeverity(threats: ThreatRequest[]): ThreatRequest[] {
     return [...threats].sort((a, b) => this.calculateThreatScore(b) - this.calculateThreatScore(a));
+  }
+
+  sortThreatItemsBySeverity(threats: ThreatItem[]): ThreatItem[] {
+    return [...threats].sort((a, b) => this.calculateThreatItemScore(b) - this.calculateThreatItemScore(a));
   }
 }

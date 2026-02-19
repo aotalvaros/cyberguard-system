@@ -1,11 +1,11 @@
 export interface AlertMessage {
-  eventId: string;
-  data: {
+  readonly eventId: string;
+  readonly data: Readonly<{
     threatId: string;
     type: string;
     severity: string;
     sourceIp: string;
     description: string;
-  };
-  timestamp?: number;
+  }>;
+  readonly timestamp?: number;
 }
