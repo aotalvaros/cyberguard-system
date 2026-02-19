@@ -30,18 +30,24 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, config.jwtSecret) as { username: string; role: string };
     req.user = decoded;
     next();
-  } catch (error: any) {
-    if (error.name === 'TokenExpiredError') {
+  } catch (error: unknown) {
+    if (error instanceof jwt.TokenExpiredError) {
       logger.warn('Expired token attempt', { error: error.message });
       return res.status(401).json({ error: 'Token expired' });
     }
+
+    if (error instanceof jwt.NotBeforeError) {
+      logger.warn('Token not yet valid', { error: error.message });
+      return res.status(401).json({ error: 'Token not yet valid' });
+    }
     
-    if (error.name === 'JsonWebTokenError') {
+    if (error instanceof jwt.JsonWebTokenError) {
       logger.warn('Invalid token attempt', { error: error.message });
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    logger.error('Token verification error', { error: error.message });
+    const message = error instanceof Error ? error.message : String(error);
+    logger.error('Token verification error', { error: message });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

@@ -9,7 +9,7 @@ export interface ThreatDetectedEvent {
     sourceIp: string;
     targetIp?: string;
     description: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   };
 }
 
@@ -32,5 +32,5 @@ export interface ThreatRequest {
   sourceIp: string;
   targetIp?: string;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }

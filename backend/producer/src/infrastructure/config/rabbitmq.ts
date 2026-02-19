@@ -3,106 +3,143 @@ import type { ChannelModel, ConfirmChannel } from 'amqplib';
 import { logger } from './logger';
 import { config } from './env';
 
-let connection: ChannelModel | null = null;
-let channel: ConfirmChannel | null = null;
-
 const EXCHANGE = 'cyberguard.events';
 const DLX_EXCHANGE = 'cyberguard.dlx';
 
-export async function connectRabbitMQ(): Promise<void> {
-  try {
-    const conn = await amqp.connect(config.rabbitmqUrl);
-    const ch = await conn.createConfirmChannel();
-    
-    connection = conn;
-    channel = ch;
+export class RabbitMQConnection {
+  private static instance: RabbitMQConnection;
+  private connection: ChannelModel | null = null;
+  private channel: ConfirmChannel | null = null;
 
-    // Configurar exchange principal
-    await channel.assertExchange(EXCHANGE, 'topic', { durable: true });
-    
-    // Configurar Dead Letter Exchange
-    await channel.assertExchange(DLX_EXCHANGE, 'direct', { durable: true });
-    await channel.assertQueue('failed.messages', { durable: true });
-    await channel.bindQueue('failed.messages', DLX_EXCHANGE, '');
+  private constructor() {}
 
-    logger.info('RabbitMQ connected with Publisher Confirms enabled');
+  static getInstance(): RabbitMQConnection {
+    if (!RabbitMQConnection.instance) {
+      RabbitMQConnection.instance = new RabbitMQConnection();
+    }
+    return RabbitMQConnection.instance;
+  }
 
-    connection?.on('error', (err: Error) => {
-      logger.error('RabbitMQ connection error', { error: err.message });
+  async connect(): Promise<void> {
+    if (this.connection && this.channel) {
+      return;
+    }
+
+    try {
+      const conn = await amqp.connect(config.rabbitmqUrl);
+      const ch = await conn.createConfirmChannel();
+
+      this.connection = conn;
+      this.channel = ch;
+
+      // Configurar exchange principal
+      await this.channel.assertExchange(EXCHANGE, 'topic', { durable: true });
+
+      // Configurar Dead Letter Exchange
+      await this.channel.assertExchange(DLX_EXCHANGE, 'direct', { durable: true });
+      await this.channel.assertQueue('failed.messages', { durable: true });
+      await this.channel.bindQueue('failed.messages', DLX_EXCHANGE, '');
+
+      logger.info('RabbitMQ connected with Publisher Confirms enabled');
+
+      this.connection.on('error', (err: Error) => {
+        logger.error('RabbitMQ connection error', { error: err.message });
+      });
+
+      this.connection.on('close', () => {
+        logger.warn('RabbitMQ connection closed');
+        this.connection = null;
+        this.channel = null;
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to connect to RabbitMQ', { error: message });
+      throw error;
+    }
+  }
+
+  getChannel(): ConfirmChannel {
+    if (!this.channel) {
+      throw new Error('RabbitMQ channel not initialized');
+    }
+    return this.channel;
+  }
+
+  async publishEvent(routingKey: string, data: Record<string, unknown>): Promise<void> {
+    const ch = this.getChannel();
+    const message = Buffer.from(JSON.stringify(data));
+
+    return new Promise<void>((resolve, reject) => {
+      const published = ch.publish(
+        EXCHANGE,
+        routingKey,
+        message,
+        {
+          persistent: true,
+          contentType: 'application/json',
+          timestamp: Date.now()
+        },
+        (err: unknown) => {
+          if (err) {
+            const errMessage = err instanceof Error ? err.message : String(err);
+            logger.error('Event NACK - not confirmed by RabbitMQ', {
+              routingKey,
+              eventId: data.eventId,
+              error: errMessage
+            });
+            reject(err instanceof Error ? err : new Error(errMessage));
+          } else {
+            logger.info('Event published and confirmed', {
+              routingKey,
+              eventId: data.eventId
+            });
+            resolve();
+          }
+        }
+      );
+
+      if (!published) {
+        logger.warn('RabbitMQ channel buffer full, waiting for drain', { routingKey });
+        ch.once('drain', () => {
+          logger.info('RabbitMQ channel drained, resuming', { routingKey });
+        });
+      }
     });
+  }
 
-    connection?.on('close', () => {
-      logger.warn('RabbitMQ connection closed');
-      connection = null;
-      channel = null;
-    });
+  async close(): Promise<void> {
+    try {
+      if (this.channel) {
+        await this.channel.waitForConfirms();
+        await this.channel.close();
+      }
+      if (this.connection) await this.connection.close();
+      this.channel = null;
+      this.connection = null;
+      logger.info('RabbitMQ connection closed gracefully');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Error closing RabbitMQ', { error: message });
+    }
+  }
 
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    logger.error('Failed to connect to RabbitMQ', { error: message });
-    throw error;
+  /** @internal Para testing únicamente */
+  static resetInstance(): void {
+    RabbitMQConnection.instance = undefined as unknown as RabbitMQConnection;
   }
 }
 
-export function getChannel(): ConfirmChannel {
-  if (!channel) {
-    throw new Error('RabbitMQ channel not initialized');
-  }
-  return channel;
+// Funciones de conveniencia para compatibilidad
+const rabbit = RabbitMQConnection.getInstance();
+
+export async function connectRabbitMQ(): Promise<void> {
+  await rabbit.connect();
 }
 
 export async function publishEvent(routingKey: string, data: Record<string, unknown>): Promise<void> {
-  const ch = getChannel();
-  const message = Buffer.from(JSON.stringify(data));
-  
-  return new Promise<void>((resolve, reject) => {
-    const published = ch.publish(
-      EXCHANGE,
-      routingKey,
-      message,
-      {
-        persistent: true,
-        contentType: 'application/json',
-        timestamp: Date.now()
-      },
-      (err: unknown) => {
-        if (err) {
-          const errMessage = err instanceof Error ? err.message : String(err);
-          logger.error('Event NACK - not confirmed by RabbitMQ', {
-            routingKey,
-            eventId: data.eventId,
-            error: errMessage
-          });
-          reject(err instanceof Error ? err : new Error(errMessage));
-        } else {
-          logger.info('Event published and confirmed', {
-            routingKey,
-            eventId: data.eventId
-          });
-          resolve();
-        }
-      }
-    );
-
-    if (!published) {
-      logger.warn('RabbitMQ channel buffer full, waiting for drain', { routingKey });
-      ch.once('drain', () => {
-        logger.info('RabbitMQ channel drained, resuming', { routingKey });
-      });
-    }
-  });
+  await rabbit.publishEvent(routingKey, data);
 }
 
 export async function closeRabbitMQ(): Promise<void> {
-  try {
-    if (channel) {
-      await channel.waitForConfirms();
-      await channel.close();
-    }
-    if (connection) await connection.close();
-    logger.info('RabbitMQ connection closed gracefully');
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    logger.error('Error closing RabbitMQ', { error: message });
-  }
+  await rabbit.close();
 }

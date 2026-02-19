@@ -42,7 +42,7 @@ export class FirebaseAuthProvider implements AuthProvider {
         token
       };
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: 'Invalid credentials'

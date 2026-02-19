@@ -10,7 +10,7 @@ export interface ThreatResponseDto {
   targetIp?: string;
   description: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 
@@ -42,8 +42,9 @@ export class ListThreatsUseCase {
         threats: threatDtos,
         total: threatDtos.length
       };
-    } catch (error: any) {
-      logger.error('Failed to list threats', { error: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to list threats', { error: message });
       throw new Error('Failed to retrieve threats');
     }
   }

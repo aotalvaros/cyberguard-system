@@ -62,9 +62,10 @@ export class ThreatService {
       });
 
       return threatId;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       logger.error('Failed to report threat', {
-        error: error.message,
+        error: message,
         threatType: threatData.type
       });
       throw error;

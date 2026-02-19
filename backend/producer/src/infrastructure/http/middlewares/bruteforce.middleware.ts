@@ -46,7 +46,7 @@ export function bruteForceDetection(req: Request, res: Response, next: NextFunct
   // Solo interceptar respuestas 401 del login
   const originalJson = res.json.bind(res);
   
-  res.json = function(body: any) {
+  res.json = function(body: unknown) {
     if (res.statusCode === 401 && req.path === '/login') {
       trackFailedAttempt(ip, req.body?.username);
     }

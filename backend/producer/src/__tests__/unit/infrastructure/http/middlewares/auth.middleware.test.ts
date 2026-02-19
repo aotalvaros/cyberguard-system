@@ -475,7 +475,8 @@ describe('Auth Middleware', () => {
 
       authMiddleware(mockRequest as AuthRequest, mockResponse as Response, nextFunction);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.status).toHaveBeenCalledWith(401);
+      expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Token not yet valid' });
     });
   });
 

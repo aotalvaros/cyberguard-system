@@ -9,10 +9,10 @@ type WebSocketMessage = {
 
 const isValidMessage = (obj: unknown): obj is WebSocketMessage => {
   if (typeof obj !== 'object' || obj === null) return false;
-  const msg = obj as any;
-  return typeof msg.type === 'string' && 
-         ['clear-all', 'delete-one'].includes(msg.type) &&
-         (msg.type !== 'delete-one' || typeof msg.id === 'string');
+  const msg = obj as Record<string, unknown>;
+  return typeof msg['type'] === 'string' && 
+         ['clear-all', 'delete-one'].includes(msg['type']) &&
+         (msg['type'] !== 'delete-one' || typeof msg['id'] === 'string');
 };
 
 let wss: Server | null = null;
@@ -72,7 +72,7 @@ export const startWebSocket = (port: number): Server => {
   return wss;
 };
 
-export const broadcast = (payload: any): void => {
+export const broadcast = (payload: unknown): void => {
   if (!wss) return;
   const str = JSON.stringify(payload);
   wss.clients.forEach(client => {

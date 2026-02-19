@@ -12,9 +12,17 @@ const mockLogger = {
 
 const mockReportThreat = jest.fn().mockResolvedValue('threat-id-123' as never);
 
+const mockPublishEvent = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
+
 jest.mock('../../../../../infrastructure/config/rabbitmq', () => ({
-  publishEvent: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
-  getChannel: jest.fn().mockReturnValue(null),
+  RabbitMQConnection: {
+    getInstance: jest.fn(() => ({
+      publishEvent: mockPublishEvent,
+      connect: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      close: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    }))
+  },
+  publishEvent: mockPublishEvent,
   connectRabbitMQ: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
   closeRabbitMQ: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 }));
