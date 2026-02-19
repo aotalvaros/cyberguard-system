@@ -6,7 +6,7 @@ export interface Threat {
   sourceIp: string;
   targetIp?: string;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   timestamp?: string;
 }
 
@@ -30,4 +30,11 @@ export interface ThreatRepository {
    * @returns Amenaza o null si no existe
    */
   findById(threatId: string): Promise<Threat | null>;
+
+  /**
+   * Eliminar una amenaza por ID
+   * @param threatId ID de la amenaza
+   * @returns true si fue eliminada, false si no existía
+   */
+  delete(threatId: string): Promise<boolean>;
 }

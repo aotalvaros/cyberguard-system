@@ -1,6 +1,8 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { AuthProvider, AuthResult, LoginCredentials } from '../../../../domain/ports/AuthProvider';
 import { TokenService } from '../../../../domain/ports/TokenService';
+import { UserRepository, UserRecord } from '../../../../domain/ports/UserRepository';
+import { AuditLogRepository } from '../../../../domain/ports/AuditLogRepository';
 
 const mockLogger = {
   info: jest.fn(),
@@ -20,6 +22,20 @@ describe('AuthService', () => {
   let authService: AuthService;
   let mockAuthProvider: jest.Mocked<AuthProvider>;
   let mockTokenService: jest.Mocked<TokenService>;
+  let mockUserRepository: jest.Mocked<UserRepository>;
+  let mockAuditLogRepository: jest.Mocked<AuditLogRepository>;
+
+  const mockUser: UserRecord = {
+    id: 'user-id-123',
+    username: 'admin',
+    email: 'admin@test.com',
+    role: 'admin',
+    isLocked: false,
+    failedAttempts: 0,
+    lastLogin: null,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -36,8 +52,37 @@ describe('AuthService', () => {
       decodeToken: jest.fn()
     } as jest.Mocked<TokenService>;
 
+    // Mock del UserRepository
+    mockUserRepository = {
+      findById: jest.fn(),
+      findByUsername: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      resetFailedAttempts: jest.fn(),
+      updateLastLogin: jest.fn(),
+      incrementFailedAttempts: jest.fn(),
+      lockUser: jest.fn()
+    } as jest.Mocked<UserRepository>;
+
+    // Mock del AuditLogRepository
+    mockAuditLogRepository = {
+      log: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
+    } as jest.Mocked<AuditLogRepository>;
+
     // Crear instancia del servicio con mocks inyectados
-    authService = new AuthService(mockAuthProvider, mockTokenService);
+    authService = new AuthService(
+      mockAuthProvider,
+      mockTokenService,
+      mockUserRepository,
+      mockAuditLogRepository
+    );
+
+    // Default: user exists in PostgreSQL
+    mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+    mockUserRepository.resetFailedAttempts.mockResolvedValue(undefined);
+    mockUserRepository.updateLastLogin.mockResolvedValue(undefined);
+    mockUserRepository.save.mockResolvedValue(mockUser);
   });
 
   // ==========================================================================
@@ -145,11 +190,15 @@ describe('AuthService', () => {
 
       for (const role of roles) {
         jest.clearAllMocks();
+        mockAuditLogRepository.log.mockResolvedValue(undefined);
 
         mockAuthProvider.authenticate.mockResolvedValue({
           success: true,
           user: { id: 'user-id-123', username: 'testuser', role }
         });
+        mockUserRepository.findByUsername.mockResolvedValue({ ...mockUser, role });
+        mockUserRepository.resetFailedAttempts.mockResolvedValue(undefined);
+        mockUserRepository.updateLastLogin.mockResolvedValue(undefined);
         mockTokenService.generateToken.mockReturnValue('token');
 
         const result = await authService.login({
@@ -514,6 +563,7 @@ describe('AuthService', () => {
         success: true,
         user: { id: 'user-id-123', username: longUsername, role: 'user' }
       });
+      mockUserRepository.findByUsername.mockResolvedValue({ ...mockUser, username: longUsername, role: 'user' });
       mockTokenService.generateToken.mockReturnValue('token');
 
       const result = await authService.login({
@@ -532,6 +582,7 @@ describe('AuthService', () => {
         success: true,
         user: { id: 'user-id-123', username: specialUsername, role: 'user' }
       });
+      mockUserRepository.findByUsername.mockResolvedValue({ ...mockUser, username: specialUsername, role: 'user' });
       mockTokenService.generateToken.mockReturnValue('token');
 
       const result = await authService.login({
@@ -550,6 +601,7 @@ describe('AuthService', () => {
         success: true,
         user: { id: 'user-id-123', username: unicodeUsername, role: 'user' }
       });
+      mockUserRepository.findByUsername.mockResolvedValue({ ...mockUser, username: unicodeUsername, role: 'user' });
       mockTokenService.generateToken.mockReturnValue('token');
 
       const result = await authService.login({
