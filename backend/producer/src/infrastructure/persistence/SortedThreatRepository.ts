@@ -22,6 +22,13 @@ export class SortedThreatRepository implements ThreatRepository {
     return threat || null;
   }
 
+  async delete(threatId: string): Promise<boolean> {
+    const index = this.threats.findIndex(t => t.threatId === threatId);
+    if (index === -1) return false;
+    this.threats.splice(index, 1);
+    return true;
+  }
+
 
   private findInsertIndex(timestamp: string): number {
     const targetTime = new Date(timestamp).getTime();

@@ -12,7 +12,8 @@ describe('ListThreatsUseCase', () => {
     mockRepository = {
       save: jest.fn().mockResolvedValue('' as never),
       findAll: jest.fn().mockResolvedValue([] as never),
-      findById: jest.fn().mockResolvedValue(null as never)
+      findById: jest.fn().mockResolvedValue(null as never),
+      delete: jest.fn().mockResolvedValue(false as never)
     } as unknown as ThreatRepository;
 
     listThreatsUseCase = new ListThreatsUseCase(mockRepository);

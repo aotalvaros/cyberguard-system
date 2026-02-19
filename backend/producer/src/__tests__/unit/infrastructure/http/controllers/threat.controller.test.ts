@@ -23,8 +23,14 @@ const mockListThreatsUseCase = {
   execute: mockExecuteListThreats
 };
 
+const mockExecuteDeleteThreat = jest.fn();
+const mockDeleteThreatUseCase = {
+  execute: mockExecuteDeleteThreat
+};
+
 const mockGetThreatService = jest.fn(() => mockThreatService);
 const mockGetListThreatsUseCase = jest.fn(() => mockListThreatsUseCase);
+const mockGetDeleteThreatUseCase = jest.fn(() => mockDeleteThreatUseCase);
 
 jest.mock('../../../../../infrastructure/config/logger', () => ({
   logger: mockLogger
@@ -33,7 +39,8 @@ jest.mock('../../../../../infrastructure/config/logger', () => ({
 jest.mock('../../../../../infrastructure/factories/ServiceFactory', () => ({
   ServiceFactory: {
     getThreatService: mockGetThreatService,
-    getListThreatsUseCase: mockGetListThreatsUseCase
+    getListThreatsUseCase: mockGetListThreatsUseCase,
+    getDeleteThreatUseCase: mockGetDeleteThreatUseCase
   }
 }));
 
@@ -46,6 +53,7 @@ jest.mock('../../../../../infrastructure/http/middlewares/bruteforce.middleware'
 }));
 
 import threatRouter from '../../../../../infrastructure/http/controllers/threat.controller';
+import { ThreatNotFoundException } from '../../../../../domain/exceptions/ThreatNotFoundException';
 
 
 describe('Threat Con as nevertroller', () => {
@@ -694,6 +702,179 @@ describe('Threat Con as nevertroller', () => {
 
       expect(mockLogger.error).toHaveBeenCalledTimes(1);
       expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+  });
+
+  // ==========================================================================
+  // DELETE /:threatId - ELIMINAR AMENAZA
+  // ==========================================================================
+
+  describe('DELETE /threats/:threatId - Delete Threat', () => {
+    describe('Successful Deletion', () => {
+      it('should return 200 when threat is deleted successfully', async () => {
+        const deleteResult = {
+          deleted: true,
+          threatId: 'threat-123',
+          message: 'Threat threat-123 deleted successfully'
+        };
+        mockExecuteDeleteThreat.mockResolvedValue(deleteResult as never);
+
+        const response = await request(app).delete('/threats/threat-123');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          success: true,
+          threatId: 'threat-123',
+          message: 'Threat threat-123 deleted successfully'
+        });
+      });
+
+      it('should call ServiceFactory.getDeleteThreatUseCase', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-123', message: 'Deleted'
+        } as never);
+
+        await request(app).delete('/threats/threat-123');
+
+        expect(mockGetDeleteThreatUseCase).toHaveBeenCalled();
+      });
+
+      it('should call execute with threatId from URL params', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-xyz', message: 'Deleted'
+        } as never);
+
+        await request(app).delete('/threats/threat-xyz');
+
+        expect(mockExecuteDeleteThreat).toHaveBeenCalledWith('threat-xyz');
+      });
+
+      it('should log success with threatId', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-123', message: 'Deleted'
+        } as never);
+
+        await request(app).delete('/threats/threat-123');
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Threat deleted',
+          { threatId: 'threat-123' }
+        );
+      });
+    });
+
+    describe('Threat Not Found', () => {
+      it('should return 404 when threat does not exist', async () => {
+        mockExecuteDeleteThreat.mockRejectedValue(
+          new ThreatNotFoundException('nonexistent-id') as never
+        );
+
+        const response = await request(app).delete('/threats/nonexistent-id');
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toContain('nonexistent-id');
+      });
+
+      it('should log warning when threat not found', async () => {
+        mockExecuteDeleteThreat.mockRejectedValue(
+          new ThreatNotFoundException('missing-id') as never
+        );
+
+        await request(app).delete('/threats/missing-id');
+
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          'Threat not found for deletion',
+          expect.objectContaining({ threatId: 'missing-id' })
+        );
+      });
+    });
+
+    describe('DELETE Error Handling', () => {
+      it('should return 500 when use case throws unexpected error', async () => {
+        mockExecuteDeleteThreat.mockRejectedValue(
+          new Error('Database error') as never
+        );
+
+        const response = await request(app).delete('/threats/threat-123');
+
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({
+          success: false,
+          error: 'Failed to delete threat'
+        });
+      });
+
+      it('should log error when deletion fails', async () => {
+        const error = new Error('Connection refused');
+        mockExecuteDeleteThreat.mockRejectedValue(error as never);
+
+        await request(app).delete('/threats/threat-123');
+
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          'Failed to delete threat',
+          { error: 'Connection refused' }
+        );
+      });
+
+      it('should not expose internal error details', async () => {
+        mockExecuteDeleteThreat.mockRejectedValue(
+          new Error('SQL: DELETE FROM sensitive_table WHERE...') as never
+        );
+
+        const response = await request(app).delete('/threats/threat-123');
+
+        expect(response.body.error).toBe('Failed to delete threat');
+        expect(response.body.error).not.toContain('SQL');
+      });
+    });
+
+    describe('DELETE Response Structure', () => {
+      it('should return consistent success structure', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-123', message: 'Deleted'
+        } as never);
+
+        const response = await request(app).delete('/threats/threat-123');
+
+        expect(response.body).toHaveProperty('success', true);
+        expect(response.body).toHaveProperty('threatId');
+        expect(response.body).toHaveProperty('message');
+      });
+
+      it('should not include error field in success response', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-123', message: 'Deleted'
+        } as never);
+
+        const response = await request(app).delete('/threats/threat-123');
+
+        expect(response.body).not.toHaveProperty('error');
+      });
+    });
+
+    describe('DELETE Edge Cases', () => {
+      it('should handle threatId with special characters', async () => {
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: 'threat-abc-123-xyz', message: 'Deleted'
+        } as never);
+
+        const response = await request(app).delete('/threats/threat-abc-123-xyz');
+
+        expect(response.status).toBe(200);
+      });
+
+      it('should handle UUID format threatId', async () => {
+        const uuid = '550e8400-e29b-41d4-a716-446655440000';
+        mockExecuteDeleteThreat.mockResolvedValue({
+          deleted: true, threatId: uuid, message: 'Deleted'
+        } as never);
+
+        const response = await request(app).delete(`/threats/${uuid}`);
+
+        expect(response.status).toBe(200);
+        expect(mockExecuteDeleteThreat).toHaveBeenCalledWith(uuid);
+      });
     });
   });
 });

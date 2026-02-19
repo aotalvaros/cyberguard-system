@@ -1,11 +1,16 @@
 import { ThreatService } from '../../application/services/threat.service';
 import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
+import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
 import { JWTTokenService } from '../providers/JWTTokenService';
-import { SortedThreatRepository } from '../persistence/SortedThreatRepository';
+import { PostgresThreatRepository } from '../persistence/PostgresThreatRepository';
+import { PostgresUserRepository } from '../persistence/PostgresUserRepository';
+import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepository';
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
+import { UserRepository } from '../../domain/ports/UserRepository';
+import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
 import { config } from '../config/env';
 
 /**
@@ -25,7 +30,10 @@ export class ServiceFactory {
   private static threatRepository: ThreatRepository | null = null;
   private static threatService: ThreatService | null = null;
   private static listThreatsUseCase: ListThreatsUseCase | null = null;
+  private static deleteThreatUseCase: DeleteThreatUseCase | null = null;
   private static authService: AuthService | null = null;
+  private static userRepository: UserRepository | null = null;
+  private static auditLogRepository: AuditLogRepository | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -33,7 +41,7 @@ export class ServiceFactory {
    */
   static getThreatRepository(): ThreatRepository {
     if (!this.threatRepository) {
-      this.threatRepository = new SortedThreatRepository();
+      this.threatRepository = new PostgresThreatRepository();
     }
     return this.threatRepository;
   }
@@ -62,6 +70,39 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del use case de eliminar amenaza
+   * Inyecta: ThreatRepository (port)
+   */
+  static getDeleteThreatUseCase(): DeleteThreatUseCase {
+    if (!this.deleteThreatUseCase) {
+      this.deleteThreatUseCase = new DeleteThreatUseCase(this.getThreatRepository());
+    }
+    return this.deleteThreatUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del repositorio de usuarios
+   * Implementa UserRepository (port)
+   */
+  static getUserRepository(): UserRepository {
+    if (!this.userRepository) {
+      this.userRepository = new PostgresUserRepository();
+    }
+    return this.userRepository;
+  }
+
+  /**
+   * ✅ Obtener instancia del repositorio de auditoría
+   * Implementa AuditLogRepository (port)
+   */
+  static getAuditLogRepository(): AuditLogRepository {
+    if (!this.auditLogRepository) {
+      this.auditLogRepository = new PostgresAuditLogRepository();
+    }
+    return this.auditLogRepository;
+  }
+
+  /**
    * ✅ Obtener instancia del servicio de autenticación
    * Inyecta: AuthProvider (port), TokenService (port)
    */
@@ -74,7 +115,12 @@ export class ServiceFactory {
       };
       const authProvider = new FirebaseAuthProvider(firebaseConfig);
       const tokenService = new JWTTokenService();
-      this.authService = new AuthService(authProvider, tokenService);
+      this.authService = new AuthService(
+        authProvider,
+        tokenService,
+        this.getUserRepository(),
+        this.getAuditLogRepository()
+      );
     }
     return this.authService;
   }
@@ -86,6 +132,9 @@ export class ServiceFactory {
     this.threatRepository = null;
     this.threatService = null;
     this.listThreatsUseCase = null;
+    this.deleteThreatUseCase = null;
     this.authService = null;
+    this.userRepository = null;
+    this.auditLogRepository = null;
   }
 }

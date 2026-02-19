@@ -1,3 +1,3 @@
 export interface EventPublisher {
-  publish(routingKey: string, event: any): Promise<void>;
+  publish(routingKey: string, event: Record<string, unknown>): Promise<void>;
 }

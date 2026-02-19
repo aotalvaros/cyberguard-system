@@ -36,6 +36,26 @@ services:
     networks:
       - cyberguard-network
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: cyberguard-postgres
+    environment:
+      POSTGRES_DB: cyberguard_db
+      POSTGRES_USER: cyberguard
+      POSTGRES_PASSWORD: cyberguard_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/producer/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyberguard -d cyberguard_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberguard-network
+
   backend:
     build:
       context: ./backend/producer
@@ -50,10 +70,17 @@ services:
       FIREBASE_API_KEY: ${FIREBASE_API_KEY}
       FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: cyberguard_db
+      POSTGRES_USER: cyberguard
+      POSTGRES_PASSWORD: cyberguard_secret
     ports:
       - "3000:3000"
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - cyberguard-network
@@ -101,6 +128,7 @@ services:
 volumes:
   rabbitmq_data:
   redis_data:
+  postgres_data:
 
 networks:
   cyberguard-network:

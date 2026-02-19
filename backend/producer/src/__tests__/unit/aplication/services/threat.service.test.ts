@@ -43,7 +43,8 @@ describe('ThreatService', () => {
     mockThreatRepository = {
       save: jest.fn().mockResolvedValue('threat-id-generated-by-repo' as never),
       findById: jest.fn(),
-      findAll: jest.fn()
+      findAll: jest.fn(),
+      delete: jest.fn()
     } as jest.Mocked<ThreatRepository>;
 
     // Crear instancia del servicio
@@ -352,7 +353,7 @@ describe('ThreatService', () => {
 
       await threatService.reportThreat(threatData);
 
-      const event = mockEventPublisher.publish.mock.calls[0][1];
+      const event = mockEventPublisher.publish.mock.calls[0][1] as { data: Record<string, unknown> };
       expect(event.data.threatId).toBe('threat-id-789');
     });
 
@@ -525,7 +526,7 @@ describe('ThreatService', () => {
       const savedData = mockThreatRepository.save.mock.calls[0][0];
       expect(savedData.metadata).toEqual(metadata);
 
-      const event = mockEventPublisher.publish.mock.calls[0][1];
+      const event = mockEventPublisher.publish.mock.calls[0][1] as { data: Record<string, unknown> };
       expect(event.data.metadata).toEqual(metadata);
     });
 
