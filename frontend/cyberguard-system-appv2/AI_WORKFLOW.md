@@ -1452,4 +1452,59 @@ Documentation:
 ```
 
 ### Próximo Feature
-CG-010: TBD
+CG-011: TBD
+
+---
+
+## CG-010: Auth Guard Fix - Login Redirect ✅
+
+**Fecha:** 2026-02-19
+**Estado:** Completado
+
+### Descripción
+Corrección del bug que impedía a usuarios con rol "viewer" acceder al dashboard después del login. El problema era que todas las rutas protegidas usaban `adminGuard` que solo permite usuarios con rol "admin".
+
+### Problema Detectado
+- Usuario inicia sesión correctamente (backend responde con token y user)
+- Respuesta del backend: `{"token": "...", "user": {"username": "...", "role": "viewer"}}`
+- Dashboard no cargaba porque `adminGuard` verificaba `authService.isAdmin()` → `role === 'admin'`
+- Usuarios con rol "viewer" eran rechazados y redirigidos a `/autenticacion`
+
+### Cambios Realizados
+
+#### Archivos Creados
+```
+presentation/
+└── guards/
+    ├── auth.guard.ts          # Nuevo guard para usuarios autenticados (cualquier rol)
+    └── __tests__/
+        └── auth.guard.spec.ts # Tests unitarios del nuevo guard
+```
+
+#### Archivos Modificados
+- `src/app/app.routes.ts` - Cambiado `adminGuard` por `authGuard` en rutas dashboard y report-threat
+
+### Guards Disponibles
+
+| Guard | Propósito | Verificación |
+|-------|-----------|--------------|
+| `authGuard` | Rutas para usuarios autenticados | `isAuthenticated()` - cualquier rol |
+| `adminGuard` | Rutas solo para administradores | `isAdmin()` - solo rol "admin" |
+
+### Tests
+- 2 tests unitarios añadidos para authGuard
+- Total: 198 tests pasando en 28 archivos
+
+### Commit
+```
+fix(CG-010): add authGuard for authenticated users to fix login redirect
+
+- Create authGuard that allows any authenticated user (any role)
+- Keep adminGuard for admin-only routes
+- Change dashboard and report-threat routes to use authGuard
+- Users with "viewer" role can now access dashboard after login
+- Add 2 unit tests for authGuard (198 total passing)
+```
+
+### Próximo Feature
+CG-011: TBD
