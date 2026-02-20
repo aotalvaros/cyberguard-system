@@ -7,7 +7,9 @@
       </span>
       @if (alerts.length > 0) {
         <button (click)="exportToJSON()" class="btn-export">⬇️ Exportar</button>
-        <button (click)="clearAll()" class="btn-clear">Limpiar Todo</button>
+        @if (isAdmin) {
+          <button (click)="clearAll()" class="btn-clear">Limpiar Todo</button>
+        }
       }
     </div>
   </div>
@@ -73,7 +75,9 @@
         <div class="alert-card" [class]="getSeverityClass(alert.data.severity)">
           <div class="alert-header">
             <span class="alert-type">{{ alert.data.type }}</span>
-            <button (click)="deleteAlert(alert.eventId)" class="btn-delete">×</button>
+            @if (isAdmin) {
+              <button (click)="deleteAlert(alert)" class="btn-delete">×</button>
+            }
           </div>
           <div class="alert-body">
             <p class="alert-description">{{ alert.data.description }}</p>

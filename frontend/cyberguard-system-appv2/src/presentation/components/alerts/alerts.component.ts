@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs';
 import { WebSocketService } from '../../../core/infrastructure/services/websocket.service';
 import { AlertMessage } from '../../../core/domain/models/alert-message.model';
 import { AlertsDomainService } from '../../../core/domain/services/alerts-domain.service';
+import { AuthService } from '../../../core/infrastructure/services/auth.service';
+import { DeleteThreatUseCase } from '../../../core/application/use-cases/delete-threat.use-case';
 
 // ⚠️ HUMAN CHECK:
 // Componente refactorizado - lógica de negocio movida a AlertsDomainService
@@ -18,6 +20,8 @@ import { AlertsDomainService } from '../../../core/domain/services/alerts-domain
 export class AlertsComponent implements OnInit, OnDestroy {
   private wsService = inject(WebSocketService);
   private alertsDomain = inject(AlertsDomainService);
+  private authService = inject(AuthService);
+  private deleteThreatUseCase = inject(DeleteThreatUseCase);
   private subscription?: Subscription;
   private cdr = inject(ChangeDetectorRef);
 
@@ -75,12 +79,45 @@ export class AlertsComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteAlert(eventId: string): void {
-    this.wsService.deleteMessage(eventId);
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  deleteAlert(alert: AlertMessage): void {
+    if (!this.isAdmin) return;
+    
+    const threatId = alert.data?.threatId;
+    if (threatId) {
+      // Llamar al servicio DELETE del backend
+      this.deleteThreatUseCase.execute(threatId).subscribe({
+        next: () => {
+          // Eliminar de la lista local después de éxito en backend
+          this.wsService.deleteMessage(alert.eventId);
+        },
+        error: (err) => {
+          console.error('Error al eliminar amenaza del backend:', err);
+          // Si falla el backend, aún eliminamos localmente
+          this.wsService.deleteMessage(alert.eventId);
+        }
+      });
+    } else {
+      // Si no tiene threatId, solo eliminar localmente
+      this.wsService.deleteMessage(alert.eventId);
+    }
   }
 
   clearAll(): void {
+    if (!this.isAdmin) return;
+    
     if (confirm('¿Eliminar todas las alertas?')) {
+      // Para cada alerta con threatId, intentar eliminar del backend
+      const alertsWithThreatId = this.alerts.filter(a => a.data?.threatId);
+      alertsWithThreatId.forEach(alert => {
+        this.deleteThreatUseCase.execute(alert.data.threatId).subscribe({
+          error: (err) => console.error('Error eliminando threat:', alert.data.threatId, err)
+        });
+      });
+      // Limpiar todas las alertas locales
       this.wsService.clearAll();
     }
   }
