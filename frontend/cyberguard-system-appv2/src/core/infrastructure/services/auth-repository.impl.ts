@@ -1,11 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AuthRepository } from '../../domain/ports/auth.repository';
 import { LoginCredentials } from '../../domain/models/login-credentials.model';
 import { AuthResponse } from '../../domain/models/auth-response.model';
 import { User } from '../../domain/models/user.model';
 import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
+import { AuthMapper } from '../mappers/auth.mapper';
+import { LoginResponseDto } from '../dto/auth.dto';
 import { environment } from '@environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +19,13 @@ export class AuthRepositoryImpl extends AuthRepository {
   private readonly USER_KEY = 'user';
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials);
+    // Convertir modelo de dominio a DTO
+    const requestDto = AuthMapper.toLoginRequestDto(credentials);
+    
+    return this.http.post<LoginResponseDto>(`${this.API_URL}/login`, requestDto).pipe(
+      // Convertir DTO de respuesta a modelo de dominio
+      map(dto => AuthMapper.toAuthResponse(dto))
+    );
   }
 
   saveToken(token: string): void {

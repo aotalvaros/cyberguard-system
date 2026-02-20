@@ -1,3 +1,3 @@
 export interface ThreatResponse {
-  threatId: string;
+  readonly threatId: string;
 }

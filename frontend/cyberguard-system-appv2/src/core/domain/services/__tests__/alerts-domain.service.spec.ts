@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { AlertsDomainService } from '../alerts-domain.service';
 import { AlertMessage } from '../../models/alert-message.model';
@@ -19,7 +19,6 @@ describe('AlertsDomainService', () => {
     const mockAlerts: AlertMessage[] = [
       {
         eventId: '1',
-        eventType: 'threat.detected',
         timestamp: Date.now(),
         data: {
           threatId: 'threat-1',
@@ -31,7 +30,6 @@ describe('AlertsDomainService', () => {
       },
       {
         eventId: '2',
-        eventType: 'threat.detected',
         timestamp: Date.now(),
         data: {
           threatId: 'threat-2',
@@ -72,7 +70,6 @@ describe('AlertsDomainService', () => {
       const alerts: AlertMessage[] = [
         {
           eventId: '1',
-          eventType: 'threat',
           timestamp: Date.now(),
           data: {
             threatId: 't1',
@@ -84,7 +81,6 @@ describe('AlertsDomainService', () => {
         },
         {
           eventId: '2',
-          eventType: 'threat',
           timestamp: Date.now(),
           data: {
             threatId: 't2',
@@ -141,7 +137,6 @@ describe('AlertsDomainService', () => {
       const alerts: AlertMessage[] = [
         {
           eventId: '1',
-          eventType: 'threat',
           timestamp: Date.now(),
           data: {
             threatId: 't1',
@@ -153,7 +148,6 @@ describe('AlertsDomainService', () => {
         },
         {
           eventId: '2',
-          eventType: 'threat',
           timestamp: Date.now(),
           data: {
             threatId: 't2',
@@ -173,6 +167,206 @@ describe('AlertsDomainService', () => {
     it('should return empty array for empty alerts', () => {
       const types = service.getUniqueTypes([]);
       expect(types.length).toBe(0);
+    });
+  });
+
+  describe('exportToJSON', () => {
+    it('should create download link and trigger download', () => {
+      const mockClick = vi.fn();
+      const mockLink = {
+        href: '',
+        download: '',
+        click: mockClick
+      };
+      
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
+      const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+      const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      const alerts: AlertMessage[] = [
+        {
+          eventId: '1',
+          timestamp: Date.now(),
+          data: {
+            threatId: 't1',
+            type: ThreatType.MALWARE,
+            severity: ThreatSeverity.HIGH,
+            sourceIp: '1.1.1.1',
+            description: 'test'
+          }
+        }
+      ];
+
+      service.exportToJSON(alerts);
+
+      expect(createElementSpy).toHaveBeenCalledWith('a');
+      expect(createObjectURLSpy).toHaveBeenCalled();
+      expect(mockClick).toHaveBeenCalled();
+      expect(mockLink.download).toContain('alerts-');
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
+
+      createElementSpy.mockRestore();
+      createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
+    });
+  });
+
+  describe('filterAlerts - additional cases', () => {
+    const mockAlerts: AlertMessage[] = [
+      {
+        eventId: '1',
+        timestamp: Date.now(),
+        data: {
+          threatId: 'threat-abc-123',
+          type: ThreatType.MALWARE,
+          severity: ThreatSeverity.HIGH,
+          sourceIp: '192.168.1.100',
+          description: 'Malware detected'
+        }
+      },
+      {
+        eventId: '2',
+        timestamp: Date.now(),
+        data: {
+          threatId: 'threat-xyz-456',
+          type: ThreatType.PHISHING,
+          severity: ThreatSeverity.LOW,
+          sourceIp: '10.0.0.50',
+          description: 'Phishing attempt'
+        }
+      }
+    ];
+
+    it('should filter by sourceIp', () => {
+      const result = service.filterAlerts(mockAlerts, '192.168', '', '');
+      expect(result.length).toBe(1);
+      expect(result[0].data.sourceIp).toBe('192.168.1.100');
+    });
+
+    it('should filter by threatId', () => {
+      const result = service.filterAlerts(mockAlerts, 'abc-123', '', '');
+      expect(result.length).toBe(1);
+      expect(result[0].data.threatId).toBe('threat-abc-123');
+    });
+
+    it('should combine multiple filters', () => {
+      const result = service.filterAlerts(mockAlerts, 'malware', ThreatType.MALWARE, ThreatSeverity.HIGH);
+      expect(result.length).toBe(1);
+    });
+
+    it('should return empty when no matches', () => {
+      const result = service.filterAlerts(mockAlerts, 'nonexistent', '', '');
+      expect(result.length).toBe(0);
+    });
+  });
+
+  describe('calculateStats - edge cases', () => {
+    it('should handle null alerts', () => {
+      const stats = service.calculateStats(null as any);
+      expect(stats.total).toBe(0);
+    });
+
+    it('should handle alerts with all severity levels', () => {
+      const alerts: AlertMessage[] = [
+        { eventId: '1', timestamp: Date.now(), data: { threatId: 't1', type: ThreatType.MALWARE, severity: ThreatSeverity.LOW, sourceIp: '1.1.1.1', description: 'test' } },
+        { eventId: '2', timestamp: Date.now(), data: { threatId: 't2', type: ThreatType.MALWARE, severity: ThreatSeverity.MEDIUM, sourceIp: '2.2.2.2', description: 'test' } },
+        { eventId: '3', timestamp: Date.now(), data: { threatId: 't3', type: ThreatType.MALWARE, severity: ThreatSeverity.HIGH, sourceIp: '3.3.3.3', description: 'test' } },
+        { eventId: '4', timestamp: Date.now(), data: { threatId: 't4', type: ThreatType.MALWARE, severity: ThreatSeverity.CRITICAL, sourceIp: '4.4.4.4', description: 'test' } }
+      ];
+
+      const stats = service.calculateStats(alerts);
+      expect(stats.total).toBe(4);
+      expect(stats.low).toBe(1);
+      expect(stats.medium).toBe(1);
+      expect(stats.high).toBe(1);
+      expect(stats.critical).toBe(1);
+    });
+  });
+
+  describe('formatDate - additional cases', () => {
+    it('should format 0 timestamp', () => {
+      const result = service.formatDate(0);
+      expect(result).toBe('');
+    });
+
+    it('should format valid timestamp to string', () => {
+      const timestamp = 1640995200000; // 2022-01-01
+      const result = service.formatDate(timestamp);
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
+    });
+  });
+
+  describe('getUniqueTypes - additional cases', () => {
+    it('should return multiple unique types', () => {
+      const alerts: AlertMessage[] = [
+        { eventId: '1', timestamp: Date.now(), data: { threatId: 't1', type: ThreatType.MALWARE, severity: ThreatSeverity.HIGH, sourceIp: '1.1.1.1', description: 'test' } },
+        { eventId: '2', timestamp: Date.now(), data: { threatId: 't2', type: ThreatType.PHISHING, severity: ThreatSeverity.HIGH, sourceIp: '2.2.2.2', description: 'test' } },
+        { eventId: '3', timestamp: Date.now(), data: { threatId: 't3', type: ThreatType.DDOS, severity: ThreatSeverity.HIGH, sourceIp: '3.3.3.3', description: 'test' } }
+      ];
+
+      const types = service.getUniqueTypes(alerts);
+      expect(types.length).toBe(3);
+      expect(types).toContain(ThreatType.MALWARE);
+      expect(types).toContain(ThreatType.PHISHING);
+      expect(types).toContain(ThreatType.DDOS);
+    });
+
+    it('should handle null alerts', () => {
+      const types = service.getUniqueTypes(null as any);
+      expect(types.length).toBe(0);
+    });
+
+    it('should filter out undefined types', () => {
+      const alerts: AlertMessage[] = [
+        { eventId: '1', timestamp: Date.now(), data: { threatId: 't1', type: ThreatType.MALWARE, severity: ThreatSeverity.HIGH, sourceIp: '1.1.1.1', description: 'test' } },
+        { eventId: '2', timestamp: Date.now(), data: { threatId: 't2', type: undefined as any, severity: ThreatSeverity.HIGH, sourceIp: '2.2.2.2', description: 'test' } }
+      ];
+
+      const types = service.getUniqueTypes(alerts);
+      expect(types.length).toBe(1);
+    });
+  });
+
+  describe('exportToJSON - additional cases', () => {
+    it('should export empty array', () => {
+      const mockClick = vi.fn();
+      const mockLink = { href: '', download: '', click: mockClick };
+      
+      vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:empty');
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      service.exportToJSON([]);
+
+      expect(mockClick).toHaveBeenCalled();
+      expect(mockLink.download).toContain('alerts-');
+
+      vi.restoreAllMocks();
+    });
+
+    it('should create blob with correct content type', () => {
+      const mockClick = vi.fn();
+      const mockLink = { href: '', download: '', click: mockClick };
+      let capturedBlob: unknown = null;
+      
+      vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
+      vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => {
+        capturedBlob = blob;
+        return 'blob:test';
+      });
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      const alerts: AlertMessage[] = [
+        { eventId: '1', timestamp: Date.now(), data: { threatId: 't1', type: ThreatType.MALWARE, severity: ThreatSeverity.HIGH, sourceIp: '1.1.1.1', description: 'test' } }
+      ];
+
+      service.exportToJSON(alerts);
+
+      expect(capturedBlob).toBeTruthy();
+      expect((capturedBlob as Blob).type).toBe('application/json');
+
+      vi.restoreAllMocks();
     });
   });
 });
