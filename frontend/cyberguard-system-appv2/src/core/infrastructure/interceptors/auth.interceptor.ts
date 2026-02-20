@@ -2,6 +2,7 @@ import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/h
 import { inject } from '@angular/core';
 import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
 import { environment } from '@environments/environment';
+import { STORAGE_KEYS } from '@environments/constants';
 
 /**
  * Rutas que NO requieren autenticación
@@ -50,7 +51,7 @@ export const authInterceptor: HttpInterceptorFn = (
   }
 
   // Obtener token del storage
-  const token = storage.get('token');
+  const token = storage.get(STORAGE_KEYS.TOKEN);
   
   // Si no hay token, continuar sin modificar
   if (!token) {

@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { WebSocketRepository } from '../../domain/ports/websocket.repository';
 import { AlertMessage } from '../../domain/models/alert-message.model';
+import { WS_COMMANDS } from '@environments/constants';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
@@ -20,11 +21,11 @@ export class WebSocketService {
   }
 
   clearAll(): void {
-    this.wsRepository.sendCommand({ type: 'clear-all' });
+    this.wsRepository.sendCommand({ type: WS_COMMANDS.CLEAR_ALL });
   }
 
   deleteMessage(eventId: string): void {
-    this.wsRepository.sendCommand({ type: 'delete-one', id: eventId });
+    this.wsRepository.sendCommand({ type: WS_COMMANDS.DELETE_ONE, id: eventId });
   }
 
   isConnected(): boolean {

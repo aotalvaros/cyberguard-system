@@ -4,14 +4,15 @@ import { WebSocketRepository } from '../../domain/ports/websocket.repository';
 import { AlertMessage } from '../../domain/models/alert-message.model';
 import { WebSocketCommand } from '../../domain/models/websocket-command.model';
 import { environment } from '@environments/environment';
+import { STORAGE_KEYS, WS_COMMANDS, LIMITS } from '@environments/constants';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketRepositoryImpl extends WebSocketRepository {
   private ws: WebSocket | null = null;
   private messages$ = new BehaviorSubject<AlertMessage[]>([]);
   private readonly WS_URL = environment.wsUrl;
-  private readonly STORAGE_KEY = 'cg_ws_history';
-  private readonly MAX_MESSAGES = 200;
+  private readonly STORAGE_KEY = STORAGE_KEYS.WS_HISTORY;
+  private readonly MAX_MESSAGES = LIMITS.MAX_WS_MESSAGES;
   private reconnectInterval: ReturnType<typeof setInterval> | null = null;
   private connected = false;
 
@@ -84,10 +85,10 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(command));
       
-      if (command.type === 'clear-all') {
+      if (command.type === WS_COMMANDS.CLEAR_ALL) {
         this.messages$.next([]);
         this.saveToStorage([]);
-      } else if (command.type === 'delete-one' && command.id) {
+      } else if (command.type === WS_COMMANDS.DELETE_ONE && command.id) {
         const current = this.messages$.value;
         const filtered = current.filter(m => m.eventId !== command.id);
         this.messages$.next(filtered);

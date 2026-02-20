@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AuthRepository } from '../../domain/ports/auth.repository';
 import { User } from '../../domain/models/user.model';
+import { ROLES } from '@environments/constants';
 
 @Injectable({ providedIn: 'root' })
 export class GetCurrentUserUseCase {
@@ -12,6 +13,6 @@ export class GetCurrentUserUseCase {
 
   isAdmin(): boolean {
     const user = this.execute();
-    return user?.role === 'admin';
+    return user?.role === ROLES.ADMIN;
   }
 }

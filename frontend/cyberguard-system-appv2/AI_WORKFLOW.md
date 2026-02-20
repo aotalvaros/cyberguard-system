@@ -1567,4 +1567,79 @@ refactor(CG-011): add role-based delete validation and backend integration
 ```
 
 ### Próximo Feature
-CG-012: TBD
+CG-012: Constants File for Hardcoded Strings
+
+---
+
+## CG-012: Constants Centralization ✅
+
+**Fecha:** 2026-02-20
+**Estado:** Completado
+
+### Descripción
+Creación de archivo de constantes centralizado para eliminar strings hardcodeados en el código. Mejora la mantenibilidad y evita errores por typos.
+
+### Problema Detectado
+- Strings como `'admin'`, `'token'`, `'user'`, `'clear-all'`, `'delete-one'` estaban hardcodeados en múltiples archivos
+- Esto es una mala práctica que dificulta el mantenimiento y puede causar errores
+
+### Cambios Realizados
+
+#### Archivos Creados
+```
+src/environments/
+└── constants.ts    # Archivo centralizado de constantes
+```
+
+#### Constantes Definidas
+```typescript
+// Roles de usuario
+ROLES = { ADMIN: 'admin', VIEWER: 'viewer', USER: 'user' }
+
+// Claves de localStorage
+STORAGE_KEYS = { TOKEN: 'token', USER: 'user', WS_HISTORY: 'cg_ws_history' }
+
+// Comandos WebSocket
+WS_COMMANDS = { CLEAR_ALL: 'clear-all', DELETE_ONE: 'delete-one' }
+
+// Niveles de severidad
+SEVERITY_LEVELS = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high', CRITICAL: 'critical' }
+SEVERITY_LIST = ['low', 'medium', 'high', 'critical']
+
+// Límites
+LIMITS = { MAX_WS_MESSAGES: 200 }
+```
+
+#### Archivos Modificados
+| Archivo | Constante Usada |
+|---------|-----------------|
+| `get-current-user.use-case.ts` | `ROLES.ADMIN` |
+| `auth-repository.impl.ts` | `STORAGE_KEYS.TOKEN`, `STORAGE_KEYS.USER` |
+| `error.interceptor.ts` | `STORAGE_KEYS.TOKEN`, `STORAGE_KEYS.USER` |
+| `auth.interceptor.ts` | `STORAGE_KEYS.TOKEN` |
+| `global-error.handler.ts` | `STORAGE_KEYS.TOKEN`, `STORAGE_KEYS.USER` |
+| `websocket-repository.impl.ts` | `STORAGE_KEYS.WS_HISTORY`, `WS_COMMANDS.*`, `LIMITS.MAX_WS_MESSAGES` |
+| `websocket.service.ts` | `WS_COMMANDS.CLEAR_ALL`, `WS_COMMANDS.DELETE_ONE` |
+| `alerts.component.ts` | `SEVERITY_LIST` |
+| `threat-validation.strategy.ts` | `ThreatSeverity` enum (ya existente) |
+
+### Tests
+- 198 tests pasando
+- Compilación exitosa
+
+### Commit
+```
+refactor(CG-012): centralize hardcoded strings into constants file
+
+- Create constants.ts in environments folder
+- Define ROLES, STORAGE_KEYS, WS_COMMANDS, SEVERITY_LEVELS, LIMITS
+- Replace all hardcoded role checks with ROLES.ADMIN
+- Replace localStorage keys with STORAGE_KEYS constants
+- Replace WebSocket command types with WS_COMMANDS constants
+- Use SEVERITY_LIST for severity dropdown options
+- Use ThreatSeverity enum in validation strategies
+- All 198 tests passing
+```
+
+### Próximo Feature
+CG-013: TBD
