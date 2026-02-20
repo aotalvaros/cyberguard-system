@@ -28,20 +28,25 @@ export class FirebaseAuthProvider implements AuthProvider {
       );
       
       const firebaseUser = userCredential.user;
-      const token = await firebaseUser.getIdToken();
-      
+      // forceRefresh: true para incluir Custom Claims actualizados
+      const idToken = await firebaseUser.getIdToken(true);
+      const decodedToken = await firebaseUser.getIdTokenResult(true);
+
+      // Leer rol desde Firebase Custom Claims; si no tiene, default 'viewer'
+      const role = this.extractRoleFromClaims(decodedToken.claims);
+
       const user: User = {
         id: firebaseUser.uid,
-        username: credentials.username, // Mantenemos consistencia
-        role: await this.getUserRole(firebaseUser.uid)
+        username: credentials.username,
+        role
       };
-      
+
       return {
         success: true,
         user,
-        token
+        token: idToken
       };
-      
+
     } catch (error: unknown) {
       return {
         success: false,
@@ -49,17 +54,21 @@ export class FirebaseAuthProvider implements AuthProvider {
       };
     }
   }
-  
- private mapUsernameToEmail(username: string): string {
-  if (username.includes('@')) {
-    return username;
+
+  private mapUsernameToEmail(username: string): string {
+    if (username.includes('@')) {
+      return username;
+    }
+    return `${username}@cyberguard.com`;
   }
-  // Si no, mapear username -> email
-  return `${username}@cyberguard.com`;
-}
-  
-  private async getUserRole(_uid: string): Promise<string> {
-    // Por ahora hardcoded, después con Firestore
-    return 'admin';
+
+  private extractRoleFromClaims(claims: Record<string, unknown>): string {
+    const validRoles = ['admin', 'analyst', 'viewer'];
+    const claimRole = claims['role'];
+    if (typeof claimRole === 'string' && validRoles.includes(claimRole)) {
+      return claimRole;
+    }
+    // Sin Custom Claim de rol → principio de menor privilegio
+    return 'viewer';
   }
 }

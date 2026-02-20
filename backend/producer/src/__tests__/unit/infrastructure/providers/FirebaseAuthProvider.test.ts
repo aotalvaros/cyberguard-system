@@ -3,6 +3,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 
 const mockGetIdToken = jest.fn<() => Promise<string>>();
+const mockGetIdTokenResult = jest.fn<() => Promise<{ claims: Record<string, unknown> }>>();
 const mockSignInWithEmailAndPassword = jest.fn();
 const mockGetAuth = jest.fn();
 const mockInitializeApp = jest.fn();
@@ -10,7 +11,8 @@ const mockInitializeApp = jest.fn();
 const createMockFirebaseUser = (uid: string, email: string) => ({
   uid,
   email,
-  getIdToken: mockGetIdToken
+  getIdToken: mockGetIdToken,
+  getIdTokenResult: mockGetIdTokenResult
 });
 
 jest.mock('firebase/auth', () => ({
@@ -45,6 +47,9 @@ describe('FirebaseAuthProvider', () => {
     // Mock de Firebase Auth
     mockAuth = { currentUser: null };
     mockGetAuth.mockReturnValue(mockAuth);
+
+    // Por defecto: sin Custom Claims → role = 'viewer'
+    mockGetIdTokenResult.mockResolvedValue({ claims: {} });
 
     // Crear instancia del provider
     firebaseAuthProvider = new FirebaseAuthProvider(mockConfig);
@@ -96,6 +101,8 @@ describe('FirebaseAuthProvider', () => {
       const mockToken = 'firebase-id-token-abc123';
 
       mockGetIdToken.mockResolvedValue(mockToken);
+      // Simular Custom Claim de admin
+      mockGetIdTokenResult.mockResolvedValue({ claims: { role: 'admin' } });
       mockSignInWithEmailAndPassword.mockResolvedValue({
         user: mockFirebaseUser
       } as never as never);
@@ -308,9 +315,11 @@ describe('FirebaseAuthProvider', () => {
   // ==========================================================================
 
   describe('User Roles', () => {
-    it('should return admin role (hardcoded for now)', async () => {
+    it('should return viewer role when user has no Custom Claims', async () => {
       const mockFirebaseUser = createMockFirebaseUser('uid-123', 'user@cyberguard.com');
       mockGetIdToken.mockResolvedValue('token');
+      // Sin Custom Claims → default 'viewer'
+      mockGetIdTokenResult.mockResolvedValue({ claims: {} });
       mockSignInWithEmailAndPassword.mockResolvedValue({
         user: mockFirebaseUser
       } as never);
@@ -320,14 +329,16 @@ describe('FirebaseAuthProvider', () => {
         password: 'pass'
       });
 
-      expect(result.user?.role).toBe('admin');
+      expect(result.user?.role).toBe('viewer');
     });
 
-    it('should call getUserRole with Firebase UID', async () => {
+    it('should return admin role when Custom Claim role=admin is set', async () => {
       const expectedUid = 'firebase-uid-xyz';
       const mockFirebaseUser = createMockFirebaseUser(expectedUid, 'user@cyberguard.com');
 
       mockGetIdToken.mockResolvedValue('token');
+      // Custom Claim: role='admin'
+      mockGetIdTokenResult.mockResolvedValue({ claims: { role: 'admin' } });
       mockSignInWithEmailAndPassword.mockResolvedValue({
         user: mockFirebaseUser
       } as never);
@@ -337,9 +348,41 @@ describe('FirebaseAuthProvider', () => {
         password: 'pass'
       });
 
-      // Por ahora siempre retorna 'admin', pero verifica que el UID se use
       expect(result.user?.id).toBe(expectedUid);
       expect(result.user?.role).toBe('admin');
+    });
+
+    it('should return analyst role when Custom Claim role=analyst is set', async () => {
+      const mockFirebaseUser = createMockFirebaseUser('uid-analyst', 'analyst@cyberguard.com');
+      mockGetIdToken.mockResolvedValue('token');
+      mockGetIdTokenResult.mockResolvedValue({ claims: { role: 'analyst' } });
+      mockSignInWithEmailAndPassword.mockResolvedValue({
+        user: mockFirebaseUser
+      } as never);
+
+      const result = await firebaseAuthProvider.authenticate({
+        username: 'analyst',
+        password: 'pass'
+      });
+
+      expect(result.user?.role).toBe('analyst');
+    });
+
+    it('should return viewer role when Custom Claim role is invalid', async () => {
+      const mockFirebaseUser = createMockFirebaseUser('uid-123', 'user@cyberguard.com');
+      mockGetIdToken.mockResolvedValue('token');
+      // Claim inválido → cae al default 'viewer'
+      mockGetIdTokenResult.mockResolvedValue({ claims: { role: 'superadmin' } });
+      mockSignInWithEmailAndPassword.mockResolvedValue({
+        user: mockFirebaseUser
+      } as never);
+
+      const result = await firebaseAuthProvider.authenticate({
+        username: 'user',
+        password: 'pass'
+      });
+
+      expect(result.user?.role).toBe('viewer');
     });
   });
 
@@ -702,12 +745,17 @@ describe('FirebaseAuthProvider', () => {
         return 'token';
       });
 
+      mockGetIdTokenResult.mockImplementation(async () => {
+        callOrder.push('getIdTokenResult');
+        return { claims: {} };
+      });
+
       await firebaseAuthProvider.authenticate({
         username: 'user',
         password: 'pass'
       });
 
-      expect(callOrder).toEqual(['signIn', 'getIdToken']);
+      expect(callOrder).toEqual(['signIn', 'getIdToken', 'getIdTokenResult']);
     });
   });
 

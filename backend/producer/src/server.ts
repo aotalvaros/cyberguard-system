@@ -8,6 +8,7 @@ import { connectRabbitMQ, closeRabbitMQ } from './infrastructure/config/rabbitmq
 import { errorHandler } from './infrastructure/http/middlewares/error.middleware';
 import authRoutes from './infrastructure/http/controllers/auth.controller';
 import threatRoutes from './infrastructure/http/controllers/threat.controller';
+import adminRoutes from './infrastructure/http/controllers/admin.controller';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.get('/health', (_req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/threats', threatRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handler
 app.use(errorHandler);

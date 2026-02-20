@@ -43,8 +43,14 @@ export class AuthService {
         return result;
       }
 
-      // Buscar usuario en PostgreSQL
-      let user = await this.userRepository.findByUsername(result.user.username);
+      // Buscar usuario en PostgreSQL.
+      // Normalizar: si viene 'admin@cyberguard.com' intentar primero con la parte
+      // local ('admin') para respetar el seed, y si no, buscar con el email completo.
+      const rawUsername = result.user.username;
+      const localUsername = rawUsername.includes('@') ? rawUsername.split('@')[0]! : rawUsername;
+      let user =
+        (await this.userRepository.findByUsername(localUsername)) ??
+        (await this.userRepository.findByUsername(rawUsername));
 
       // Si no existe en PostgreSQL → crear automáticamente con rol 'viewer'
       if (!user) {
@@ -56,14 +62,13 @@ export class AuthService {
           id: uuidv4(),
           username: result.user.username,
           email: result.user.username,
-          role: 'viewer',
+          role: result.user.role, 
           isLocked: false,
           failedAttempts: 0,
           lastLogin: new Date(),
           createdAt: new Date(),
           updatedAt: new Date()
         };
-
         await this.userRepository.save(newUser);
         user = newUser;
 
@@ -73,7 +78,7 @@ export class AuthService {
           status: 'success',
           ipAddress,
           userAgent,
-          details: { username: user.username, role: 'viewer', source: 'firebase_auto_sync' }
+          details: { username: user.username, role: user.role, source: 'firebase_auto_sync' }
         }).catch((err: unknown) => {
           logger.error('Failed to log audit', { error: err instanceof Error ? err.message : String(err) });
         });
@@ -124,7 +129,7 @@ export class AuthService {
         token,
         user: {
           id: user.id,
-          username: user.username,
+          username: rawUsername,  // Devuelve el username exacto que escribió el usuario
           role: user.role
         }
       };

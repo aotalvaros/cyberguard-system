@@ -14,18 +14,19 @@ Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real c
 
 | Métrica | Valor | Estado |
 |---------|-------|--------|
-| **Calificación Arquitectura** | 4.4/5 (88%) | ✅ |
-| **Test Cases** | 431 casos en 17 suites | ✅ |
+| **Calificación Arquitectura** | 4.7/5 (94%) | ✅ |
+| **Test Cases** | 480 casos en 18 suites | ✅ |
 | **Cobertura** | 85%+ | ✅ |
 | **Tipos `any`** | 0 en producción | ✅ |
 | **Flakiness** | 0% | ✅ |
 | **Arquitectura** | Hexagonal (Ports & Adapters) | ✅ |
-| **Autenticación** | Firebase + JWT | ✅ |
+| **Autenticación** | Firebase Custom Claims + JWT | ✅ |
 | **Persistencia Threats** | PostgreSQL 15 (ACID) | ✅ |
-| **Persistencia Users** | PostgreSQL 15 | ✅ |
+| **Persistencia Users** | PostgreSQL 15 + seed admin | ✅ |
 | **Auditoría** | PostgreSQL (audit_logs) | ✅ |
 | **RabbitMQ** | Singleton + ConfirmChannel + DLX | ✅ |
 | **CRUD Threats** | POST + GET + DELETE | ✅ |
+| **Gestión de Roles** | PATCH /api/admin/users/:username/role | ✅ |
 | **Validación DTOs** | Joi en todos los endpoints | ✅ |
 | **Brute Force Detection** | Auto-detección + auto-report + DI | ✅ |
 | **Tests E2E** | Pendiente | ⏳ |
@@ -108,17 +109,17 @@ src/
 │   │   └── ServiceFactory.ts        # Inyección de dependencias (singletons)
 │   ├── http/
 │   │   ├── controllers/
-│   │   │   ├── auth.controller.ts   # POST /api/auth/login
-│   │   │   └── threat.controller.ts # POST/GET/DELETE /api/threats
+│   │   │   ├── auth.controller.ts    # POST /api/auth/login
+│   │   │   ├── threat.controller.ts  # POST/GET/DELETE /api/threats
+│   │   │   └── admin.controller.ts   # GET/PATCH /api/admin/users (gestión de roles)
 │   │   └── middlewares/
 │   │       ├── auth.middleware.ts    # Validación JWT
 │   │       ├── bruteforce.middleware.ts # Detección de fuerza bruta
 │   │       └── error.middleware.ts   # Manejo centralizado de errores
 │   ├── persistence/
 │   │   ├── PostgresThreatRepository.ts    # Threats → PostgreSQL
-│   │   ├── PostgresUserRepository.ts      # Users → PostgreSQL
-│   │   ├── PostgresAuditLogRepository.ts  # Audit → PostgreSQL
-│   │   └── SortedThreatRepository.ts      # (legacy, reemplazado por PostgreSQL)
+│   │   ├── PostgresUserRepository.ts      # Users → PostgreSQL + findAll()
+│   │   └── PostgresAuditLogRepository.ts  # Audit → PostgreSQL
 │   └── providers/
 │       └── RabbitMQPublisher.ts     # Implementa EventPublisher
 │
@@ -329,7 +330,9 @@ Content-Type: application/json
 
 **Comportamiento:**
 - ✅ Firebase autentica las credenciales
-- ✅ Si el usuario NO existe en PostgreSQL → se crea automáticamente con rol `viewer`
+- ✅ Lee el rol desde Firebase Custom Claims (`{ role: 'admin' | 'analyst' | 'viewer' }`); si no tiene claim, asigna `viewer`
+- ✅ Si el usuario NO existe en PostgreSQL → se crea automáticamente con el rol del Custom Claim
+- ✅ Username normalizado: `admin@cyberguard.com` y `admin` resuelven al mismo registro
 - ✅ Se registra en `audit_logs` (login_success / login_failed)
 - ✅ Cuenta bloquea después de 5 intentos fallidos
 
@@ -427,22 +430,52 @@ DELETE /api/threats/:threatId
 Authorization: Bearer <token>
 ```
 
-**Respuesta exitosa (200):**
+---
+
+### 5. Listar Usuarios (Admin)
+
+```http
+GET /api/admin/users
+Authorization: Bearer <token-con-role-admin>
+```
+
+**Respuesta (200):**
 ```json
 {
-  "success": true,
-  "threatId": "550e8400-...",
-  "message": "Threat deleted successfully"
+  "users": [
+    { "username": "admin", "role": "admin", "isLocked": false, "lastLogin": "..." },
+    { "username": "juan@example.com", "role": "viewer", "isLocked": false, "lastLogin": "..." }
+  ],
+  "total": 2
 }
 ```
 
-**Respuesta error (404):**
+---
+
+### 6. Cambiar Rol de Usuario (Admin)
+
+```http
+PATCH /api/admin/users/:username/role
+Authorization: Bearer <token-con-role-admin>
+Content-Type: application/json
+
+{ "role": "analyst" }
+```
+
+**Roles válidos:** `admin` | `analyst` | `viewer`
+
+**Respuesta (200):**
 ```json
 {
-  "success": false,
-  "error": "Threat not found"
+  "success": true,
+  "user": { "username": "juan@example.com", "role": "analyst", "updatedAt": "..." }
 }
 ```
+
+**Reglas:**
+- ✅ Solo usuarios con `role='admin'` pueden acceder
+- ✅ Un admin no puede degradar su propio rol
+- ✅ El nuevo rol se aplica en el próximo login del usuario
 
 ---
 
@@ -525,11 +558,11 @@ npm run test:watch        # Modo watch
 npm run test:coverage     # Con cobertura
 ```
 
-### Tests implementados — 431 casos en 17 suites
+### Tests implementados — 480 casos en 18 suites
 
 | Módulo | Casos | Descripción |
 |--------|-------|-------------|
-| `AuthService.test.ts` | 18+ | Login, auto-creación, soft-locking, auditoría |
+| `AuthService.test.ts` | 18+ | Login, Custom Claims, auto-creación, soft-locking, auditoría |
 | `threat.service.test.ts` | 51 | Report, event publishing, errores tipados |
 | `ListThreatsUseCase.test.ts` | 6 | Retrieval, DTOs, errores |
 | `DeleteThreatUseCase.test.ts` | 8 | Delete, ThreatNotFoundException |
@@ -540,13 +573,14 @@ npm run test:coverage     # Con cobertura
 | `auth.middleware.test.ts` | 8 | JWT validation, expiración |
 | `bruteforce.middleware.test.ts` | 12 | Detection, blocking, auto-report |
 | `error.middleware.test.ts` | 8 | Manejo centralizado de errores |
-| `FirebaseAuthProvider.test.ts` | 10+ | Firebase mock, error scenarios |
+| `FirebaseAuthProvider.test.ts` | 15+ | Firebase mock, Custom Claims, extractRoleFromClaims |
 | `JWTTokenService.test.ts` | 10+ | JWT sign/verify, expiración |
 | `RabbitMQPublisher.test.ts` | 15+ | ConfirmChannel, ack/nack |
 | `ServiceFactory.test.ts` | 10+ | DI composition, singletons |
 | `env.test.ts` | 11 | Config validation, defaults |
 | `PostgresRepos tests` | 30+ | Repos tipados, manejo de errores |
-| **TOTAL** | **431** | **17 suites · 0% flakiness · ~6s** |
+| `ThreatClassifier.test.ts` | 61 | Strategy pattern, 5 estrategias |
+| **TOTAL** | **480** | **18 suites · 0% flakiness · ~6s** |
 
 ---
 
@@ -678,18 +712,18 @@ npm audit                # Verificar vulnerabilidades
 
 | Dimensión | Puntaje | Observaciones |
 |-----------|---------|---------------|
-| **Arquitectura Hexagonal** | 4.5/5 | 6 ports, 6+ adapters, 2 use cases. Legado residual mínimo |
-| **Calidad de Código** | 4.5/5 | 0 `any`, inmutabilidad, excepciones tipadas |
-| **Testing** | 4.0/5 | 551 casos totales (431+120), 22 suites, 85%+ cobertura |
-| **Seguridad** | 4.0/5 | Firebase, JWT, brute force, audit trail |
-| **Infraestructura** | 4.0/5 | Docker multi-servicio, Singleton RabbitMQ |
-| **Patrones de Diseño** | 4.5/5 | Factory, Repository, Port&Adapter, Singleton |
-| **Persistencia** | 5.0/5 | PostgreSQL ACID, 3 repos, 7 índices, JSONB |
-| **TOTAL** | **4.4/5 (88%)** | **Production-ready** |
+| **Arquitectura Hexagonal** | 5.0/5 | 7 ports, 6+ adapters, 2 use cases. Sin legado |
+| **Calidad de Código** | 5.0/5 | 0 `any`, tsconfig strict completo, inmutabilidad, DomainError |
+| **Testing** | 4.0/5 | 600 tests totales (480+120), 23 suites, 85%+ cobertura |
+| **Seguridad** | 4.0/5 | Firebase Custom Claims, JWT, brute force, audit trail, gestión de roles |
+| **Infraestructura** | 5.0/5 | Docker multi-stage, multi-servicio, USER node, Singleton RabbitMQ |
+| **Patrones de Diseño** | 5.0/5 | Factory, Repository, Port&Adapter, Singleton, Strategy (5 estrategias) |
+| **Persistencia** | 5.0/5 | PostgreSQL ACID, 3 repos, 7 índices, JSONB, seed admin automático |
+| **TOTAL** | **4.7/5 (94%)** | **Production-ready** |
 
 ---
 
-**Última actualización:** Febrero 2026  
-**Calificación:** 4.4/5 (88%) — Production-ready  
+**Última actualización:** 20 Febrero 2026  
+**Calificación:** 4.7/5 (94%) — Production-ready  
 **Equipo:** CyberGuard  
-**Versión:** 1.3.0
+**Versión:** 1.4.0

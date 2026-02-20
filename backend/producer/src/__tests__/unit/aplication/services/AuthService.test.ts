@@ -56,6 +56,7 @@ describe('AuthService', () => {
     mockUserRepository = {
       findById: jest.fn(),
       findByUsername: jest.fn(),
+      findAll: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),

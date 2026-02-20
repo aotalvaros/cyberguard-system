@@ -1,7 +1,7 @@
 # 📊 Análisis Comparativo: DEBT_REPORT vs Estado Actual (Febrero 2026)
 
-**Fecha del Análisis:** 19 de Febrero de 2026 (Actualización Final)  
-**Estado General:** 98% Completado ✅ | 2% Pendiente ⏳ (solo E2E)
+**Fecha del Análisis:** 20 de Febrero de 2026 (Actualización de Roles + Corrección Redis)  
+**Estado General:** 99% Completado ✅ | 1% Pendiente ⏳ (solo E2E)
 
 ---
 
@@ -14,11 +14,11 @@
 | **Arquitectura Hexagonal** | 5.0 / 5 | Estructura completa: 7 ports, 6+ adapters, 2 use cases. ✅ Legado eliminado (SortedThreatRepository, threat.store.ts borrados) |
 | **Calidad de Código** | 5.0 / 5 | 0 `any`, tsconfig strict completo (`noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUncheckedIndexedAccess`), inmutabilidad, `DomainError` |
 | **Testing** | 4.0 / 5 | 600 test cases totales (480 producer + 120 worker), 23 suites, 85%+ cobertura, 0% flakiness. Faltan tests de integración E2E |
-| **Seguridad** | 4.0 / 5 | Firebase Auth, JWT, BruteForce con DI correcta, Joi en todos los endpoints, audit trail en PostgreSQL. Sin tests de integración de seguridad |
+| **Seguridad** | 4.5 / 5 | Firebase Custom Claims para roles, JWT, BruteForce con DI correcta, Joi en todos los endpoints, audit trail en PostgreSQL, endpoint admin PATCH /api/admin/users/:username/role. Sin tests de integración de seguridad |
 | **Infraestructura / Docker** | 5.0 / 5 | PostgreSQL 15 ACID, RabbitMQ ConfirmChannel + DLX + Singleton, Redis, multi-servicio. ✅ Multi-stage Dockerfiles (builder + production, USER node) |
 | **Patrones de Diseño** | 5.0 / 5 | Factory (ServiceFactory), Repository (3 repos), Port & Adapter (7 ports), Singleton (RabbitMQConnection), ✅ Strategy (ThreatClassifier + 5 estrategias) |
 | **Persistencia** | 5.0 / 5 | PostgreSQL 15 ACID, 3 repos tipados, 7 índices de rendimiento, JSONB, migraciones SQL, auto-creación de usuarios |
-| **TOTAL** | **4.7 / 5 (94%)** | **Production-ready. Solo falta E2E para 5/5 completo** |
+| **TOTAL** | **4.8 / 5 (96%)** | **Production-ready. Solo falta E2E para 5/5 completo** |
 
 ### Justificación por Dimensión
 
@@ -28,7 +28,7 @@
 
 **Testing (4.0/5):** Suite robusta (600 tests, 0% flakiness, ~11s total). Tests de dominio sin mocks; tests de aplicación con mocks tipados. Incluye 61 tests nuevos del patrón Strategy (ThreatClassifier + 5 estrategias). Se descuenta 1.0 por ausencia de tests de integración E2E.
 
-**Seguridad (4.0/5):** Todos los P0 resueltos: Firebase Auth, JWT, BruteForce con DI, Joi en todos los endpoints, audit trail. Multi-stage Docker con `USER node` mejora seguridad de contenedores. Se descuenta 1.0 por falta de tests de integración de seguridad.
+**Seguridad (4.5/5):** Todos los P0 resueltos: Firebase Custom Claims (roles reales en el token), JWT, BruteForce con DI, Joi en todos los endpoints, audit trail. Endpoint admin `PATCH /api/admin/users/:username/role` permite gestión post-creación de roles. Multi-stage Docker con `USER node` mejora seguridad de contenedores. Seed admin automático en migración SQL. Se descuenta 0.5 por falta de tests de integración de seguridad.
 
 **Infraestructura / Docker (5.0/5):** docker-compose funcional con 5 servicios. ✅ Multi-stage Dockerfiles (builder → production) para producer y worker: imagen ligera sin devDependencies, `USER node` para seguridad, solo `npm ci --only=production` en producción.
 
@@ -601,28 +601,139 @@ worker/src/__tests__/unit/
 
 ---
 
-## 📈 Evolución del Proyecto
+## � SESIÓN 20 Feb 2026 — Roles, Admin Endpoint & Bug Fixes
 
-| Métrica | DEBT_REPORT (Original) | 18 Feb 2026 | 19 Feb 2026 (Final) |
-|---------|----------------------|-------------|---------------------|
-| **Completado** | 0% | 65% | **98%** |
-| **Test Suites (producer)** | ~10 | ~10 | **18** |
-| **Test Suites (worker)** | 0 | 0 | **5** |
-| **Test Cases (producer)** | ~120 | ~120 | **480** |
-| **Test Cases (worker)** | 0 | 0 | **120** |
-| **Test Cases TOTAL** | ~120 | ~120 | **600** |
-| **Ports (domain)** | 4 | 4 | **7** |
-| **PostgreSQL Repos** | 0 | 0 | **3** |
-| **Use Cases** | 1 | 1 | **2** |
-| **Excepciones Dominio** | 0 | 0 | **2** |
-| **Validación Joi** | auth only | auth only | **auth + threats** |
-| **RabbitMQ** | Fire-and-forget | Fire-and-forget | **Singleton + ConfirmChannel + DLX** |
-| **Persistencia** | In-memory | In-memory | **PostgreSQL 15 ACID** |
-| **`any` en producción** | ~17+ | ~17+ | **0** |
-| **tsconfig strict** | parcial | parcial | **✅ completo (5 flags extra)** |
-| **Docker multi-stage** | ❌ | ❌ | **✅ builder → production** |
-| **Strategy pattern** | ❌ | ❌ | **✅ 5 estrategias** |
-| **Builds limpios** | ❌ | ❌ | **✅ producer + worker** |
+### 1️⃣ Firebase Custom Claims (Rol real desde Firebase)
+
+**Antes:** `FirebaseAuthProvider.getUserRole()` retornaba `'admin'` hardcodeado (ignorado). `AuthService` auto-creaba usuarios con `role: 'viewer'` siempre.
+
+**Ahora:**
+```typescript
+// ✅ FirebaseAuthProvider.ts — lee claims reales del token
+const decodedToken = await firebaseUser.getIdTokenResult(true);
+const role = this.extractRoleFromClaims(decodedToken.claims);
+// extractRoleFromClaims: admin | analyst | viewer (min privilege si no hay claim)
+
+// ✅ AuthService.ts — usa role del Custom Claim
+const newUser: UserRecord = {
+  // ...
+  role: result.user.role,   // ya no hardcodeado a 'viewer'
+};
+
+// ✅ AuthService.ts — normalización de username (admin == admin@cyberguard.com)
+const localUsername = rawUsername.includes('@') ? rawUsername.split('@')[0]! : rawUsername;
+let user = (await this.userRepository.findByUsername(localUsername)) ??
+           (await this.userRepository.findByUsername(rawUsername));
+```
+
+**Estado:** ✅ COMPLETADO.
+
+---
+
+### 2️⃣ Endpoint Admin de Gestión de Roles (POST-creación)
+
+**Nuevo archivo:** `infrastructure/http/controllers/admin.controller.ts`
+
+```
+✅ GET  /api/admin/users                          → lista todos los usuarios (role=admin requerido)
+✅ PATCH /api/admin/users/:username/role           → { role: 'admin'|'analyst'|'viewer' }
+```
+
+**Reglas implementadas:**
+- Solo usuarios con JWT `role='admin'` pueden acceder (`requireAdmin` middleware)
+- Un admin no puede degradar su propio rol
+- `UserRepository.findAll()` añadido al port e implementado en `PostgresUserRepository`
+
+**Seed en migración SQL:**
+```sql
+-- ✅ migration 001_initial_schema.sql — admin auto-creado al arrancar
+INSERT INTO users (...) VALUES (..., 'admin', 'admin@cyberguard.com', 'admin', ...) ON CONFLICT DO NOTHING;
+INSERT INTO users (...) VALUES (..., 'admin@cyberguard.com', 'admin@cyberguard.com', 'admin', ...) ON CONFLICT DO NOTHING;
+```
+
+**Estado:** ✅ COMPLETADO.
+
+---
+
+### 3️⃣ Bug Fix: Redis `removeHistoryItemById` (Worker)
+
+**Problema crítico:** El pipeline Redis eliminaba **todo** el historial al recibir un comando `delete-one`, porque el `del` estaba **después** del `rPush`.
+
+```typescript
+// ❌ ANTES (roto): rPush luego del → borraba lo que se acababa de insertar
+pipeline.rPush(HISTORY_KEY, ...remaining);
+pipeline.del(HISTORY_KEY);   // ← borraba todo
+
+// ✅ AHORA: del primero, luego rPush los items restantes
+pipeline.del(HISTORY_KEY);
+for (const item of remaining) { pipeline.rPush(HISTORY_KEY, item); }
+await pipeline.exec();
+```
+
+**Estado:** ✅ CORREGIDO.
+
+---
+
+### 4️⃣ Bug Fix: Frontend ignora broadcasts `delete-one` / `clear-all`
+
+**Problema:** El handler `onmessage` en `websocket-repository.impl.ts` (Angular) solo manejaba mensajes tipo `threat` e `history`. Los broadcasts `delete-one` y `clear-all` emitidos por el Worker llegaban pero eran silenciosamente ignorados, por lo que el panel WebSocket nunca sincronizaba las eliminaciones.
+
+```typescript
+// ✅ AHORA (agregado en onmessage)
+if (message.type === 'delete-one' && message.id) {
+  const filtered = current.filter(m => m.eventId !== message.id);
+  this.messages$.next(filtered);
+  this.saveToStorage(filtered);
+  return;
+}
+if (message.type === 'clear-all') {
+  this.messages$.next([]);
+  this.saveToStorage([]);
+  return;
+}
+```
+
+**Estado:** ✅ CORREGIDO.
+
+---
+
+### 5️⃣ Fix Producción Docker
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| Frontend no compilaba en Docker | `npm install --production` excluía Angular CLI (devDep) | `npm install` |
+| nginx TLS cert error al arrancar | tag `nginx:alpine` resolvía a imagen con cert corrupto | `nginx:1.27-alpine` (tag fijo) |
+
+**Estado:** ✅ CORREGIDO.
+
+---
+
+
+
+| Métrica | DEBT_REPORT (Original) | 18 Feb 2026 | 19 Feb 2026 | 20 Feb 2026 (Final) |
+|---------|----------------------|-------------|-------------|---------------------|
+| **Completado** | 0% | 65% | 98% | **99%** |
+| **Test Suites (producer)** | ~10 | ~10 | 18 | **18** |
+| **Test Suites (worker)** | 0 | 0 | 5 | **5** |
+| **Test Cases (producer)** | ~120 | ~120 | 480 | **480** |
+| **Test Cases (worker)** | 0 | 0 | 120 | **120** |
+| **Test Cases TOTAL** | ~120 | ~120 | 600 | **600** |
+| **Ports (domain)** | 4 | 4 | 7 | **7** |
+| **PostgreSQL Repos** | 0 | 0 | 3 | **3** |
+| **Use Cases** | 1 | 1 | 2 | **2** |
+| **Excepciones Dominio** | 0 | 0 | 2 | **2** |
+| **Validación Joi** | auth only | auth only | auth + threats | **auth + threats + admin** |
+| **RabbitMQ** | Fire-and-forget | Fire-and-forget | Singleton + ConfirmChannel + DLX | **Singleton + ConfirmChannel + DLX** |
+| **Persistencia** | In-memory | In-memory | PostgreSQL 15 ACID | **PostgreSQL 15 ACID + seed admin** |
+| **`any` en producción** | ~17+ | ~17+ | 0 | **0** |
+| **tsconfig strict** | parcial | parcial | ✅ completo | **✅ completo** |
+| **Docker multi-stage** | ❌ | ❌ | ✅ builder → production | **✅ builder → production (npm fix)** |
+| **Strategy pattern** | ❌ | ❌ | ✅ 5 estrategias | **✅ 5 estrategias** |
+| **Firebase Custom Claims** | ❌ | ❌ | ❌ | **✅ roles reales desde token** |
+| **Admin endpoint roles** | ❌ | ❌ | ❌ | **✅ PATCH /api/admin/users/:username/role** |
+| **Redis delete-one bug** | ❌ (bug) | ❌ (bug) | ❌ (bug) | **✅ corregido (pipeline order)** |
+| **WS delete broadcast** | ❌ (ignorado) | ❌ (ignorado) | ❌ (ignorado) | **✅ manejado en onmessage** |
+| **Builds limpios** | ❌ | ❌ | ✅ producer + worker | **✅ producer + worker** |
 
 ---
 
@@ -639,10 +750,21 @@ worker/src/__tests__/unit/
 8. ✅ **Strategy Pattern** - `ThreatClassificationStrategy` port + `ThreatClassifier` domain service + 5 estrategias concretas + 61 tests
 9. ✅ **ServiceFactory integración** - `getThreatClassifier()` con las 5 estrategias inyectadas
 
-### Único pendiente (Quality gate - 5-6 horas)
-10. ⏸️ **Tests de Integración / E2E** - PostgreSQL + Firebase + RabbitMQ con servicios reales
+### ✅ COMPLETADO en la sesión 20 Feb 2026
+10. ✅ **Firebase Custom Claims** - Roles reales leídos del token (no hardcodeados)
+11. ✅ **Username normalization** - `admin@cyberguard.com` y `admin` resuelven al mismo usuario
+12. ✅ **Admin endpoint** - `GET /api/admin/users` + `PATCH /api/admin/users/:username/role`
+13. ✅ **UserRepository.findAll()** - Nuevo método en port + implementación PostgreSQL
+14. ✅ **Seed admin migration** - Usuario admin auto-creado al arrancar (ambos formatos)
+15. ✅ **Redis delete-one bug** - Pipeline order corregido (del primero, luego rPush)
+16. ✅ **WebSocket delete broadcast** - Frontend ahora maneja `delete-one` y `clear-all`
+17. ✅ **Docker nginx fix** - `nginx:1.27-alpine` en lugar del tag flotante `:alpine`
+18. ✅ **Docker npm fix** - `npm install` en lugar de `npm install --production` (build stage)
+
+### Único pendiente (Quality gate — 5-6 horas)
+19. ⏸️ **Tests de Integración / E2E** - PostgreSQL + Firebase + RabbitMQ con servicios reales
 
 ---
 
-**Análisis Actualizado:** 19 de Febrero de 2026  
+**Análisis Actualizado:** 20 de Febrero de 2026  
 **Próxima Revisión:** Marzo 2026
