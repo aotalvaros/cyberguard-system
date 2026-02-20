@@ -1,19 +1,131 @@
 # Worker - CyberGuard System
 
-Este worker consume eventos desde RabbitMQ, guarda un historial corto en Redis y reenvia actualizaciones por WebSocket a los clientes.
+Servicio consumidor de eventos del sistema de alertas de ciberseguridad. Consume mensajes desde RabbitMQ, persiste historial en Redis y retransmite actualizaciones en tiempo real vía WebSocket a los clientes del frontend.
 
-Caracteristicas:
-- Consume el exchange `cyberguard.events` (topic)
-- Emite mensajes a clientes WebSocket
-- Persiste historial reciente en Redis para replay al reconectar
-- Soporta comandos `clear-all` y `delete-one` via WebSocket
-- Logica de reconexion a RabbitMQ
+**📚 Documentación Relacionada:**
+- 📊 [ANALISIS_DEUDA_ACTUAL.md](../ANALISIS_DEUDA_ACTUAL.md) - Estado actual vs deuda original
+- 📋 [DEBT_REPORT_BACKEND.md](../DEBT_REPORT_BACKEND.md) - Reporte de deuda técnica
 
-Stack: Node.js + TypeScript + RabbitMQ (amqplib) + Redis + ws
+---
 
-## Entorno
+## 🎯 Estado del Proyecto
 
-Crea `.env` en `backend/worker`:
+| Métrica | Valor | Estado |
+|---------|-------|--------|
+| **Calificación** | 4.4/5 (88%) | ✅ |
+| **Test Cases** | 120 casos en 5 suites | ✅ |
+| **Cobertura** | 85%+ | ✅ |
+| **Tipos `any`** | 0 en producción | ✅ |
+| **Tiempo de tests** | ~5 segundos | ✅ |
+| **Flakiness** | 0% | ✅ |
+
+---
+
+## 🚀 Stack Tecnológico
+
+| Tecnología | Versión | Uso |
+|------------|---------|-----|
+| **Node.js** | 20 LTS | Runtime |
+| **TypeScript** | 5.x | Tipado estricto (strict: true) |
+| **amqplib** | Latest | Consumo de eventos RabbitMQ |
+| **ioredis** | Latest | Persistencia de historial en Redis |
+| **ws** | Latest | WebSocket Server |
+| **Winston** | Latest | Logging estructurado |
+| **Jest + ts-jest** | Latest | Testing (120 casos) |
+
+---
+
+## 🏗️ Arquitectura del Worker
+
+```
+RabbitMQ Exchange (cyberguard.events)
+            │
+            ▼
+    ┌───────────────┐
+    │   rabbitmq.ts │  ← Consume mensajes + ack/nack + reconexión automática
+    └───────┬───────┘
+            │ handleMessage()
+            ▼
+    ┌───────────────┐
+    │   handler.ts  │  ← buildPayload() + sanitización + tipado fuerte
+    └───────┬───────┘
+            │
+      ┌─────┴─────┐
+      ▼           ▼
+┌──────────┐  ┌────────────┐
+│ redis.ts │  │websocket.ts│  ← Broadcast en tiempo real a clientes
+│ historial│  │ (ws server)│
+└──────────┘  └────────────┘
+```
+
+### Flujo de Mensajes
+
+```
+1. Producer publica evento en RabbitMQ  (routing key: threat.detected.malware)
+2. Worker consume con ConfirmChannel    (ack explícito, nack en error)
+3. handler.ts parsea y tipifica payload (sin any, Record<string, unknown>)
+4. redis.ts persiste en historial       (últimas N amenazas, TTL configurable)
+5. websocket.ts hace broadcast          (a todos los clientes conectados)
+6. Cliente reconecta → replay           (historial completo desde Redis)
+```
+
+---
+
+## 📁 Estructura de Archivos
+
+```
+worker/
+├── src/
+│   ├── index.ts        # Entry point (orquesta conexiones)
+│   ├── config.ts       # Variables de entorno tipadas
+│   ├── handler.ts      # buildPayload() + handleMessage()
+│   ├── logger.ts       # Winston logging estructurado
+│   ├── rabbitmq.ts     # Consumo RabbitMQ + ack/nack + reconexión
+│   ├── redis.ts        # Historial en Redis (save/history/clear/remove)
+│   ├── websocket.ts    # WebSocket Server + broadcast + comandos
+│   └── __tests__/
+│       └── unit/
+│           ├── config.test.ts     # 13 tests
+│           ├── handler.test.ts    # 21 tests
+│           ├── rabbitmq.test.ts   # 47 tests
+│           ├── redis.test.ts      # 27 tests
+│           └── websocket.test.ts  # 12 tests
+├── jest.config.js
+├── tsconfig.json
+└── package.json
+```
+
+---
+
+## 🧪 Testing
+
+### Métricas de la Suite
+
+| Suite | Casos | Descripción |
+|-------|-------|-------------|
+| `config.test.ts` | 13 | Defaults, env overrides, edge cases |
+| `handler.test.ts` | 21 | buildPayload, handleMessage, sanitización |
+| `rabbitmq.test.ts` | 47 | Connect, consume, ack/nack, DLX, reconexión |
+| `redis.test.ts` | 27 | Connect, save, history, clear, remove, close |
+| `websocket.test.ts` | 12 | Start, broadcast, comandos de cliente, close |
+| **TOTAL** | **120** | **0% flakiness · ~5s ejecución** |
+
+### Ejecutar Tests
+
+```bash
+cd backend/worker
+npm test                  # Todos los tests
+npm run test:watch        # Modo watch
+npm run test:coverage     # Con cobertura de código
+```
+
+---
+
+## 🔧 Configuración
+
+### Variables de Entorno
+
+Crea un archivo `.env` en `backend/worker/`:
 
 ```env
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
@@ -23,31 +135,137 @@ WORKER_EXCHANGE=cyberguard.events
 WORKER_TOPIC=#
 ```
 
-## Ejecutar
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `RABBITMQ_URL` | `amqp://guest:guest@localhost:5672` | URL de conexión RabbitMQ |
+| `REDIS_URL` | `redis://localhost:6379` | URL de conexión Redis |
+| `WORKER_WS_PORT` | `8081` | Puerto del servidor WebSocket |
+| `WORKER_EXCHANGE` | `cyberguard.events` | Exchange a consumir |
+| `WORKER_TOPIC` | `#` | Patrón routing key (`#` = todos) |
+
+---
+
+## 🚀 Ejecutar
+
+### Con Docker (recomendado)
+
+```bash
+# Desde la raíz del proyecto
+docker compose up -d worker
+```
+
+### Desarrollo local
 
 ```bash
 cd backend/worker
 npm install
-npm run start
+npm run dev     # Con hot-reload (ts-node-dev)
+npm start       # Producción (node dist/)
 ```
 
-Servidor WebSocket:
+Servidor WebSocket disponible en:
 ```
 ws://localhost:8081
 ```
 
-## Comandos WebSocket
+---
 
-Los clientes pueden solicitar limpieza del historial compartido:
+## 📡 API WebSocket
 
-- **Clear all**
-	```json
-	{ "type": "clear-all" }
-	```
-	Limpia el historial en Redis y emite `{ "type": "clear-all" }` a todos los clientes.
+### Conexión desde el Cliente
 
-- **Delete one**
-	```json
-	{ "type": "delete-one", "id": "<messageId>" }
-	```
-	Elimina un item especifico en Redis y emite `{ "type": "delete-one", "id": "<messageId>" }`.
+```javascript
+const ws = new WebSocket('ws://localhost:8081');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // data = { type: "threat", payload: { threatId, type, severity, ... } }
+};
+```
+
+### Eventos Emitidos por el Worker
+
+```json
+// Nueva amenaza detectada (broadcast a todos los clientes)
+{ "type": "threat", "payload": { "threatId": "...", "type": "malware", "severity": "critical" } }
+
+// Historial al reconectar (replay desde Redis)
+{ "type": "history", "payload": [ { ... }, { ... } ] }
+
+// Confirmación de limpieza total
+{ "type": "clear-all" }
+
+// Confirmación de eliminación individual
+{ "type": "delete-one", "id": "<messageId>" }
+```
+
+### Comandos Enviados por el Cliente
+
+```json
+// Limpiar todo el historial en Redis + broadcast
+{ "type": "clear-all" }
+
+// Eliminar un item específico en Redis + broadcast
+{ "type": "delete-one", "id": "<messageId>" }
+```
+
+---
+
+## 🛡️ Características Técnicas
+
+| Característica | Implementación |
+|----------------|---------------|
+| **At-least-once delivery** | ConfirmChannel con ack/nack explícito |
+| **Dead Letter Queue** | DLX configurado para mensajes no procesados |
+| **Reconexión automática** | Retry con backoff en caso de desconexión |
+| **Replay al conectar** | Historial completo persistido en Redis |
+| **0 `any` en TypeScript** | `unknown` + type narrowing en todo el código |
+| **Tests unitarios** | 120 casos, 0% flakiness, mocks tipados |
+
+---
+
+## 📊 Deuda Técnica
+
+### ✅ Resuelta
+
+| Item | Antes | Ahora |
+|------|-------|-------|
+| Tests unitarios | 0 casos | 120 casos en 5 suites |
+| Tipos `any` | 6+ ocurrencias | 0 ocurrencias |
+| Build TypeScript | Con errores | Limpio (exit code 0) |
+
+### ⏳ Pendiente
+
+| Item | Prioridad | Esfuerzo |
+|------|-----------|----------|
+| Tests de integración (RabbitMQ/Redis real) | P2 | 3-4h |
+| Multi-stage Dockerfile | P3 | 1h |
+
+---
+
+## 🐛 Troubleshooting
+
+### Error de conexión a RabbitMQ
+```bash
+docker compose ps rabbitmq
+docker compose logs rabbitmq
+# Management UI: http://localhost:15672 (guest/guest)
+```
+
+### Error de conexión a Redis
+```bash
+docker compose ps redis
+docker exec -it cyberguard-redis redis-cli ping
+# Esperado: PONG
+```
+
+### Tests fallando
+```bash
+npx jest --clearCache && npm test
+```
+
+---
+
+**Última actualización:** Febrero 2026  
+**Calificación:** 4.4/5 (88%) — Production-ready  
+**Versión:** 1.3.0

@@ -45,11 +45,11 @@ jest.mock('../../../../../infrastructure/factories/ServiceFactory', () => ({
 }));
 
 jest.mock('../../../../../infrastructure/http/middlewares/auth.middleware', () => ({
-  authMiddleware: (req: any, res: any, next: any) => next()
+  authMiddleware: (_req: unknown, _res: unknown, next: () => void) => next()
 }));
 
 jest.mock('../../../../../infrastructure/http/middlewares/bruteforce.middleware', () => ({
-  bruteForceDetection: (req: any, res: any, next: any) => next()
+  bruteForceDetection: (_req: unknown, _res: unknown, next: () => void) => next()
 }));
 
 import threatRouter from '../../../../../infrastructure/http/controllers/threat.controller';

@@ -11,22 +11,17 @@ import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepos
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { UserRepository } from '../../domain/ports/UserRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
+import { ThreatClassifier } from '../../domain/services/ThreatClassifier';
+import {
+  MalwareClassificationStrategy,
+  IntrusionClassificationStrategy,
+  PhishingClassificationStrategy,
+  DdosClassificationStrategy,
+  RansomwareClassificationStrategy,
+} from '../classification/ThreatClassificationStrategies';
 import { config } from '../config/env';
 
-/**
- * 🏭 SERVICE FACTORY - Composición de Dependencias
- * 
- * Patrón: Singleton
- * Responsabilidad: Crear e inyectar dependencias en toda la aplicación
- * 
- * Beneficios:
- * ✅ Un único punto de composición
- * ✅ Reutilización de instancias (singleton)
- * ✅ Fácil para mocking en tests
- * ✅ Desacoplamiento entre capas
- */
 export class ServiceFactory {
-  // ✅ Singletons
   private static threatRepository: ThreatRepository | null = null;
   private static threatService: ThreatService | null = null;
   private static listThreatsUseCase: ListThreatsUseCase | null = null;
@@ -34,6 +29,7 @@ export class ServiceFactory {
   private static authService: AuthService | null = null;
   private static userRepository: UserRepository | null = null;
   private static auditLogRepository: AuditLogRepository | null = null;
+  private static threatClassifier: ThreatClassifier | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -136,5 +132,23 @@ export class ServiceFactory {
     this.authService = null;
     this.userRepository = null;
     this.auditLogRepository = null;
+    this.threatClassifier = null;
+  }
+
+  /**
+   * ✅ Obtener instancia del clasificador de amenazas
+   * Strategy Pattern: Registra todas las estrategias de clasificación
+   */
+  static getThreatClassifier(): ThreatClassifier {
+    if (!this.threatClassifier) {
+      this.threatClassifier = new ThreatClassifier([
+        new MalwareClassificationStrategy(),
+        new IntrusionClassificationStrategy(),
+        new PhishingClassificationStrategy(),
+        new DdosClassificationStrategy(),
+        new RansomwareClassificationStrategy(),
+      ]);
+    }
+    return this.threatClassifier;
   }
 }

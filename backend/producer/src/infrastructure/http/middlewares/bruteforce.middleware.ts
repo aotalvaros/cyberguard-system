@@ -32,15 +32,16 @@ export function getBruteForceState(): Map<string, LoginAttempt> {
   return new Map(loginAttempts);
 }
 
-export function bruteForceDetection(req: Request, res: Response, next: NextFunction) {
+export function bruteForceDetection(req: Request, res: Response, next: NextFunction): void {
   const ip = req.ip || 'unknown';
   const attempt = loginAttempts.get(ip);
 
   if (attempt && attempt.reported && (Date.now() - attempt.firstAttempt < TIME_WINDOW)) {
     logger.warn('Blocking request from blacklisted IP', { ip });
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Access denied due to multiple failed attempts. Try again later.' 
     });
+    return;
   }
 
   // Solo interceptar respuestas 401 del login

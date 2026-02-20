@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { EventPublisher } from '../../domain/ports/EventPublisher';
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
-import { Threat, ThreatProps, ThreatType, SeverityLevel } from '../../domain/entities/Threat';
+import { Threat, ThreatType, SeverityLevel } from '../../domain/entities/Threat';
 import { ThreatRequest } from '../../types';
 import { logger } from '../../infrastructure/config/logger';
 

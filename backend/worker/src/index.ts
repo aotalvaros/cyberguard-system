@@ -3,13 +3,13 @@ import { connectAndConsume, closeRabbit } from './rabbitmq';
 import { handleMessage } from './handler';
 import { WS_PORT } from './config';
 import { logger } from './logger';
-import { connectRedis, saveToRedis, getHistoryFromRedis, closeRedis } from './redis';
+import { connectRedis, saveToRedis, closeRedis } from './redis';
 
 async function main() {
   await connectRedis();
   startWebSocket(WS_PORT);
 
-  await connectAndConsume(async (data, routingKey, raw) => {
+  await connectAndConsume(async (data, routingKey, _raw) => {
     const payload = await handleMessage(data, routingKey);
     await saveToRedis(payload);
     broadcast(payload);

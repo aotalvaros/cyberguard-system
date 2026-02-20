@@ -40,7 +40,7 @@ router.post('/', validate(createThreatSchema), async (req: Request, res: Respons
 });
 
 
-router.get('/', async (req: Request, res: Response): Promise<void> => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
 
     const listThreatsUseCase = ServiceFactory.getListThreatsUseCase();

@@ -166,7 +166,7 @@ describe('Validation Middleware', () => {
 
       const jsonCall = (mockResponse.json as jest.Mock).mock.calls[0] as unknown[];
       const responseBody = jsonCall[0] as { details: Array<{ field: string; message: string }> };
-      const detail = responseBody.details[0];
+      const detail = responseBody.details[0]!;
       expect(detail).toHaveProperty('field');
       expect(detail).toHaveProperty('message');
       expect(typeof detail.field).toBe('string');

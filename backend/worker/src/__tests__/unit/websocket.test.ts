@@ -20,7 +20,7 @@ jest.mock('../../redis', () => ({
   removeHistoryItemById: jest.fn().mockResolvedValue(undefined as never),
 }));
 
-import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById } from '../../redis';
+import { clearHistoryFromRedis, removeHistoryItemById } from '../../redis';
 import { logger } from '../../logger';
 
 

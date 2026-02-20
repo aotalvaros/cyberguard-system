@@ -6,7 +6,7 @@ import {
   removeHistoryItemById,
   closeRedis,
 } from '../../redis';
-import { describe, it, expect, jest, afterAll, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 
 // Mock logger

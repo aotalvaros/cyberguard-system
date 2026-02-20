@@ -11,7 +11,7 @@ interface FirebaseConfig {
 export class FirebaseAuthProvider implements AuthProvider {
   private auth: Auth;
   
-  constructor(private config: FirebaseConfig) {
+  constructor(config: FirebaseConfig) {
     const app: FirebaseApp = initializeApp(config);
     this.auth = getAuth(app);
   }
@@ -58,7 +58,7 @@ export class FirebaseAuthProvider implements AuthProvider {
   return `${username}@cyberguard.com`;
 }
   
-  private async getUserRole(uid: string): Promise<string> {
+  private async getUserRole(_uid: string): Promise<string> {
     // Por ahora hardcoded, después con Firestore
     return 'admin';
   }

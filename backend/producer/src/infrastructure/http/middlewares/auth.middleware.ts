@@ -10,17 +10,19 @@ export interface AuthRequest extends Request {
   };
 }
 
-export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ error: 'Authorization header missing' });
+    res.status(401).json({ error: 'Authorization header missing' });
+    return;
   }
 
   const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
 
   if (!token) {
-    return res.status(401).json({ error: 'Token missing' });
+    res.status(401).json({ error: 'Token missing' });
+    return;
   }
 
   try {
@@ -33,21 +35,24 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   } catch (error: unknown) {
     if (error instanceof jwt.TokenExpiredError) {
       logger.warn('Expired token attempt', { error: error.message });
-      return res.status(401).json({ error: 'Token expired' });
+      res.status(401).json({ error: 'Token expired' });
+      return;
     }
 
     if (error instanceof jwt.NotBeforeError) {
       logger.warn('Token not yet valid', { error: error.message });
-      return res.status(401).json({ error: 'Token not yet valid' });
+      res.status(401).json({ error: 'Token not yet valid' });
+      return;
     }
     
     if (error instanceof jwt.JsonWebTokenError) {
       logger.warn('Invalid token attempt', { error: error.message });
-      return res.status(401).json({ error: 'Invalid token' });
+      res.status(401).json({ error: 'Invalid token' });
+      return;
     }
 
     const message = error instanceof Error ? error.message : String(error);
     logger.error('Token verification error', { error: message });
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
