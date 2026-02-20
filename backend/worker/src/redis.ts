@@ -5,12 +5,14 @@ let redisClient: ReturnType<typeof createClient> | null = null;
 const HISTORY_KEY = 'cg:ws:history';
 const MAX_HISTORY = 200;
 
-const getMessageId = (payload: any): string | null => {
-  if (!payload) return null;
-  if (payload.eventId && typeof payload.eventId === 'string') return payload.eventId;
-  if (payload.data?.threatId && typeof payload.data.threatId === 'string') return payload.data.threatId;
-  if (payload.routingKey && payload.receivedAt) return `${payload.routingKey}::${payload.receivedAt}`;
-  if (payload.routing && payload.timestamp) return `${payload.routing}::${payload.timestamp}`;
+const getMessageId = (payload: unknown): string | null => {
+  if (!payload || typeof payload !== 'object') return null;
+  const record = payload as Record<string, unknown>;
+  if (record['eventId'] && typeof record['eventId'] === 'string') return record['eventId'];
+  const data = record['data'] as Record<string, unknown> | undefined;
+  if (data?.['threatId'] && typeof data['threatId'] === 'string') return data['threatId'];
+  if (record['routingKey'] && record['receivedAt']) return `${String(record['routingKey'])}::${String(record['receivedAt'])}`;
+  if (record['routing'] && record['timestamp']) return `${String(record['routing'])}::${String(record['timestamp'])}`;
   
   try {
     const str = JSON.stringify(payload);
@@ -38,7 +40,7 @@ export const connectRedis = async (url?: string): Promise<void> => {
   }
 };
 
-export const saveToRedis = async (payload: any): Promise<void> => {
+export const saveToRedis = async (payload: unknown): Promise<void> => {
   if (!redisClient?.isOpen) return;
   try {
     await redisClient.lPush(HISTORY_KEY, JSON.stringify(payload));
@@ -49,7 +51,7 @@ export const saveToRedis = async (payload: any): Promise<void> => {
   }
 };
 
-export const getHistoryFromRedis = async (): Promise<any[]> => {
+export const getHistoryFromRedis = async (): Promise<unknown[]> => {
   if (!redisClient?.isOpen) return [];
   try {
     const items = await redisClient.lRange(HISTORY_KEY, 0, MAX_HISTORY - 1);

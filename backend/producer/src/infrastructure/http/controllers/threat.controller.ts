@@ -4,6 +4,8 @@ import { ServiceFactory } from '../../../infrastructure/factories/ServiceFactory
 import { ThreatNotFoundException } from '../../../domain/exceptions/ThreatNotFoundException';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { bruteForceDetection } from '../middlewares/bruteforce.middleware';
+import { validate } from '../middlewares/validation.middleware';
+import { createThreatSchema } from '../validators/threat.schema';
 
 
 const router = Router();
@@ -12,7 +14,7 @@ const router = Router();
 router.use(authMiddleware);
 router.use(bruteForceDetection);
 
-router.post('/', async (req: Request, res: Response): Promise<void> => {
+router.post('/', validate(createThreatSchema), async (req: Request, res: Response): Promise<void> => {
   try {
 
     const threatService = ServiceFactory.getThreatService();
@@ -38,7 +40,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 
-router.get('/', async (req: Request, res: Response): Promise<void> => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
 
     const listThreatsUseCase = ServiceFactory.getListThreatsUseCase();

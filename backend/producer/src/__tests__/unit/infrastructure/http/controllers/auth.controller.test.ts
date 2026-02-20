@@ -11,7 +11,7 @@ const mockLogger = {
   debug: jest.fn()
 };
 
-const mockBruteForceDetection = jest.fn((req: express.Request, res: express.Response, next: express.NextFunction) => next());
+const mockBruteForceDetection = jest.fn((_req: express.Request, _res: express.Response, next: express.NextFunction) => next());
 
 // Mock del AuthService
 const mockLogin = jest.fn<(credentials: { username: string; password: string }) => Promise<AuthResult>>();
@@ -46,7 +46,7 @@ describe('Auth Controller with AuthService', () => {
     
     // Reset mock implementations
     mockLogin.mockReset();
-    mockBruteForceDetection.mockImplementation((req, res, next) => next());
+    mockBruteForceDetection.mockImplementation((_req, _res, next) => next());
     
     app = express();
     app.use(express.json());
@@ -372,7 +372,7 @@ describe('Auth Controller with AuthService', () => {
     it('should call brute force middleware before validation', async () => {
       const callOrder: string[] = [];
 
-      mockBruteForceDetection.mockImplementation((req, res, next) => {
+      mockBruteForceDetection.mockImplementation((_req, _res, next) => {
         callOrder.push('bruteforce');
         next();
       });

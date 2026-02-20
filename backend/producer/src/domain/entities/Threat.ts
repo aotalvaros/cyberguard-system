@@ -11,7 +11,7 @@ export interface ThreatProps {
   sourceIp: string;
   targetIp?: string;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   timestamp?: string;
 }
 
@@ -23,7 +23,7 @@ export class Threat {
     public readonly sourceIp: string,
     public readonly description: string,
     public readonly targetIp?: string,
-    public readonly metadata?: Record<string, any>,
+    public readonly metadata?: Record<string, unknown>,
     public readonly timestamp?: string
   ) {}
 

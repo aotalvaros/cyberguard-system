@@ -74,6 +74,9 @@ export class PostgresUserRepository implements UserRepository {
         ]
       );
       const row = rows[0];
+      if (!row) {
+        throw new Error(`Failed to save user: no row returned for userId ${user.id}`);
+      }
       logger.info('User saved to PostgreSQL', { userId: user.id, username: user.username });
       return rowToUser(row);
     } catch (error: unknown) {
@@ -103,6 +106,9 @@ export class PostgresUserRepository implements UserRepository {
         ]
       );
       const row = rows[0];
+      if (!row) {
+        throw new Error(`Failed to update user: no row returned for userId ${id}`);
+      }
       return rowToUser(row);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);

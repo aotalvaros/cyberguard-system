@@ -1,9 +1,14 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
+const mockPublishEvent = jest.fn<(routingKey: string, data: Record<string, unknown>) => Promise<void>>().mockResolvedValue(undefined);
 
-// Mocks first
+// Mock the RabbitMQConnection singleton
 jest.mock('../../../../infrastructure/config/rabbitmq', () => ({
-  publishEvent: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
+  RabbitMQConnection: {
+    getInstance: jest.fn(() => ({
+      publishEvent: mockPublishEvent
+    }))
+  }
 }));
 
 jest.mock('../../../../infrastructure/config/logger', () => ({
@@ -16,7 +21,6 @@ jest.mock('../../../../infrastructure/config/logger', () => ({
 
 
 import { RabbitMQPublisher } from '../../../../infrastructure/providers/RabbitMQPublisher';
-import { publishEvent } from '../../../../infrastructure/config/rabbitmq';
 import { logger } from '../../../../infrastructure/config/logger';
 
 describe('RabbitMQPublisher', () => {
@@ -43,8 +47,8 @@ describe('RabbitMQPublisher', () => {
 
       await publisher.publish(routingKey, event);
 
-      expect(publishEvent).toHaveBeenCalledTimes(1);
-      expect(publishEvent).toHaveBeenCalledWith(routingKey, event);
+      expect(mockPublishEvent).toHaveBeenCalledTimes(1);
+      expect(mockPublishEvent).toHaveBeenCalledWith(routingKey, event);
       expect(logger.error).not.toHaveBeenCalled();
     });
 
@@ -58,7 +62,7 @@ describe('RabbitMQPublisher', () => {
 
       await publisher.publish(routingKey, event);
 
-      expect(publishEvent).toHaveBeenCalledWith(routingKey, event);
+      expect(mockPublishEvent).toHaveBeenCalledWith(routingKey, event);
     });
 
     it('should handle empty event object', async () => {
@@ -67,7 +71,7 @@ describe('RabbitMQPublisher', () => {
 
       await publisher.publish(routingKey, event);
 
-      expect(publishEvent).toHaveBeenCalledWith(routingKey, event);
+      expect(mockPublishEvent).toHaveBeenCalledWith(routingKey, event);
     });
 
     it('should publish multiple events sequentially', async () => {
@@ -81,10 +85,10 @@ describe('RabbitMQPublisher', () => {
         await publisher.publish(routingKey, event);
       }
 
-      expect(publishEvent).toHaveBeenCalledTimes(3);
-      expect(publishEvent).toHaveBeenNthCalledWith(1, 'key1', { id: '1' });
-      expect(publishEvent).toHaveBeenNthCalledWith(2, 'key2', { id: '2' });
-      expect(publishEvent).toHaveBeenNthCalledWith(3, 'key3', { id: '3' });
+      expect(mockPublishEvent).toHaveBeenCalledTimes(3);
+      expect(mockPublishEvent).toHaveBeenNthCalledWith(1, 'key1', { id: '1' });
+      expect(mockPublishEvent).toHaveBeenNthCalledWith(2, 'key2', { id: '2' });
+      expect(mockPublishEvent).toHaveBeenNthCalledWith(3, 'key3', { id: '3' });
     });
   });
 
@@ -97,7 +101,7 @@ describe('RabbitMQPublisher', () => {
       };
       const error = new Error('RabbitMQ connection failed');
 
-      (publishEvent as jest.Mock).mockRejectedValueOnce(error as never);
+      mockPublishEvent.mockRejectedValueOnce(error as never);
 
       await expect(publisher.publish(routingKey, event)).rejects.toThrow(
         'RabbitMQ connection failed'
@@ -118,7 +122,7 @@ describe('RabbitMQPublisher', () => {
       const event = { data: 'test' };
       const error = new Error('Network timeout');
 
-      (publishEvent as jest.Mock).mockRejectedValueOnce(error as never);
+      mockPublishEvent.mockRejectedValueOnce(error as never);
 
       await expect(publisher.publish(routingKey, event)).rejects.toThrow('Network timeout');
 
@@ -136,7 +140,7 @@ describe('RabbitMQPublisher', () => {
       const event = { test: 'data' };
       const error = { code: 'ECONNREFUSED' };
 
-      (publishEvent as jest.Mock).mockRejectedValueOnce(error as never);
+      mockPublishEvent.mockRejectedValueOnce(error as never);
 
       await expect(publisher.publish(routingKey, event)).rejects.toEqual(error);
 
@@ -154,7 +158,7 @@ describe('RabbitMQPublisher', () => {
       const event = { eventId: 'nack-test', data: { type: 'ddos' } };
       const error = new Error('Message was NACK by broker');
 
-      (publishEvent as jest.Mock).mockRejectedValueOnce(error as never);
+      mockPublishEvent.mockRejectedValueOnce(error as never);
 
       await expect(publisher.publish(routingKey, event)).rejects.toThrow(
         'Message was NACK by broker'

@@ -1,11 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../../../infrastructure/config/logger';
 
+interface HttpError extends Error {
+  status?: number;
+}
+
 export function errorHandler(
-  err: any,
+  err: HttpError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   logger.error('Error handler', {
     error: err.message,
@@ -13,7 +17,7 @@ export function errorHandler(
     path: req.path
   });
 
-  res.status(err.status || 500).json({
+  res.status(err.status ?? 500).json({
     error: 'Internal server error'
   });
 }

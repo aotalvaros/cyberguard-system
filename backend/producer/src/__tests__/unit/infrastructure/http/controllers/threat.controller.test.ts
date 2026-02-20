@@ -45,11 +45,11 @@ jest.mock('../../../../../infrastructure/factories/ServiceFactory', () => ({
 }));
 
 jest.mock('../../../../../infrastructure/http/middlewares/auth.middleware', () => ({
-  authMiddleware: (req: any, res: any, next: any) => next()
+  authMiddleware: (_req: unknown, _res: unknown, next: () => void) => next()
 }));
 
 jest.mock('../../../../../infrastructure/http/middlewares/bruteforce.middleware', () => ({
-  bruteForceDetection: (req: any, res: any, next: any) => next()
+  bruteForceDetection: (_req: unknown, _res: unknown, next: () => void) => next()
 }));
 
 import threatRouter from '../../../../../infrastructure/http/controllers/threat.controller';
@@ -98,7 +98,7 @@ describe('Threat Con as nevertroller', () => {
 
         await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(mockGetThreatService).toHaveBeenCalled();
       });
@@ -126,7 +126,7 @@ describe('Threat Con as nevertroller', () => {
 
         await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(mockLogger.info).toHaveBeenCalledWith(
           'Threat reported successfully',
@@ -139,7 +139,7 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.body).toHaveProperty('success', true);
         expect(response.body).toHaveProperty('threatId') as never;
@@ -222,6 +222,7 @@ describe('Threat Con as nevertroller', () => {
             type: 'malware',
             severity: 'high',
             sourceIp: '192.168.1.100',
+            description: 'Malware file detected in uploads',
             metadata
           });
 
@@ -237,7 +238,7 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.status).toBe(500);
         expect(response.body).toEqual({
@@ -252,7 +253,7 @@ describe('Threat Con as nevertroller', () => {
 
         await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(mockLogger.error).toHaveBeenCalledWith(
           'Failed to report threat',
@@ -267,7 +268,7 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.body.error).toBe('Failed to report threat');
         expect(response.body.error).not.toContain('SQL');
@@ -278,7 +279,7 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.status).toBe(500);
       });
@@ -290,7 +291,7 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.body).not.toHaveProperty('error');
       });
@@ -300,27 +301,26 @@ describe('Threat Con as nevertroller', () => {
 
         const response = await request(app)
           .post('/threats')
-          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+          .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
         expect(response.body).not.toHaveProperty('threatId') as never;
       });
     });
 
     describe('POST Edge Cases', () => {
-      it('should handle empty request body', async () => {
-        mockReportThreat.mockResolvedValue('threat-id' as never);
-
+      it('should return 400 when request body is empty', async () => {
         const response = await request(app)
           .post('/threats')
           .send({});
 
-        expect(response.status).toBe(201);
-        expect(mockReportThreat).toHaveBeenCalledWith({});
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toBe('Validation failed');
+        expect(mockReportThreat).not.toHaveBeenCalled();
       });
 
-      it('should handle very long description', async () => {
-        mockReportThreat.mockResolvedValue('threat-id' as never);
-        const longDescription = 'A'.repeat(5000);
+      it('should return 400 when description exceeds 500 characters', async () => {
+        const longDescription = 'A'.repeat(501);
 
         const response = await request(app)
           .post('/threats')
@@ -329,6 +329,24 @@ describe('Threat Con as nevertroller', () => {
             severity: 'high',
             sourceIp: '192.168.1.100',
             description: longDescription
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('Validation failed');
+        expect(mockReportThreat).not.toHaveBeenCalled();
+      });
+
+      it('should accept description at exactly 500 characters', async () => {
+        mockReportThreat.mockResolvedValue('threat-id' as never);
+        const maxDescription = 'A'.repeat(500);
+
+        const response = await request(app)
+          .post('/threats')
+          .send({
+            type: 'malware',
+            severity: 'high',
+            sourceIp: '192.168.1.100',
+            description: maxDescription
           });
 
         expect(response.status).toBe(201);
@@ -669,7 +687,7 @@ describe('Threat Con as nevertroller', () => {
 
       await request(app)
         .post('/threats')
-        .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+        .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
       expect(mockLogger.info).toHaveBeenCalledTimes(1);
       expect(mockLogger.error).not.toHaveBeenCalled();
@@ -689,7 +707,7 @@ describe('Threat Con as nevertroller', () => {
 
       await request(app)
         .post('/threats')
-        .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100' });
+        .send({ type: 'malware', severity: 'high', sourceIp: '192.168.1.100', description: 'Malware detected in network' });
 
       expect(mockLogger.error).toHaveBeenCalledTimes(1);
       expect(mockLogger.info).not.toHaveBeenCalled();

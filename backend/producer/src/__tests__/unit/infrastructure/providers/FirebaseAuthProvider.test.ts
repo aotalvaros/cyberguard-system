@@ -502,7 +502,7 @@ describe('FirebaseAuthProvider', () => {
         user: mockFirebaseUser
       } as never);
 
-      const result = await firebaseAuthProvider.authenticate({
+      await firebaseAuthProvider.authenticate({
         username: '',
         password: 'pass'
       });

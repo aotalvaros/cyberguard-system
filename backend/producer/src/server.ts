@@ -29,7 +29,7 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -49,8 +49,9 @@ async function startServer() {
     app.listen(config.port, () => {
       logger.info(`Backend API running on port ${config.port}`);
     });
-  } catch (error: any) {
-    logger.error('Failed to start server', { error: error.message });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to start server', { error: message });
     process.exit(1);
   }
 }

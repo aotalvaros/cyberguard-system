@@ -14,11 +14,13 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).required()
 });
 
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   const { error, value } = loginSchema.validate(req.body);
   
   if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+    const firstDetail = error.details[0];
+    res.status(400).json({ error: firstDetail ? firstDetail.message : 'Validation failed' });
+    return;
   }
 
   const credentials = value as LoginRequest;
@@ -27,7 +29,8 @@ router.post('/login', async (req: Request, res: Response) => {
   const result = await authService.login(credentials);
   
   if (!result.success) {
-    return res.status(401).json({ error: result.error });
+    res.status(401).json({ error: result.error });
+    return;
   }
   
   const response: LoginResponse = {

@@ -8,15 +8,17 @@ type Payload = Readonly<{
 
 const sanitizeString = (str: string): string => str.replace(/[<>"'&]/g, '');
 
-const isValidPayload = (obj: unknown): obj is Payload => (
-  typeof obj === 'object' &&
-  obj !== null &&
-  'routingKey' in obj &&
-  'data' in obj &&
-  'receivedAt' in obj &&
-  typeof (obj as any).routingKey === 'string' &&
-  typeof (obj as any).receivedAt === 'string'
-);
+const isValidPayload = (obj: unknown): obj is Payload => {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const record = obj as Record<string, unknown>;
+  return (
+    'routingKey' in record &&
+    'data' in record &&
+    'receivedAt' in record &&
+    typeof record['routingKey'] === 'string' &&
+    typeof record['receivedAt'] === 'string'
+  );
+};
 
 export const buildPayload = (data: unknown, routingKey: string): Payload => ({
   routingKey: sanitizeString(routingKey),
