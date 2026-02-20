@@ -1507,4 +1507,64 @@ fix(CG-010): add authGuard for authenticated users to fix login redirect
 ```
 
 ### Próximo Feature
-CG-011: TBD
+CG-011: Role-Based Delete Feature
+
+---
+
+## CG-011: Role-Based Delete & Backend Integration ✅
+
+**Fecha:** 2026-02-20
+**Estado:** Completado
+
+### Descripción
+Implementación de validación de rol para la funcionalidad de eliminar amenazas. Los usuarios con rol "viewer" ya no pueden ver ni usar los botones de eliminar. Además, se integró el consumo real del endpoint DELETE del backend cuando un admin elimina una amenaza.
+
+### Problema Detectado
+- El componente de alertas mostraba botones de eliminar a todos los usuarios sin validar el rol
+- Al eliminar, solo se eliminaba localmente (memoria/localStorage) sin consumir el servicio DELETE del backend
+- Usuarios "viewer" podían eliminar alertas aunque no deberían tener ese permiso
+
+### Cambios Realizados
+
+#### Archivos Modificados
+- `src/presentation/components/alerts/alerts.component.ts`
+  - Inyectados `AuthService` y `DeleteThreatUseCase`
+  - Agregado getter `isAdmin` para verificar rol del usuario
+  - `deleteAlert()` ahora consume `DELETE /api/threats/:threatId` del backend
+  - `clearAll()` valida rol admin y elimina del backend antes de limpiar localmente
+
+- `src/presentation/components/alerts/alerts.component.html`
+  - Botón "Limpiar Todo" condicionado a `@if (isAdmin)`
+  - Botón "×" (eliminar individual) condicionado a `@if (isAdmin)`
+
+### Comportamiento por Rol
+
+| Rol | Ver alertas | Exportar JSON | Eliminar individual | Limpiar todo |
+|-----|-------------|---------------|---------------------|--------------|
+| `viewer` | ✅ | ✅ | ❌ | ❌ |
+| `admin` | ✅ | ✅ | ✅ | ✅ |
+
+### Flujo de Eliminación (Admin)
+1. Admin hace clic en botón eliminar
+2. Frontend llama a `DELETE /api/threats/:threatId`
+3. Si el backend responde OK → se elimina de la lista local
+4. Si el backend falla → se elimina localmente de todas formas (graceful degradation)
+
+### Tests
+- Compilación exitosa sin errores
+- Build de producción verificado
+
+### Commit
+```
+refactor(CG-011): add role-based delete validation and backend integration
+
+- Hide delete buttons for viewers (only admins can see them)
+- Integrate DeleteThreatUseCase to consume backend DELETE endpoint
+- Add isAdmin getter in AlertsComponent
+- Validate role before deleteAlert() and clearAll() execution
+- Backend deletion happens before local cleanup
+- Graceful degradation: local delete if backend fails
+```
+
+### Próximo Feature
+CG-012: TBD
