@@ -1,5 +1,6 @@
 import { ErrorHandler, Injectable, inject, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { STORAGE_KEYS } from '@environments/constants';
 
 /**
  * Tipos de errores que maneja la aplicación
@@ -130,8 +131,8 @@ export class GlobalErrorHandler implements ErrorHandler {
     switch (error.type) {
       case AppErrorType.AUTHENTICATION:
         // Redirigir al login si la sesión expiró
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem(STORAGE_KEYS.TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
         this.router.navigate(['/autenticacion']);
         break;
 

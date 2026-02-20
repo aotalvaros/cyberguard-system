@@ -9,14 +9,15 @@ import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
 import { AuthMapper } from '../mappers/auth.mapper';
 import { LoginResponseDto } from '../dto/auth.dto';
 import { environment } from '@environments/environment';
+import { STORAGE_KEYS } from '@environments/constants';
 
 @Injectable({ providedIn: 'root' })
 export class AuthRepositoryImpl extends AuthRepository {
   private http = inject(HttpClient);
   private storage = inject(LocalStorageAdapter);
   private readonly API_URL = `${environment.apiUrl}/api/auth`;
-  private readonly TOKEN_KEY = 'token';
-  private readonly USER_KEY = 'user';
+  private readonly TOKEN_KEY = STORAGE_KEYS.TOKEN;
+  private readonly USER_KEY = STORAGE_KEYS.USER;
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     // Convertir modelo de dominio a DTO

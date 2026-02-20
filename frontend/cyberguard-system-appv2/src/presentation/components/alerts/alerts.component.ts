@@ -7,6 +7,7 @@ import { AlertMessage } from '../../../core/domain/models/alert-message.model';
 import { AlertsDomainService } from '../../../core/domain/services/alerts-domain.service';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 import { DeleteThreatUseCase } from '../../../core/application/use-cases/delete-threat.use-case';
+import { SEVERITY_LIST } from '@environments/constants';
 
 // ⚠️ HUMAN CHECK:
 // Componente refactorizado - lógica de negocio movida a AlertsDomainService
@@ -142,7 +143,7 @@ export class AlertsComponent implements OnInit, OnDestroy {
     return this.alertsDomain.getUniqueTypes(this.alerts);
   }
 
-  getUniqueSeverities(): string[] {
-    return ['low', 'medium', 'high', 'critical'];
+  getUniqueSeverities(): readonly string[] {
+    return SEVERITY_LIST;
   }
 }

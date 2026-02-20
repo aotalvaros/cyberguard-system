@@ -1,4 +1,5 @@
 import { ThreatRequest } from '../../core/domain/models/threat-request.model';
+import { ThreatSeverity } from '../../core/domain/models/threat-severity.enum';
 
 // ⚠️ HUMAN CHECK:
 // Strategy Pattern para validación específica por tipo de amenaza
@@ -20,7 +21,7 @@ export class MalwareValidationStrategy implements ThreatValidationStrategy {
       errors.push('Malware threats should mention malware or virus');
     }
     
-    if (threat.severity === 'low') {
+    if (threat.severity === ThreatSeverity.LOW) {
       errors.push('Malware threats should be at least medium severity');
     }
     
@@ -45,7 +46,7 @@ export class DdosValidationStrategy implements ThreatValidationStrategy {
   validate(threat: ThreatRequest): ValidationResult {
     const errors: string[] = [];
     
-    if (threat.severity !== 'critical' && threat.severity !== 'high') {
+    if (threat.severity !== ThreatSeverity.CRITICAL && threat.severity !== ThreatSeverity.HIGH) {
       errors.push('DDoS attacks should be high or critical severity');
     }
     
@@ -57,7 +58,7 @@ export class RansomwareValidationStrategy implements ThreatValidationStrategy {
   validate(threat: ThreatRequest): ValidationResult {
     const errors: string[] = [];
     
-    if (threat.severity !== 'critical') {
+    if (threat.severity !== ThreatSeverity.CRITICAL) {
       errors.push('Ransomware should always be critical severity');
     }
     

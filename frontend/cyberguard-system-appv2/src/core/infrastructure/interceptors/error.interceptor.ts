@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
 import { AppErrorType, createAppError } from '../handlers/global-error.handler';
+import { STORAGE_KEYS } from '@environments/constants';
 
 /**
  * Mapea códigos HTTP a tipos de error de aplicación
@@ -104,8 +105,8 @@ export const errorInterceptor: HttpInterceptorFn = (
 
       // Manejo especial para errores de autenticación
       if (error.status === 401) {
-        storage.remove('token');
-        storage.remove('user');
+        storage.remove(STORAGE_KEYS.TOKEN);
+        storage.remove(STORAGE_KEYS.USER);
         router.navigate(['/autenticacion']);
       }
 
