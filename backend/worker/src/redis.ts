@@ -78,24 +78,30 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
   if (!redisClient?.isOpen) return;
   try {
     const items = await redisClient.lRange(HISTORY_KEY, 0, -1);
-    const pipeline = redisClient.multi();
     
     let found = false;
+    const remaining: string[] = [];
     for (const item of items) {
       try {
         const parsed = JSON.parse(item);
         if (getMessageId(parsed) !== id) {
-          pipeline.rPush(HISTORY_KEY, item);
+          remaining.push(item);
         } else {
           found = true;
         }
       } catch {
-        pipeline.rPush(HISTORY_KEY, item);
+        remaining.push(item);
       }
     }
     
     if (found) {
-      await pipeline.del(HISTORY_KEY).exec();
+      // del primero, luego rPush de los items restantes (sin el eliminado)
+      const pipeline = redisClient.multi();
+      pipeline.del(HISTORY_KEY);
+      for (const item of remaining) {
+        pipeline.rPush(HISTORY_KEY, item);
+      }
+      await pipeline.exec();
       logger.info('History item removed', { id });
     } else {
       logger.warn('History item not found', { id });

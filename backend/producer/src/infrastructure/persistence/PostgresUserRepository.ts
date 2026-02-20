@@ -117,6 +117,17 @@ export class PostgresUserRepository implements UserRepository {
     }
   }
 
+  async findAll(): Promise<UserRecord[]> {
+    try {
+      const rows = await query<UserRow>('SELECT * FROM users ORDER BY created_at DESC', []);
+      return rows.map(rowToUser);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to list users', { error: message });
+      throw error;
+    }
+  }
+
   async delete(id: string): Promise<boolean> {
     try {
       const rows = await query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);

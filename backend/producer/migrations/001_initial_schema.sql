@@ -48,3 +48,30 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+
+-- Seed: Admin user pre-created so first login gets role='admin' automatically.
+-- Two rows cover both username formats: 'admin' and 'admin@cyberguard.com'.
+-- ON CONFLICT DO NOTHING: safe to re-run, never overwrites manual changes.
+INSERT INTO users (id, username, email, role, is_locked, failed_attempts, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'admin',
+  'admin@cyberguard.com',
+  'admin',
+  false,
+  0,
+  NOW(),
+  NOW()
+) ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO users (id, username, email, role, is_locked, failed_attempts, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'admin@cyberguard.com',
+  'admin@cyberguard.com',
+  'admin',
+  false,
+  0,
+  NOW(),
+  NOW()
+) ON CONFLICT (username) DO NOTHING;

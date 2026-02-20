@@ -12,12 +12,13 @@ Servicio consumidor de eventos del sistema de alertas de ciberseguridad. Consume
 
 | Métrica | Valor | Estado |
 |---------|-------|--------|
-| **Calificación** | 4.4/5 (88%) | ✅ |
+| **Calificación** | 4.5/5 (90%) | ✅ |
 | **Test Cases** | 120 casos en 5 suites | ✅ |
 | **Cobertura** | 85%+ | ✅ |
 | **Tipos `any`** | 0 en producción | ✅ |
 | **Tiempo de tests** | ~5 segundos | ✅ |
 | **Flakiness** | 0% | ✅ |
+| **Bug delete-one** | Corregido (pipeline order) | ✅ |
 
 ---
 
@@ -211,6 +212,32 @@ ws.onmessage = (event) => {
 
 ---
 
+## 🐛 Bug Fix: `removeHistoryItemById`
+
+**Versión 1.4.0 (20 Feb 2026)**
+
+**Problema:** `removeHistoryItemById` en `redis.ts` usaba un pipeline incorrecto que eliminaba **todo** el historial en lugar de solo el item especificado.
+
+```typescript
+// ❌ ANTES (roto): del al final borraba todo
+const pipeline = redisClient.multi();
+for (const item of remaining) { pipeline.rPush(HISTORY_KEY, item); }
+pipeline.del(HISTORY_KEY);  // ← borraba lo que acababa de insertar
+await pipeline.exec();
+```
+
+```typescript
+// ✅ AHORA (correcto): del primero, luego push items restantes
+const pipeline = redisClient.multi();
+pipeline.del(HISTORY_KEY);           // ← limpia la key original
+for (const item of remaining) { pipeline.rPush(HISTORY_KEY, item); }
+await pipeline.exec();
+```
+
+**Impacto:** El comando `delete-one` desde el frontend ahora elimina correctamente **solo** el item solicitado, preservando el resto del historial. El broadcast `{ type: "delete-one", id: "..." }` también se propaga correctamente a todos los clientes conectados.
+
+---
+
 ## 🛡️ Características Técnicas
 
 | Característica | Implementación |
@@ -233,6 +260,7 @@ ws.onmessage = (event) => {
 | Tests unitarios | 0 casos | 120 casos en 5 suites |
 | Tipos `any` | 6+ ocurrencias | 0 ocurrencias |
 | Build TypeScript | Con errores | Limpio (exit code 0) |
+| Bug `removeHistoryItemById` | Borraba TODO el historial | Solo borra el item especificado |
 
 ### ⏳ Pendiente
 
@@ -266,6 +294,6 @@ npx jest --clearCache && npm test
 
 ---
 
-**Última actualización:** Febrero 2026  
-**Calificación:** 4.4/5 (88%) — Production-ready  
-**Versión:** 1.3.0
+**Última actualización:** 20 Febrero 2026  
+**Calificación:** 4.5/5 (90%) — Production-ready  
+**Versión:** 1.4.0

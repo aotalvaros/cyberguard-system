@@ -20,6 +20,7 @@ export interface UserRecord {
 export interface UserRepository {
   findById(id: string): Promise<UserRecord | null>;
   findByUsername(username: string): Promise<UserRecord | null>;
+  findAll(): Promise<UserRecord[]>;
   save(user: UserRecord): Promise<UserRecord>;
   update(id: string, data: Partial<UserRecord>): Promise<UserRecord>;
   delete(id: string): Promise<boolean>;
