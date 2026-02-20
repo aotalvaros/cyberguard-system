@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: cyberguard-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberguard-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: cyberguard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cyberguard-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: cyberguard-postgres
+    environment:
+      POSTGRES_DB: cyberguard_db
+      POSTGRES_USER: cyberguard
+      POSTGRES_PASSWORD: cyberguard_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/producer/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyberguard -d cyberguard_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyberguard-network
+
+  backend:
+    build:
+      context: ./backend/producer
+      dockerfile: Dockerfile
+    container_name: cyberguard-backend
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      ALLOWED_ORIGINS: http://localhost:4200,http://localhost
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: cyberguard_db
+      POSTGRES_USER: cyberguard
+      POSTGRES_PASSWORD: cyberguard_secret
+    ports:
+      - "3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend/worker
+      dockerfile: Dockerfile
+    container_name: cyberguard-worker
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      WORKER_WS_PORT: 8081
+      WORKER_EXCHANGE: cyberguard.events
+      WORKER_TOPIC: "#"
+    ports:
+      - "8081:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend/cyberguard-system-appv2
+      dockerfile: Dockerfile
+    container_name: cyberguard-frontend
+    environment:
+      API_URL: http://localhost:3000
+      WS_URL: ws://localhost:8081
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+      - worker
+    networks:
+      - cyberguard-network
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  cyberguard-network:
+    driver: bridge
