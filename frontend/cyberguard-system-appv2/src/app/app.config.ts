@@ -10,6 +10,10 @@ import { WebSocketRepository } from '../core/domain/ports/websocket.repository';
 import { WebSocketRepositoryImpl } from '../core/infrastructure/services/websocket-repository.impl';
 import { authInterceptor, retryInterceptor, errorInterceptor, loadingInterceptor } from '../core/infrastructure/interceptors';
 import { GlobalErrorHandler } from '../core/infrastructure/handlers';
+import { StatisticsRepository } from '../core/domain/ports/statistics.repository';
+// TODO [POST-BACKEND]: switch to StatisticsRepositoryImpl once GET /api/statistics is delivered.
+// import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
+import { StatisticsMockRepository } from '../core/infrastructure/services/statistics-mock-repository.impl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,6 +26,8 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: AuthRepository, useClass: AuthRepositoryImpl },
     { provide: ThreatRepository, useClass: ThreatRepositoryImpl },
-    { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl }
+    { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
+    // Uses mock while backend endpoint is pending — swap to StatisticsRepositoryImpl when ready
+    { provide: StatisticsRepository, useClass: StatisticsMockRepository },
   ]
 };
