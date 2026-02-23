@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AuthRepository } from '../../domain/ports/auth.repository';
 import { User } from '../../domain/models/user.model';
-import { ROLES } from '@environments/constants';
+import { ROLES } from '../../../environments/constants';
 
 /**
  * ⚠️ HUMAN CHECK: Use Case Pattern aplicado

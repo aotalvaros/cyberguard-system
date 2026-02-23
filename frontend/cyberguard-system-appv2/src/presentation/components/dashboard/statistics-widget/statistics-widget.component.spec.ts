@@ -15,7 +15,7 @@ const mockStats: ThreatStatistics = {
   criticalActive: 5,
 };
 
-function setupFixture(stats: ThreatStatistics | 'never' | 'error'): ComponentFixture<StatisticsWidgetComponent> {
+async function setupFixture(stats: ThreatStatistics | 'never' | 'error'): Promise<ComponentFixture<StatisticsWidgetComponent>> {
   let mockExecute;
   if (stats === 'never') {
     mockExecute = vi.fn().mockReturnValue(NEVER);
@@ -27,10 +27,10 @@ function setupFixture(stats: ThreatStatistics | 'never' | 'error'): ComponentFix
 
   const mockUseCase = { execute: mockExecute };
 
-  TestBed.configureTestingModule({
+  await TestBed.configureTestingModule({
     imports: [StatisticsWidgetComponent],
     providers: [{ provide: GetStatisticsUseCase, useValue: mockUseCase }],
-  });
+  }).compileComponents();
 
   const fixture = TestBed.createComponent(StatisticsWidgetComponent);
   fixture.detectChanges();
@@ -45,8 +45,8 @@ describe('StatisticsWidgetComponent', () => {
   // Given execute() returns of({ totalThreats: 42, ... })
   // When fixture detects changes
   // Then element bound to totalThreats contains text "42"
-  it('should render totalThreats value', () => {
-    const fixture = setupFixture(mockStats);
+  it('should render totalThreats value', async () => {
+    const fixture = await setupFixture(mockStats);
     const el: HTMLElement = fixture.nativeElement;
     const totalEl = el.querySelector('[data-testid="total-threats"]');
     expect(totalEl?.textContent).toContain('42');
@@ -55,8 +55,8 @@ describe('StatisticsWidgetComponent', () => {
   // Given execute() returns of({ criticalActive: 5, ... })
   // When fixture detects changes
   // Then element bound to criticalActive contains text "5"
-  it('should render criticalActive value', () => {
-    const fixture = setupFixture(mockStats);
+  it('should render criticalActive value', async () => {
+    const fixture = await setupFixture(mockStats);
     const el: HTMLElement = fixture.nativeElement;
     const critEl = el.querySelector('[data-testid="critical-active"]');
     expect(critEl?.textContent).toContain('5');
@@ -65,8 +65,8 @@ describe('StatisticsWidgetComponent', () => {
   // Given execute() returns of({ last24Hours: 8, ... })
   // When fixture detects changes
   // Then element bound to last24Hours contains text "8"
-  it('should render last24Hours value', () => {
-    const fixture = setupFixture(mockStats);
+  it('should render last24Hours value', async () => {
+    const fixture = await setupFixture(mockStats);
     const el: HTMLElement = fixture.nativeElement;
     const recentEl = el.querySelector('[data-testid="last-24h"]');
     expect(recentEl?.textContent).toContain('8');
@@ -75,8 +75,8 @@ describe('StatisticsWidgetComponent', () => {
   // Given execute() returns a never-emitting observable
   // When fixture detects changes
   // Then template renders without throwing (empty state / loading)
-  it('should render without throwing when observable has not emitted', () => {
-    expect(() => setupFixture('never')).not.toThrow();
+  it('should render without throwing when observable has not emitted', async () => {
+    await expect(setupFixture('never')).resolves.toBeDefined();
   });
 
   // Given execute() throws an error
@@ -84,7 +84,7 @@ describe('StatisticsWidgetComponent', () => {
   // Then component should use EMPTY_STATISTICS as fallback
   it('should use EMPTY_STATISTICS when API call fails', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const fixture = setupFixture('error');
+    const fixture = await setupFixture('error');
     const component = fixture.componentInstance;
     
     const result = await firstValueFrom(component.statistics$);
@@ -98,8 +98,8 @@ describe('StatisticsWidgetComponent', () => {
   });
 
   describe('emptyStats property', () => {
-    it('should expose EMPTY_STATISTICS constant', () => {
-      const fixture = setupFixture(mockStats);
+    it('should expose EMPTY_STATISTICS constant', async () => {
+      const fixture = await setupFixture(mockStats);
       const component = fixture.componentInstance;
       expect(component.emptyStats).toEqual(EMPTY_STATISTICS);
     });
