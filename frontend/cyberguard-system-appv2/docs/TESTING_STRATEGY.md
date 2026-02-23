@@ -14,6 +14,132 @@ Este documento define la estrategia de Quality Assurance (QA) para el frontend d
 | Lines | 97.68% | ≥80% ✅ |
 | Tests Passing | 321/321 | 100% ✅ |
 
+---
+
+## Metodología TDD Aplicada
+
+### Feature: Threat Statistics Dashboard
+
+Para la implementación del **Dashboard de Estadísticas de Amenazas** se aplicó estrictamente la metodología **Test-Driven Development (TDD)** siguiendo el ciclo **RED-GREEN-REFACTOR**.
+
+### Ciclo TDD Implementado
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CICLO RED-GREEN-REFACTOR                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│    ┌─────────┐      ┌─────────┐      ┌──────────┐          │
+│    │   RED   │ ──▶  │  GREEN  │ ──▶  │ REFACTOR │ ──┐      │
+│    │  (Test  │      │  (Impl  │      │ (Mejora) │   │      │
+│    │  Fails) │      │  Pasa)  │      │          │   │      │
+│    └─────────┘      └─────────┘      └──────────┘   │      │
+│         ▲                                           │      │
+│         └───────────────────────────────────────────┘      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Commits TDD (Evidencia del Proceso)
+
+Se realizaron **19 commits atómicos** siguiendo el ciclo TDD:
+
+| # | Fase | Descripción |
+|---|------|-------------|
+| 1 | 🔴 RED | `test(domain): add failing test for ThreatStatistics model` |
+| 2 | 🟢 GREEN | `feat(domain): implement ThreatStatistics model` |
+| 3 | 🔵 REFACTOR | `refactor(domain): add EMPTY_STATISTICS constant` |
+| 4 | 🔴 RED | `test(domain): add failing test for StatisticsRepository port` |
+| 5 | 🟢 GREEN | `feat(domain): implement StatisticsRepository abstract port` |
+| 6 | 🔴 RED | `test(application): add failing test for GetStatisticsUseCase` |
+| 7 | 🟢 GREEN | `feat(application): implement GetStatisticsUseCase` |
+| 8 | 🔴 RED | `test(infrastructure): add failing test for StatisticsRepositoryImpl` |
+| 9 | 🟢 GREEN | `feat(infrastructure): implement StatisticsRepositoryImpl` |
+| 10 | 🔵 REFACTOR | `refactor(infrastructure): add getStatisticsSafe error handling` |
+| 11 | 🔴 RED | `test(infrastructure): add failing test for mock repository` |
+| 12 | 🟢 GREEN | `feat(infrastructure): implement StatisticsMockRepository` |
+| 13 | 🔴 RED | `test(presentation): add failing test for StatisticsWidget` |
+| 14 | 🟢 GREEN | `feat(presentation): implement StatisticsWidget component` |
+| 15 | 🔵 REFACTOR | `refactor(presentation): extract stat-card to reusable partial` |
+| 16 | 🔴 RED | `test(presentation): add failing test for dashboard integration` |
+| 17 | 🟢 GREEN | `feat(presentation): integrate StatisticsWidget in Dashboard` |
+| 18 | 🔵 REFACTOR | `refactor(di): configure StatisticsRepository DI provider` |
+| 19 | 🔵 REFACTOR | `refactor(coverage): improve WebSocket testability` |
+
+### Flujo TDD por Capa (Inside-Out)
+
+```
+1. Domain Layer
+   ├── 🔴 Test: ThreatStatistics model structure
+   ├── 🟢 Impl: threat-statistics.model.ts
+   ├── 🔴 Test: StatisticsRepository port contract
+   └── 🟢 Impl: statistics.repository.ts (abstract class)
+
+2. Application Layer  
+   ├── 🔴 Test: GetStatisticsUseCase behavior
+   └── 🟢 Impl: get-statistics.use-case.ts
+
+3. Infrastructure Layer
+   ├── 🔴 Test: StatisticsRepositoryImpl HTTP calls
+   ├── 🟢 Impl: statistics-repository.impl.ts
+   ├── 🔴 Test: Mock repository for development
+   └── 🟢 Impl: statistics-mock-repository.impl.ts
+
+4. Presentation Layer
+   ├── 🔴 Test: StatisticsWidget renders stats
+   ├── 🟢 Impl: statistics-widget.component.ts
+   ├── 🔴 Test: Dashboard shows widget
+   └── 🟢 Impl: dashboard.component.html integration
+```
+
+### Ejemplo de Ciclo TDD Completo
+
+**Fase RED** - Test que falla:
+```typescript
+// statistics.repository.spec.ts
+describe('StatisticsRepository', () => {
+  it('should be usable as an Angular DI token', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: StatisticsRepository, useClass: StubRepository }]
+    });
+    const repo = TestBed.inject(StatisticsRepository);
+    expect(repo).toBeInstanceOf(StubRepository);
+  });
+});
+// ❌ FAILS: StatisticsRepository is not defined
+```
+
+**Fase GREEN** - Implementación mínima:
+```typescript
+// statistics.repository.ts
+export abstract class StatisticsRepository {
+  abstract getStatistics(): Observable<ThreatStatistics>;
+}
+// ✅ PASSES
+```
+
+**Fase REFACTOR** - Mejora sin cambiar comportamiento:
+```typescript
+// Añadir método safe que no lanza errores
+export abstract class StatisticsRepository {
+  abstract getStatistics(): Observable<ThreatStatistics>;
+  abstract getStatisticsSafe(): Observable<ThreatStatistics>;
+}
+// ✅ PASSES (tests actualizados)
+```
+
+### Beneficios Obtenidos con TDD
+
+| Beneficio | Resultado |
+|-----------|-----------|
+| **Cobertura alta desde el inicio** | 100% en nuevos componentes |
+| **Diseño guiado por tests** | Interfaces limpias y testeables |
+| **Documentación viva** | Tests describen comportamiento esperado |
+| **Refactoring seguro** | Suite de tests como red de seguridad |
+| **Menos bugs en producción** | Defectos detectados temprano |
+
+---
+
 ## Arquitectura de Testing
 
 ```
