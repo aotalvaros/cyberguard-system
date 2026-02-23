@@ -9,6 +9,7 @@ import { errorHandler } from './infrastructure/http/middlewares/error.middleware
 import authRoutes from './infrastructure/http/controllers/auth.controller';
 import threatRoutes from './infrastructure/http/controllers/threat.controller';
 import adminRoutes from './infrastructure/http/controllers/admin.controller';
+import { statisticsRouter } from './infrastructure/http/controllers/statistics.controller';
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/threats', threatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/statistics', statisticsRouter);
 
 // Error handler
 app.use(errorHandler);

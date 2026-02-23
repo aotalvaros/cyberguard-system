@@ -2,6 +2,8 @@ import { ThreatService } from '../../application/services/threat.service';
 import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
+import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
+import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
 import { JWTTokenService } from '../providers/JWTTokenService';
@@ -119,6 +121,16 @@ export class ServiceFactory {
       );
     }
     return this.authService;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de estadísticas de amenazas
+   * Inyecta: ThreatStatisticsRepository (port)
+   * No se cachea — use case sin estado, creación ligera.
+   */
+  static getStatisticsUseCase(): GetThreatStatisticsUseCase {
+    const repo = new PostgresThreatStatisticsRepository();
+    return new GetThreatStatisticsUseCase(repo);
   }
 
   /**
