@@ -813,4 +813,90 @@ describe('AuthService', () => {
       });
     });
   });
+
+  // ==========================================================================
+  // AUDIT LOG ERROR HANDLING — VALIDAR que .catch silencia errores del log
+  // sin propagar al cliente (fail-silent en auditoria, no en negocio)
+  // ==========================================================================
+
+  describe('Audit Log Error Handling', () => {
+    it('should still return failed login result even when audit log throws on login failure', async () => {
+      // Arrange — authProvider rechaza Y el audit log también falla
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials'
+      });
+      mockAuditLogRepository.log.mockRejectedValueOnce(new Error('Audit DB connection lost'));
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'wrong' });
+
+      // Assert — VALIDAR: el fallo del audit NO debe romper el flujo de negocio
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Invalid credentials');
+      // El error fue logueado silenciosamente
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: 'Audit DB connection lost' })
+      );
+    });
+
+    it('should still return successful login even when audit log throws on success', async () => {
+      // Arrange — login exitoso pero el audit log falla
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'user-id-123', username: 'admin', role: 'admin' }
+      });
+      mockTokenService.generateToken.mockReturnValue('success-token');
+      // First log call (on success) rejects
+      mockAuditLogRepository.log.mockRejectedValueOnce(new Error('Audit DB timeout'));
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'pass' });
+
+      // Assert — VALIDAR: el fallo del audit NO interrumpe el login exitoso
+      expect(result.success).toBe(true);
+      expect(result.token).toBe('success-token');
+    });
+
+    it('should silently handle audit log failure when auto-creating user from Firebase', async () => {
+      // Arrange — usuario no existe en PostgreSQL, se crea automáticamente
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'fb-id', username: 'newuser@example.com', role: 'viewer' }
+      });
+      mockUserRepository.findByUsername.mockResolvedValue(null); // no existe
+      mockTokenService.generateToken.mockReturnValue('token-new');
+      // La primera llamada al audit log (user_auto_created) falla
+      mockAuditLogRepository.log.mockRejectedValueOnce(new Error('Audit write failed'));
+
+      // Act — no debe lanzar excepción
+      const result = await authService.login({ username: 'newuser@example.com', password: 'pass' });
+
+      // Assert — el flow continúa a pesar del fallo del audit
+      expect(result.success).toBe(true);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: 'Audit write failed' })
+      );
+    });
+
+    it('should silently handle audit log failure when account is locked', async () => {
+      // Arrange — cuenta bloqueada, audit log falla
+      const lockedUser = { ...mockUser, isLocked: true };
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'user-id-123', username: 'admin', role: 'admin' }
+      });
+      mockUserRepository.findByUsername.mockResolvedValue(lockedUser);
+      mockAuditLogRepository.log.mockRejectedValueOnce(new Error('Audit unavailable'));
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'pass' });
+
+      // Assert — VALIDAR: la cuenta sigue siendo rechazada pese al fallo del audit
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('locked');
+    });
+  });
 });
