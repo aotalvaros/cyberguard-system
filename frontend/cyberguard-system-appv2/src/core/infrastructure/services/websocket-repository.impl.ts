@@ -1,10 +1,42 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { WebSocketRepository } from '../../domain/ports/websocket.repository';
 import { AlertMessage } from '../../domain/models/alert-message.model';
 import { WebSocketCommand } from '../../domain/models/websocket-command.model';
 import { environment } from '@environments/environment';
 import { STORAGE_KEYS, WS_COMMANDS, LIMITS } from '@environments/constants';
+
+/**
+ * Factory function type for creating WebSocket instances.
+ * Extracted to enable dependency injection and testability.
+ */
+export type WebSocketFactory = (url: string) => WebSocket;
+
+/**
+ * Storage adapter interface to abstract localStorage operations.
+ * Enables testing without real localStorage.
+ */
+export interface StorageAdapter {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+
+/**
+ * Default storage adapter using localStorage.
+ */
+export const defaultStorageAdapter: StorageAdapter = {
+  getItem: (key: string) => localStorage.getItem(key),
+  setItem: (key: string, value: string) => localStorage.setItem(key, value),
+};
+
+/**
+ * Default WebSocket factory using native WebSocket.
+ */
+export const defaultWebSocketFactory: WebSocketFactory = (url: string) => new WebSocket(url);
+
+/** Injection tokens for testability */
+export const WS_FACTORY_TOKEN = new InjectionToken<WebSocketFactory>('WebSocketFactory');
+export const STORAGE_ADAPTER_TOKEN = new InjectionToken<StorageAdapter>('StorageAdapter');
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketRepositoryImpl extends WebSocketRepository {
@@ -16,8 +48,17 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   private reconnectInterval: ReturnType<typeof setInterval> | null = null;
   private connected = false;
 
-  constructor() {
+  // Injected dependencies for testability
+  protected wsFactory: WebSocketFactory;
+  protected storage: StorageAdapter;
+
+  constructor(
+    @Optional() @Inject(WS_FACTORY_TOKEN) wsFactory?: WebSocketFactory,
+    @Optional() @Inject(STORAGE_ADAPTER_TOKEN) storage?: StorageAdapter
+  ) {
     super();
+    this.wsFactory = wsFactory ?? defaultWebSocketFactory;
+    this.storage = storage ?? defaultStorageAdapter;
     this.loadFromStorage();
   }
 
@@ -25,7 +66,7 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
     try {
-      this.ws = new WebSocket(this.WS_URL);
+      this.ws = this.wsFactory(this.WS_URL);
 
       this.ws.onopen = () => {
         this.connected = true;
@@ -37,21 +78,7 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
       };
 
       this.ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          
-          // Extraer estructura anidada del worker
-          if (message.data && message.data.eventId && message.data.data) {
-            const alert: AlertMessage = {
-              eventId: message.data.eventId,
-              data: message.data.data,
-              timestamp: Date.now()
-            };
-            this.addMessage(alert);
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
+        this.handleMessage(event);
       };
 
       this.ws.onerror = (error) => {
@@ -105,7 +132,33 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     return this.connected;
   }
 
-  private addMessage(message: AlertMessage): void {
+  /**
+   * Handle incoming WebSocket message.
+   * Extracted as protected method for testability.
+   */
+  protected handleMessage(event: MessageEvent): void {
+    try {
+      const message = JSON.parse(event.data);
+      
+      // Extraer estructura anidada del worker
+      if (message.data && message.data.eventId && message.data.data) {
+        const alert: AlertMessage = {
+          eventId: message.data.eventId,
+          data: message.data.data,
+          timestamp: Date.now()
+        };
+        this.addMessage(alert);
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+    }
+  }
+
+  /**
+   * Add a message to the list with deduplication.
+   * Protected for testing access.
+   */
+  protected addMessage(message: AlertMessage): void {
     const current = this.messages$.value;
     
     // Deduplicación con validación null-safe
@@ -121,7 +174,11 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  private scheduleReconnect(): void {
+  /**
+   * Schedule reconnection attempt.
+   * Protected for testing access.
+   */
+  protected scheduleReconnect(): void {
     if (!this.reconnectInterval) {
       this.reconnectInterval = setInterval(() => {
         console.log('Attempting to reconnect...');
@@ -130,9 +187,13 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  private loadFromStorage(): void {
+  /**
+   * Load messages from storage.
+   * Protected for testing access.
+   */
+  protected loadFromStorage(): void {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
+      const stored = this.storage.getItem(this.STORAGE_KEY);
       if (stored) {
         const messages: AlertMessage[] = JSON.parse(stored);
         // Filtrar solo alertas válidas (ignorar comandos como clear-all)
@@ -146,9 +207,13 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  private saveToStorage(messages: AlertMessage[]): void {
+  /**
+   * Save messages to storage.
+   * Protected for testing access.
+   */
+  protected saveToStorage(messages: AlertMessage[]): void {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(messages));
+      this.storage.setItem(this.STORAGE_KEY, JSON.stringify(messages));
     } catch (error) {
       console.error('Failed to save to storage:', error);
     }
