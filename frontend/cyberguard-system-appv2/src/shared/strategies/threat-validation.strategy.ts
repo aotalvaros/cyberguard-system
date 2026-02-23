@@ -1,8 +1,24 @@
 import { ThreatRequest } from '../../core/domain/models/threat-request.model';
 import { ThreatSeverity } from '../../core/domain/models/threat-severity.enum';
 
-// ⚠️ HUMAN CHECK:
-// Strategy Pattern para validación específica por tipo de amenaza
+/**
+ * ⚠️ HUMAN CHECK: Strategy Pattern para validación de amenazas
+ * 
+ * ¿Por qué Strategy Pattern?
+ * Cada tipo de amenaza tiene reglas de validación diferentes:
+ * - Malware: no puede ser severidad 'low'
+ * - DDoS: debe ser 'high' o 'critical'
+ * - Ransomware: siempre es 'critical'
+ * 
+ * Beneficios:
+ * - OCP: Agregar nuevo tipo = crear nueva clase, sin modificar existentes
+ * - SRP: Cada strategy valida UN tipo de amenaza
+ * - Testeable: Cada strategy se testea de forma aislada
+ * 
+ * Uso de ThreatSeverity enum en lugar de strings:
+ * Antes: threat.severity === 'low' (propenso a typos)
+ * Ahora: threat.severity === ThreatSeverity.LOW (type-safe)
+ */
 export interface ThreatValidationStrategy {
   validate(threat: ThreatRequest): ValidationResult;
 }

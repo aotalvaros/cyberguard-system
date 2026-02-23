@@ -5,6 +5,19 @@ import { environment } from '@environments/environment';
 import { STORAGE_KEYS } from '@environments/constants';
 
 /**
+ * ⚠️ HUMAN CHECK: Interceptor de autenticación
+ * 
+ * Patrón: Chain of Responsibility (implícito en interceptores de Angular)
+ * Cada request pasa por aquí antes de salir al servidor.
+ * 
+ * Decisión: Usamos STORAGE_KEYS.TOKEN en lugar de 'token' hardcodeado.
+ * Si cambiamos la key de storage, solo modificamos constants.ts.
+ * 
+ * Rutas públicas: login y register NO necesitan token.
+ * Si agregáramos forgot-password, lo añadimos a PUBLIC_ROUTES.
+ */
+
+/**
  * Rutas que NO requieren autenticación
  */
 const PUBLIC_ROUTES = [
