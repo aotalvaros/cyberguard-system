@@ -9,8 +9,22 @@ import { AuthService } from '../../../core/infrastructure/services/auth.service'
 import { DeleteThreatUseCase } from '../../../core/application/use-cases/delete-threat.use-case';
 import { SEVERITY_LIST } from '@environments/constants';
 
-// ⚠️ HUMAN CHECK:
-// Componente refactorizado - lógica de negocio movida a AlertsDomainService
+/**
+ * ⚠️ HUMAN CHECK: Componente de alertas con validación de rol
+ * 
+ * Arquitectura aplicada:
+ * - Lógica de negocio delegada a AlertsDomainService (SRP)
+ * - Eliminación real via DeleteThreatUseCase que llama al backend
+ * - Validación visual: botones de eliminar SOLO visibles para admin
+ * 
+ * Decisión de diseño para deleteAlert():
+ * 1. Primero intentamos eliminar del backend (DELETE /api/threats/:id)
+ * 2. Si el backend responde OK → eliminamos de la lista local
+ * 3. Si falla → eliminamos local de todas formas (graceful degradation)
+ * 
+ * El getter isAdmin evita llamadas repetidas al servicio de auth.
+ * SEVERITY_LIST viene de constants.ts para evitar duplicación.
+ */
 @Component({
   selector: 'app-alerts',
   standalone: true,

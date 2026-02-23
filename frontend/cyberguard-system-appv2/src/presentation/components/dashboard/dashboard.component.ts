@@ -9,13 +9,14 @@ import { ThreatType } from '../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../core/domain/models/threat-severity.enum';
 import { ThreatRequest } from '../../../core/domain/models/threat-request.model';
 import { AlertsComponent } from '../alerts/alerts.component';
+import { StatisticsWidgetComponent } from './statistics-widget/statistics-widget.component';
 
 // ⚠️ HUMAN CHECK:
 // Dashboard refactorizado para usar Use Cases en lugar de servicios directos
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertsComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertsComponent, StatisticsWidgetComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

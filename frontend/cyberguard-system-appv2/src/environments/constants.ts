@@ -1,4 +1,14 @@
 /**
+ * ⚠️ HUMAN CHECK: Archivo de constantes centralizado
+ * 
+ * Decisión técnica: Centralizamos todos los strings "mágicos" en este archivo
+ * para evitar typos y facilitar cambios futuros. Usamos 'as const' para obtener
+ * tipos literales y mejor autocompletado en el IDE.
+ * 
+ * Principio aplicado: DRY (Don't Repeat Yourself)
+ * Si el backend cambia un valor (ej: 'admin' -> 'administrator'), 
+ * solo modificamos este archivo.
+ * 
  * Constantes de la aplicación CyberGuard
  * Archivo centralizado para evitar strings hardcodeados en el código
  */

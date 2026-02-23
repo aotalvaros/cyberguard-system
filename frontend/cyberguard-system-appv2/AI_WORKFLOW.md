@@ -1642,4 +1642,126 @@ refactor(CG-012): centralize hardcoded strings into constants file
 ```
 
 ### Próximo Feature
-CG-013: TBD
+CG-013: Threat Statistics Dashboard
+
+---
+
+## CG-013: Threat Statistics Dashboard ✅
+
+**Fecha:** 2026-02-23
+**Estado:** Completado (Frontend-only, backend pendiente)
+
+### Descripción
+Implementación del widget de estadísticas de amenazas siguiendo TDD estricto, demostrando ciclos RED-GREEN-REFACTOR con commits atómicos.
+
+### Metodología Aplicada
+- **ATDD**: Escenarios Gherkin definidos antes de implementar
+- **TDD**: Cada commit sigue el ciclo RED (test) → GREEN (implementación)
+- **Commits Atómicos**: 17 commits trazables para demostrar disciplina
+
+### Cambios Realizados
+
+#### Archivos Creados - Domain Layer
+```
+core/domain/
+├── models/
+│   ├── threat-statistics.model.ts      # Interface ThreatStatistics + EMPTY_STATISTICS
+│   └── __tests__/
+│       └── threat-statistics.model.spec.ts
+└── ports/
+    ├── statistics.repository.ts        # Abstract class (DI token)
+    └── __tests__/
+        └── statistics.repository.spec.ts
+```
+
+#### Archivos Creados - Application Layer
+```
+core/application/use-cases/
+├── get-statistics.use-case.ts          # GetStatisticsUseCase injectable
+└── __tests__/
+    └── get-statistics.use-case.spec.ts
+```
+
+#### Archivos Creados - Infrastructure Layer
+```
+core/infrastructure/services/
+├── statistics-repository.impl.ts       # HTTP adapter (production)
+├── statistics-mock-repository.impl.ts  # Mock adapter (development)
+└── __tests__/
+    ├── statistics-repository.impl.spec.ts
+    └── statistics-di.spec.ts
+```
+
+#### Archivos Creados - Presentation Layer
+```
+presentation/components/dashboard/statistics-widget/
+├── statistics-widget.component.ts      # Standalone component con inject()
+├── statistics-widget.component.html    # Template con data-testid
+├── statistics-widget.component.scss    # Estilos responsive
+└── statistics-widget.component.spec.ts
+```
+
+#### Archivos Modificados
+- `src/app/app.config.ts` - Provider: StatisticsRepository → StatisticsMockRepositoryImpl
+- `src/presentation/components/dashboard/dashboard.component.ts` - Import widget
+- `src/presentation/components/dashboard/dashboard.component.html` - Render widget
+
+### Tests
+- **292 tests pasando** (100% green)
+- **Cobertura: 89.72%** (partiendo de 72.8%)
+
+### Commits Atómicos TDD (17 total)
+```
+🔴 RED → 🟢 GREEN | Ciclo 1 - Domain Model
+  5b7b706 test(statistics): add failing specs for ThreatStatistics domain model
+  554505c feat(statistics): implement ThreatStatistics domain model
+
+🔴 RED → 🟢 GREEN | Ciclo 2 - Repository Port
+  e57990c test(statistics): add failing specs for StatisticsRepository port
+  a9f2291 feat(statistics): implement StatisticsRepository abstract port
+
+🔴 RED → 🟢 GREEN | Ciclo 3 - Use Case
+  06667f2 test(statistics): add failing specs for GetStatisticsUseCase
+  351a215 feat(statistics): implement GetStatisticsUseCase
+
+🔴 RED → 🟢 GREEN | Ciclo 4 - Infrastructure
+  09a7141 test(statistics): add failing specs for StatisticsRepositoryImpl
+  5369542 feat(statistics): implement StatisticsRepositoryImpl HTTP adapter
+  333d694 feat(statistics): add mock repository for development
+
+🔴 RED → 🟢 GREEN | Ciclo 5 - Presentation
+  ad96efa test(statistics): add failing specs for StatisticsWidgetComponent
+  247bb03 feat(statistics): implement StatisticsWidgetComponent
+
+⚙️ Integration & Coverage
+  229d01d feat(statistics): integrate widget into dashboard
+  a9cc043 chore(statistics): wire DI with mock until backend ready
+  0aac6ab test(statistics): add DI integration specs
+  514fe10 test(coverage): add dashboard and alerts integration tests
+  7cffe7e test(coverage): enhance existing test suites for 90% coverage
+  3c9b79a refactor(coverage): minor fixes to improve branch coverage
+  7a3c038 docs(statistics): add rubric compliance report
+  ba1f26e fix(statistics): use relative imports and async test setup
+```
+
+### Patrones Aplicados
+- Hexagonal Architecture (domain → application → infrastructure → presentation)
+- Dependency Inversion (abstract class como token DI)
+- Use Case Pattern
+- Repository Pattern con adapter real y mock
+- OnPush Change Detection
+
+### Funcionalidades
+- Widget muestra: totalThreats, criticalActive, last24Hours
+- Estados: loading, error, success
+- Fallback a EMPTY_STATISTICS en error
+- Mock data mientras backend no esté disponible
+- Responsive design
+
+### Notas
+- Backend endpoint `GET /api/statistics` aún no implementado
+- Se usa `StatisticsMockRepositoryImpl` temporalmente
+- TODO: Cambiar provider a `StatisticsRepositoryImpl` cuando backend esté listo
+
+### Próximo Feature
+CG-014: TBD (E2E tests cuando backend esté disponible)
