@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { WebSocketRepositoryImpl } from '../websocket-repository.impl';
 import { firstValueFrom } from 'rxjs';
+import { WS_COMMANDS, STORAGE_KEYS } from '@environments/constants';
 
 describe('WebSocketRepositoryImpl', () => {
   let repository: WebSocketRepositoryImpl;
@@ -19,7 +20,12 @@ describe('WebSocketRepositoryImpl', () => {
   afterEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    repository.disconnect();
+    vi.useRealTimers();
+    try {
+      repository.disconnect();
+    } catch {
+      // Ignore disconnect errors in cleanup
+    }
   });
 
   describe('getMessages$', () => {
@@ -68,9 +74,8 @@ describe('WebSocketRepositoryImpl', () => {
           }
         }
       ];
-      localStorage.setItem('cg_ws_history', JSON.stringify(storedMessages));
+      localStorage.setItem(STORAGE_KEYS.WS_HISTORY, JSON.stringify(storedMessages));
 
-      // Create new instance to trigger loadFromStorage
       const newRepo = new WebSocketRepositoryImpl();
       
       const messages = await firstValueFrom(newRepo.getMessages$());
@@ -80,7 +85,7 @@ describe('WebSocketRepositoryImpl', () => {
 
     it('should handle invalid JSON in localStorage gracefully', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      localStorage.setItem('cg_ws_history', 'invalid-json');
+      localStorage.setItem(STORAGE_KEYS.WS_HISTORY, 'invalid-json');
 
       const newRepo = new WebSocketRepositoryImpl();
       
@@ -91,7 +96,7 @@ describe('WebSocketRepositoryImpl', () => {
     });
 
     it('should handle empty localStorage', async () => {
-      localStorage.removeItem('cg_ws_history');
+      localStorage.removeItem(STORAGE_KEYS.WS_HISTORY);
       
       const newRepo = new WebSocketRepositoryImpl();
       const messages = await firstValueFrom(newRepo.getMessages$());
@@ -114,15 +119,45 @@ describe('WebSocketRepositoryImpl', () => {
         {
           eventId: 'invalid-no-data',
           timestamp: Date.now()
-          // Missing data
         }
       ];
-      localStorage.setItem('cg_ws_history', JSON.stringify(storedMessages));
+      localStorage.setItem(STORAGE_KEYS.WS_HISTORY, JSON.stringify(storedMessages));
 
       const newRepo = new WebSocketRepositoryImpl();
       const messages = await firstValueFrom(newRepo.getMessages$());
       
-      // Should only have the valid message
+      expect(messages.length).toBe(1);
+      expect(messages[0].eventId).toBe('valid-1');
+    });
+
+    it('should filter messages without threatId from storage', async () => {
+      const storedMessages = [
+        {
+          eventId: 'valid-1',
+          data: {
+            threatId: 'threat-1',
+            type: 'malware',
+            severity: 'high',
+            sourceIp: '10.0.0.1',
+            description: 'Valid'
+          }
+        },
+        {
+          eventId: 'invalid-no-threatid',
+          data: {
+            threatId: '',
+            type: 'test',
+            severity: 'low',
+            sourceIp: '1.1.1.1',
+            description: 'No threat id'
+          }
+        }
+      ];
+      localStorage.setItem(STORAGE_KEYS.WS_HISTORY, JSON.stringify(storedMessages));
+
+      const newRepo = new WebSocketRepositoryImpl();
+      const messages = await firstValueFrom(newRepo.getMessages$());
+      
       expect(messages.length).toBe(1);
       expect(messages[0].eventId).toBe('valid-1');
     });

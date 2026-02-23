@@ -117,4 +117,80 @@ describe('ErrorInterceptor', () => {
       expect(error.statusCode).toBe(0);
     }
   });
+
+  it('should transform 404 error to SERVER type with resource not found message', async () => {
+    const request$ = httpClient.get('http://localhost:3000/api/threats/invalid-id');
+    const promise = firstValueFrom(request$);
+
+    const req = httpMock.expectOne('http://localhost:3000/api/threats/invalid-id');
+    req.flush({ error: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+
+    try {
+      await promise;
+    } catch (error: any) {
+      expect(error.type).toBe(AppErrorType.SERVER);
+      expect(error.statusCode).toBe(404);
+      expect(error.message).toContain('not found');
+    }
+  });
+
+  it('should transform 502 error to SERVER type', async () => {
+    const request$ = httpClient.get('http://localhost:3000/api/threats');
+    const promise = firstValueFrom(request$);
+
+    const req = httpMock.expectOne('http://localhost:3000/api/threats');
+    req.flush({}, { status: 502, statusText: 'Bad Gateway' });
+
+    try {
+      await promise;
+    } catch (error: any) {
+      expect(error.type).toBe(AppErrorType.SERVER);
+      expect(error.statusCode).toBe(502);
+    }
+  });
+
+  it('should transform 503 error to SERVER type', async () => {
+    const request$ = httpClient.get('http://localhost:3000/api/threats');
+    const promise = firstValueFrom(request$);
+
+    const req = httpMock.expectOne('http://localhost:3000/api/threats');
+    req.flush({}, { status: 503, statusText: 'Service Unavailable' });
+
+    try {
+      await promise;
+    } catch (error: any) {
+      expect(error.type).toBe(AppErrorType.SERVER);
+      expect(error.statusCode).toBe(503);
+    }
+  });
+
+  it('should transform 504 error to SERVER type', async () => {
+    const request$ = httpClient.get('http://localhost:3000/api/threats');
+    const promise = firstValueFrom(request$);
+
+    const req = httpMock.expectOne('http://localhost:3000/api/threats');
+    req.flush({}, { status: 504, statusText: 'Gateway Timeout' });
+
+    try {
+      await promise;
+    } catch (error: any) {
+      expect(error.type).toBe(AppErrorType.SERVER);
+      expect(error.statusCode).toBe(504);
+    }
+  });
+
+  it('should transform unknown status to UNKNOWN type', async () => {
+    const request$ = httpClient.get('http://localhost:3000/api/threats');
+    const promise = firstValueFrom(request$);
+
+    const req = httpMock.expectOne('http://localhost:3000/api/threats');
+    req.flush({}, { status: 418, statusText: 'I\'m a teapot' });
+
+    try {
+      await promise;
+    } catch (error: any) {
+      expect(error.type).toBe(AppErrorType.UNKNOWN);
+      expect(error.statusCode).toBe(418);
+    }
+  });
 });
