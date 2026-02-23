@@ -39,3 +39,7 @@ temp/
 
 # TypeScript cache
 *.tsbuildinfo
+-e 
+# Amazon Q duplicates (already in .github/)
+.amazonq/prompts/
+.amazonq/skills/
