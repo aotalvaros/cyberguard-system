@@ -1,0 +1,52 @@
+<section class="statistics-widget" aria-label="Estadísticas de amenazas">
+  @if (statistics$ | async; as stats) {
+    <div class="stats-grid">
+      <article class="stat-card stat-card--total" aria-labelledby="total-threats-label">
+        <span id="total-threats-label" class="stat-label">Total Amenazas</span>
+        <span class="stat-value" data-testid="total-threats" aria-live="polite">
+          {{ stats.totalThreats }}
+        </span>
+      </article>
+
+      <article class="stat-card stat-card--critical" aria-labelledby="critical-active-label">
+        <span id="critical-active-label" class="stat-label">Críticas Activas</span>
+        <span class="stat-value stat-value--danger" data-testid="critical-active" aria-live="polite">
+          {{ stats.criticalActive }}
+        </span>
+      </article>
+
+      <article class="stat-card stat-card--recent" aria-labelledby="last-24h-label">
+        <span id="last-24h-label" class="stat-label">Últimas 24 h</span>
+        <span class="stat-value" data-testid="last-24h" aria-live="polite">
+          {{ stats.last24Hours }}
+        </span>
+      </article>
+    </div>
+
+    <div class="stats-breakdowns">
+      <div class="breakdown" *ngIf="stats.byType | keyvalue as typeEntries">
+        <h3 class="breakdown-title">Por tipo</h3>
+        <ul class="breakdown-list" role="list">
+          <li *ngFor="let entry of typeEntries" class="breakdown-item">
+            <span class="breakdown-key">{{ entry.key }}</span>
+            <span class="breakdown-count" aria-label="{{ entry.key }}: {{ entry.value }}">{{ entry.value }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="breakdown" *ngIf="stats.bySeverity | keyvalue as severityEntries">
+        <h3 class="breakdown-title">Por severidad</h3>
+        <ul class="breakdown-list" role="list">
+          <li *ngFor="let entry of severityEntries" class="breakdown-item">
+            <span class="breakdown-key breakdown-key--{{ entry.key }}">{{ entry.key }}</span>
+            <span class="breakdown-count" aria-label="{{ entry.key }}: {{ entry.value }}">{{ entry.value }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  } @else {
+    <div class="stats-loading" aria-busy="true" aria-label="Cargando estadísticas">
+      <span>Cargando estadísticas…</span>
+    </div>
+  }
+</section>
