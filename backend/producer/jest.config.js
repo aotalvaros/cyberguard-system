@@ -16,16 +16,20 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/__tests__/**',
-    '!src/server.ts'
+    '!src/server.ts',
+    // Infraestructura de bootstrap: requieren conexiones reales (PostgreSQL, RabbitMQ, Firebase).
+    // Se testean via integration tests, no unit tests (principio de Arquitectura Hexagonal).
+    '!src/infrastructure/config/**',
+    '!src/infrastructure/factories/**'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 85,
-      functions: 85,
-      lines: 85,
-      statements: 85
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90
     }
   },
   moduleNameMapper: {
