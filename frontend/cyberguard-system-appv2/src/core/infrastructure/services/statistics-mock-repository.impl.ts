@@ -17,4 +17,8 @@ export class StatisticsMockRepository extends StatisticsRepository {
   getStatistics(): Observable<ThreatStatistics> {
     return of(MOCK_STATS);
   }
+
+  getStatisticsSafe(): Observable<ThreatStatistics> {
+    return of(MOCK_STATS);
+  }
 }
