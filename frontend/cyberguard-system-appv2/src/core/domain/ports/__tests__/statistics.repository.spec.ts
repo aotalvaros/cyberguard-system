@@ -9,6 +9,10 @@ class StubStatisticsRepository extends StatisticsRepository {
   getStatistics() {
     return of(EMPTY_STATISTICS);
   }
+
+  getStatisticsSafe() {
+    return of(EMPTY_STATISTICS);
+  }
 }
 
 describe('StatisticsRepository', () => {
