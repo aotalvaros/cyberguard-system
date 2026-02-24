@@ -243,6 +243,26 @@ describe('Statistics Controller — GET /statistics', () => {
       // Assert
       expect(response.body.success).toBe(false);
     });
+
+    /**
+     * VALIDAR: Cuando se lanza un valor no-Error (string, number, etc.),
+     * el controller sigue retornando 500 con mensaje genérico.
+     * Cubre la rama `String(error)` del ternario de catch.
+     */
+    it('should return 500 when a non-Error value is thrown (string)', async () => {
+      // Arrange — lanzar un string en lugar de Error cubre la rama false del ternario
+      mockExecute.mockRejectedValue('service_unavailable_string' as never);
+
+      // Act
+      const response = await request(app).get('/statistics');
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({
+        success: false,
+        error: 'Failed to retrieve statistics',
+      });
+    });
   });
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
