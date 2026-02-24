@@ -103,6 +103,21 @@ describe('ThreatClassifier', () => {
 
       expect(result.riskScore).toBe(80);
     });
+
+    it('should return riskScore 50 when severity is unknown (covers ?? 50 fallback)', () => {
+      // Arrange — use an unlisted severity to trigger the `?? 50` default branch
+      const classifier = new ThreatClassifier([]);
+      const unknownSeverityContext = createContext({
+        type: 'ddos',
+        severity: 'unknown' as never,
+      });
+
+      // Act
+      const result = classifier.classify(unknownSeverityContext);
+
+      // Assert — the `?? 50` branch should fire when severity is not in the map
+      expect(result.riskScore).toBe(50);
+    });
   });
 
   describe('hasStrategy', () => {

@@ -989,5 +989,26 @@ describe('ThreatService', () => {
         'Test error'
       );
     });
+
+    it('should handle non-Error thrown values (string) — covers String(error) branch', async () => {
+      // Arrange — throw a string to cover the `false` branch of `error instanceof Error`
+      mockThreatRepository.save.mockRejectedValue('db_connection_lost' as never);
+
+      const threatData: ThreatRequest = {
+        type: 'malware',
+        severity: 'high',
+        sourceIp: '192.168.1.100',
+        description: 'Test'
+      };
+
+      // Act & Assert — the service re-throws after logging; non-Error values propagate raw
+      await expect(threatService.reportThreat(threatData)).rejects.toBe(
+        'db_connection_lost'
+      );
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to report threat',
+        expect.objectContaining({ error: 'db_connection_lost' })
+      );
+    });
   });
 });

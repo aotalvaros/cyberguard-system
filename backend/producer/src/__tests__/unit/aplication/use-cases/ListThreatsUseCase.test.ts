@@ -160,4 +160,15 @@ describe('ListThreatsUseCase', () => {
     expect(result.total).toBe(5);
     expect(result.threats.length).toBe(result.total);
   });
+
+  // ✅ TEST 8: Cubre la rama String(error) del catch cuando se lanza un valor no-Error
+  it('should throw generic error when repository rejects with a non-Error value — covers String(error) branch', async () => {
+    // ARRANGE — throw a plain string to trigger `String(error)` instead of `.message`
+    jest.mocked(mockRepository.findAll).mockRejectedValue('network_timeout' as never);
+
+    // ACT & ASSERT — the use-case wraps it in a generic Error
+    await expect(listThreatsUseCase.execute()).rejects.toThrow(
+      'Failed to retrieve threats'
+    );
+  });
 });
