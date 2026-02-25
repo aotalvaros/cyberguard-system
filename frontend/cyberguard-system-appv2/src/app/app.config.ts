@@ -11,8 +11,8 @@ import { WebSocketRepositoryImpl } from '../core/infrastructure/services/websock
 import { authInterceptor, retryInterceptor, errorInterceptor, loadingInterceptor } from '../core/infrastructure/interceptors';
 import { GlobalErrorHandler } from '../core/infrastructure/handlers';
 import { StatisticsRepository } from '../core/domain/ports/statistics.repository';
-// TODO [POST-BACKEND]: switch to StatisticsRepositoryImpl once GET /api/statistics is delivered.
-// import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
+// Backend endpoint available — use real implementation
+import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
 import { StatisticsMockRepository } from '../core/infrastructure/services/statistics-mock-repository.impl';
 
 export const appConfig: ApplicationConfig = {
@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     { provide: AuthRepository, useClass: AuthRepositoryImpl },
     { provide: ThreatRepository, useClass: ThreatRepositoryImpl },
     { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
-    // Uses mock while backend endpoint is pending — swap to StatisticsRepositoryImpl when ready
-    { provide: StatisticsRepository, useClass: StatisticsMockRepository },
+    // Use real repository now that backend endpoint exists
+    { provide: StatisticsRepository, useClass: StatisticsRepositoryImpl },
   ]
 };
