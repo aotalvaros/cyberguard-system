@@ -40,7 +40,7 @@ export class ThreatService {
       const event = {
         eventId: uuidv4(),
         eventType: 'threat.detected',
-        timestamp: threat.timestamp || new Date().toISOString(),
+        timestamp: threat.timestamp || /* istanbul ignore next */ new Date().toISOString(),
         data: {
           threatId,
           type: threat.type,

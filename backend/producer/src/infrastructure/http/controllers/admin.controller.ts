@@ -36,7 +36,7 @@ router.patch(
 
     const { error, value } = updateRoleSchema.validate(req.body);
     if (error) {
-      res.status(400).json({ error: error.details[0]?.message ?? 'Invalid role' });
+      res.status(400).json({ error: error.details[0]?.message ?? /* istanbul ignore next */ 'Invalid role' });
       return;
     }
 

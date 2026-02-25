@@ -898,5 +898,108 @@ describe('AuthService', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('locked');
     });
+
+    /**
+     * VALIDAR (rama String(err) en .catch): cuando auditLogRepository.log rechaza
+     * con un valor que NO es instancia de Error (e.g. un string), la rama
+     * `err instanceof Error ? err.message : String(err)` toma el camino String(err).
+     * El flujo de negocio NO se interrumpe — el login falla por credenciales, no por audit.
+     *
+     * Cubre las ramas de líneas 35, 40 del AuthService — el ternario String(err).
+     */
+    it('should use String(err) in logger when audit log rejects with a non-Error on login failure', async () => {
+      // Arrange — authenticate falla Y el audit log rechaza con un string (no Error)
+      mockAuthProvider.authenticate.mockResolvedValue({ success: false, error: 'bad credentials' });
+      mockAuditLogRepository.log.mockRejectedValueOnce('AUDIT_TIMEOUT_STRING' as never);
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'wrong' });
+
+      // Assert — el login sigue fallando por las credenciales (no por el audit)
+      expect(result.success).toBe(false);
+      // El logger.error fue llamado con String('AUDIT_TIMEOUT_STRING')
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: 'AUDIT_TIMEOUT_STRING' })
+      );
+    });
+
+    /**
+     * VALIDAR (rama String(err)): cuando el audit log de auto-creación rechaza
+     * con un no-Error. Cubre la rama String(err) de línea 83.
+     */
+    it('should use String(err) in logger when auto-create audit rejects with a non-Error', async () => {
+      // Arrange — Firebase autentica, usuario no existe en PostgreSQL → auto-creación
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'fb-id', username: 'newuser', role: 'viewer' },
+      });
+      mockUserRepository.findByUsername.mockResolvedValue(null);
+      mockTokenService.generateToken.mockReturnValue('token-xyz');
+      // El audit log de user_auto_created falla con un objeto plano (no Error)
+      mockAuditLogRepository.log.mockRejectedValueOnce({ code: 503, msg: 'unavailable' } as never);
+
+      // Act
+      const result = await authService.login({ username: 'newuser', password: 'pass' });
+
+      // Assert — el flujo no se interrumpe; String({ code: 503, msg: 'unavailable' }) es llamado
+      expect(result.success).toBe(true);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: '[object Object]' })
+      );
+    });
+
+    /**
+     * VALIDAR (rama String(err)): cuando el audit log de cuenta bloqueada rechaza
+     * con un no-Error. Cubre la rama String(err) de línea 97.
+     */
+    it('should use String(err) in logger when locked-account audit rejects with a non-Error', async () => {
+      // Arrange — cuenta bloqueada, audit log rechaza con número
+      const lockedUser = { ...mockUser, isLocked: true };
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'user-id-123', username: 'admin', role: 'admin' },
+      });
+      mockUserRepository.findByUsername.mockResolvedValue(lockedUser);
+      mockAuditLogRepository.log.mockRejectedValueOnce(42 as never); // número, no Error
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'pass' });
+
+      // Assert — cuenta sigue bloqueada; String(42) = '42' fue usado en el logger
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('locked');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: '42' })
+      );
+    });
+
+    /**
+     * VALIDAR (rama String(err)): cuando el audit log de login exitoso rechaza
+     * con un no-Error. Cubre la rama String(err) de línea 122.
+     */
+    it('should use String(err) in logger when success audit rejects with a non-Error', async () => {
+      // Arrange — login exitoso, audit log de login_success rechaza con undefined
+      mockAuthProvider.authenticate.mockResolvedValue({
+        success: true,
+        user: { id: 'user-id-123', username: 'admin', role: 'admin' },
+      });
+      mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+      mockTokenService.generateToken.mockReturnValue('valid-token');
+      mockAuditLogRepository.log.mockRejectedValueOnce(undefined as never);
+
+      // Act
+      const result = await authService.login({ username: 'admin', password: 'pass' });
+
+      // Assert — el token se retorna igual; String(undefined) = 'undefined' fue usado
+      expect(result.success).toBe(true);
+      expect(result.token).toBe('valid-token');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to log audit',
+        expect.objectContaining({ error: 'undefined' })
+      );
+    });
   });
 });

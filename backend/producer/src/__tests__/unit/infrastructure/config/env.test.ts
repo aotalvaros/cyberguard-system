@@ -173,6 +173,31 @@ describe('Environment Configuration', () => {
     });
   });
 
+  describe('Required Environment Variables - Failure Cases', () => {
+    it('should call process.exit(1) when a required variable has an empty value', async () => {
+      // Arrange — PORT is valid; RABBITMQ_URL is set to '' (falsy).
+      // dotenv does NOT override variables already present in process.env,
+      // so the empty string survives and !'' === true triggers the check.
+      process.env.PORT = '3000';
+      process.env.RABBITMQ_URL = '';   // falsy → triggers validation
+      process.env.JWT_SECRET = '';
+      process.env.FIREBASE_API_KEY = '';
+      process.env.FIREBASE_AUTH_DOMAIN = '';
+      process.env.FIREBASE_PROJECT_ID = '';
+
+      jest.unstable_mockModule('../../../../infrastructure/config/logger', () => ({
+        logger: mockLogger
+      }));
+
+      // The module init throws because our process.exit spy throws
+      await expect(
+        import('../../../../infrastructure/config/env')
+      ).rejects.toThrow('process.exit called');
+
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle single allowed origin', async () => {
       // Arrange

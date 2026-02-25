@@ -3,6 +3,7 @@ import { DeleteThreatUseCase } from '../../../../application/use-cases/DeleteThr
 import { Threat, ThreatRepository } from '../../../../domain/ports/ThreatRepository';
 import { ThreatNotFoundException } from '../../../../domain/exceptions/ThreatNotFoundException';
 
+
 // Mock logger
 jest.mock('../../../../infrastructure/config/logger', () => ({
   logger: {
@@ -12,6 +13,8 @@ jest.mock('../../../../infrastructure/config/logger', () => ({
     debug: jest.fn()
   }
 }));
+
+import { logger } from '../../../../infrastructure/config/logger';
 
 describe('DeleteThreatUseCase', () => {
   let deleteThreatUseCase: DeleteThreatUseCase;
@@ -35,6 +38,8 @@ describe('DeleteThreatUseCase', () => {
     };
 
     deleteThreatUseCase = new DeleteThreatUseCase(mockRepository);
+    jest.spyOn(logger, 'error').mockRestore();
+    jest.spyOn(logger, 'warn').mockRestore();
   });
 
   describe('execute', () => {

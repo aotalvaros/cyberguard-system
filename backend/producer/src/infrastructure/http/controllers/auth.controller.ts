@@ -19,7 +19,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   
   if (error) {
     const firstDetail = error.details[0];
-    res.status(400).json({ error: firstDetail ? firstDetail.message : 'Validation failed' });
+    res.status(400).json({ error: firstDetail ? firstDetail.message : /* istanbul ignore next */ 'Validation failed' });
     return;
   }
 

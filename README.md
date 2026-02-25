@@ -204,11 +204,37 @@ refactor(scope): descripción
 ---
 
 ## 🧪 Testing
+
 ### Backend (Producer)
 ```bash
 cd backend/producer
-npm test
+npm test                    # 506 tests, 21 suites
+npm test -- --coverage      # Reporte HTML en coverage/index.html
 ```
+
+### Evidencia TDD — Semana 2
+La feature `GET /api/statistics` fue implementada con **ciclo TDD Red→Green→Refactor**:
+
+```bash
+# Verificar el commit RED (tests fallan, implementación no existe):
+git show 660ddcb --stat
+
+# Verificar el commit GREEN (tests pasan):
+git show 99fb71d --stat
+
+# Ejecutar solo los tests del use case nuevo:
+cd backend/producer
+npx jest GetThreatStatisticsUseCase --no-coverage
+```
+
+| Fase | Commit | Descripción |
+|------|--------|-------------|
+| 🔴 RED | `660ddcb` | Tests escritos antes de la implementación |
+| 🟢 GREEN | `99fb71d` | Implementación mínima para pasar los tests |
+| 🔵 REFACTOR | `ad5d1d1` | Tests de infraestructura y controller |
+9
+Ver estrategia completa en [TESTING_STRATEGY_BACKEND.md](backend/producer/TESTING_STRATEGY_BACKEND.md)
+
 
 ### Frontend (Angular + Vitest)
 ```bash
