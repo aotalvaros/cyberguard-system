@@ -39,7 +39,7 @@ jest.mock('../../../../../application/services/threat.service', () => ({
 
 
 import  '../../../../../infrastructure/config/logger';
-import { bruteForceDetection, resetBruteForceState } from '../../../../../infrastructure/http/middlewares/bruteforce.middleware';
+import { bruteForceDetection, resetBruteForceState, getBruteForceState } from '../../../../../infrastructure/http/middlewares/bruteforce.middleware';
 
 describe('Brute Force Detection Middleware', () => {
   let app: express.Application;
@@ -621,6 +621,144 @@ describe('Brute Force Detection Middleware', () => {
       
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ token: 'fake-jwt-token' });
+    });
+  });
+
+  // ==========================================================================
+  // getBruteForceState() — función exportada para diagnóstico
+  // ==========================================================================
+
+  describe('getBruteForceState()', () => {
+    /**
+     * VERIFICAR: getBruteForceState retorna una copia del Map interno.
+     * El Map externo no debe mutar el estado del módulo (defensive copy).
+     */
+    it('should return empty map when no attempts have been made', () => {
+      const state = getBruteForceState();
+      expect(state.size).toBe(0);
+      expect(state).toBeInstanceOf(Map);
+    });
+
+    it('should reflect attempts after failed logins', async () => {
+      // Arrange — 3 intentos fallidos desde TEST_IP
+      for (let i = 0; i < 3; i++) {
+        await request(app).post('/login').send({ username: 'admin', password: 'wrong' });
+      }
+
+      // Act
+      const state = getBruteForceState();
+
+      // Assert — el Map contiene la IP con count === 3
+      expect(state.has(TEST_IP)).toBe(true);
+      expect(state.get(TEST_IP)!.count).toBe(3);
+    });
+
+    it('should return a defensive copy — mutations do not affect internal state', async () => {
+      await request(app).post('/login').send({ username: 'admin', password: 'wrong' });
+
+      const state = getBruteForceState();
+      // Mutar la copia no debe afectar el mapa real
+      state.clear();
+
+      const stateAfter = getBruteForceState();
+      // El estado interno sigue teniendo la entrada
+      expect(stateAfter.size).toBe(1);
+    });
+  });
+
+  // ==========================================================================
+  // Ventana de tiempo — reset de intentos expirados (líneas 72-73)
+  // ==========================================================================
+
+  describe('Time Window Reset (trackFailedAttempt internal branch)', () => {
+    /**
+     * VALIDAR: Si la ventana de tiempo de 5 min expiró, un nuevo intento fallido
+     * reinicia el contador desde 1 (no acumula con intentos de la sesión anterior).
+     * Cubre la rama `now - attempt.firstAttempt > TIME_WINDOW` (líneas 72-73).
+     */
+    it('should reset attempt counter after time window expires', async () => {
+      jest.useFakeTimers();
+      try {
+        // Arrange — 4 intentos (debajo del umbral)
+        for (let i = 0; i < 4; i++) {
+          await request(app).post('/login').send({ username: 'admin', password: 'wrong' });
+        }
+        expect(getBruteForceState().get(TEST_IP)!.count).toBe(4);
+
+        // Avanzar más de 5 minutos → la ventana expira
+        jest.advanceTimersByTime(5 * 60 * 1000 + 1);
+
+        // Un nuevo intento debe reiniciar el contador
+        await request(app).post('/login').send({ username: 'admin', password: 'wrong' });
+
+        // Assert — el contador vuelve a 1, no a 5
+        const state = getBruteForceState();
+        expect(state.get(TEST_IP)!.count).toBe(1);
+        // Y no se reportó amenaza (solo 1 intento en la nueva ventana)
+        expect(mockReportThreat).not.toHaveBeenCalled();
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+
+  // ==========================================================================
+  // setInterval cleanup — limpieza de entradas antiguas (líneas 108-111)
+  // ==========================================================================
+
+  describe('setInterval Cleanup (expired entries purge)', () => {
+    /**
+     * VALIDAR: El setInterval que corre cada 10 min limpia entradas expiradas.
+     * Para controlar el timer, el módulo se carga con fake timers ya activos
+     * usando jest.isolateModulesAsync(). De esta forma el setInterval queda
+     * registrado bajo el control de Jest.
+     * Cubre el callback del setInterval (líneas 108-111).
+     */
+    it('should remove expired entries after 10 minutes via setInterval', async () => {
+      jest.useFakeTimers();
+      // jest.resetModules() garantiza que el módulo se recarga fresco en el
+      // isolateModulesAsync, con setInterval bajo el control de fake timers.
+      jest.resetModules();
+      try {
+        let isolatedGetState!: () => Map<string, unknown>;
+        let isolatedDetection!: express.RequestHandler;
+        let isolatedReset!: () => void;
+
+        await jest.isolateModulesAsync(async () => {
+          const mod = await import('../../../../../infrastructure/http/middlewares/bruteforce.middleware');
+          isolatedGetState = mod.getBruteForceState as () => Map<string, unknown>;
+          isolatedDetection = mod.bruteForceDetection as express.RequestHandler;
+          isolatedReset = mod.resetBruteForceState;
+        });
+
+        isolatedReset();
+
+        // Construir una mini-app con el módulo aislado para usar Supertest
+        const testApp = express();
+        testApp.use(express.json());
+        testApp.use((req, _res, next) => {
+          Object.defineProperty(req, 'ip', { value: '10.0.0.99', writable: true, configurable: true });
+          next();
+        });
+        testApp.use(isolatedDetection as express.RequestHandler);
+        testApp.post('/login', (_req, res) => res.status(401).json({ error: 'bad' }));
+
+        // Generar una entrada en el Map (1 intento fallido)
+        await request(testApp).post('/login').send({ username: 'u', password: 'w' });
+        expect(isolatedGetState().size).toBe(1);
+
+        // Avanzar más de 5 min → la entrada expira respecto a la ventana
+        jest.advanceTimersByTime(5 * 60 * 1000 + 1);
+
+        // Avanzar 10 min → el setInterval se activa y purga las entradas expiradas
+        jest.advanceTimersByTime(10 * 60 * 1000);
+
+        // Assert — el Map quedó vacío: la limpieza funcionó
+        expect(isolatedGetState().size).toBe(0);
+      } finally {
+        jest.useRealTimers();
+        jest.resetModules();
+      }
     });
   });
 });

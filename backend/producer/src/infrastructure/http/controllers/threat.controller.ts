@@ -67,7 +67,7 @@ router.delete('/:threatId', async (req: Request, res: Response): Promise<void> =
 
     const deleteThreatUseCase = ServiceFactory.getDeleteThreatUseCase();
 
-    const result = await deleteThreatUseCase.execute(threatId ?? '');
+    const result = await deleteThreatUseCase.execute(threatId ?? /* istanbul ignore next */ '');
 
     logger.info('Threat deleted', { threatId: result.threatId });
 

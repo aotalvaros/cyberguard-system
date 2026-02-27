@@ -12,6 +12,9 @@ jest.mock('../../../../infrastructure/config/env', () => ({
 import { ServiceFactory } from '../../../../infrastructure/factories/ServiceFactory';
 import { AuthService } from '../../../../application/services/AuthService';
 import { ThreatService } from '../../../../application/services/threat.service';
+import { ListThreatsUseCase } from '../../../../application/use-cases/ListThreatsUseCase';
+import { DeleteThreatUseCase } from '../../../../application/use-cases/DeleteThreatUseCase';
+import { ThreatClassifier } from '../../../../domain/services/ThreatClassifier';
 
 
 describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
@@ -165,6 +168,131 @@ describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
 
       expect(threatService).toBeInstanceOf(ThreatService);
       expect(authService).toBeInstanceOf(AuthService);
+    });
+  });
+
+  // ── Additional factory methods – singleton pattern & reset ────────────────
+
+  describe('Remaining Factory Methods', () => {
+    beforeEach(() => {
+      ServiceFactory.resetForTesting();
+    });
+
+    describe('getThreatRepository()', () => {
+      it('should create and return a repository instance', () => {
+        const repo = ServiceFactory.getThreatRepository();
+        expect(repo).toBeDefined();
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const repo1 = ServiceFactory.getThreatRepository();
+        const repo2 = ServiceFactory.getThreatRepository();
+        expect(repo1).toBe(repo2);
+      });
+    });
+
+    describe('getListThreatsUseCase()', () => {
+      it('should create and return a ListThreatsUseCase instance', () => {
+        const uc = ServiceFactory.getListThreatsUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(ListThreatsUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getListThreatsUseCase();
+        const uc2 = ServiceFactory.getListThreatsUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getDeleteThreatUseCase()', () => {
+      it('should create and return a DeleteThreatUseCase instance', () => {
+        const uc = ServiceFactory.getDeleteThreatUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(DeleteThreatUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getDeleteThreatUseCase();
+        const uc2 = ServiceFactory.getDeleteThreatUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getUserRepository()', () => {
+      it('should create and return a user repository instance', () => {
+        const repo = ServiceFactory.getUserRepository();
+        expect(repo).toBeDefined();
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const repo1 = ServiceFactory.getUserRepository();
+        const repo2 = ServiceFactory.getUserRepository();
+        expect(repo1).toBe(repo2);
+      });
+    });
+
+    describe('getAuditLogRepository()', () => {
+      it('should create and return an audit log repository instance', () => {
+        const repo = ServiceFactory.getAuditLogRepository();
+        expect(repo).toBeDefined();
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const repo1 = ServiceFactory.getAuditLogRepository();
+        const repo2 = ServiceFactory.getAuditLogRepository();
+        expect(repo1).toBe(repo2);
+      });
+    });
+
+    describe('getThreatClassifier()', () => {
+      it('should create and return a ThreatClassifier instance', () => {
+        const classifier = ServiceFactory.getThreatClassifier();
+        expect(classifier).toBeDefined();
+        expect(classifier).toBeInstanceOf(ThreatClassifier);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const classifier1 = ServiceFactory.getThreatClassifier();
+        const classifier2 = ServiceFactory.getThreatClassifier();
+        expect(classifier1).toBe(classifier2);
+      });
+    });
+
+    describe('getStatisticsUseCase()', () => {
+      it('should return a use case instance (no caching)', () => {
+        const uc1 = ServiceFactory.getStatisticsUseCase();
+        const uc2 = ServiceFactory.getStatisticsUseCase();
+        expect(uc1).toBeDefined();
+        expect(uc2).toBeDefined();
+      });
+    });
+
+    describe('resetForTesting()', () => {
+      it('should reset all cached instances so next call creates new ones', () => {
+        const threat1    = ServiceFactory.getThreatRepository();
+        const list1      = ServiceFactory.getListThreatsUseCase();
+        const del1       = ServiceFactory.getDeleteThreatUseCase();
+        const user1      = ServiceFactory.getUserRepository();
+        const audit1     = ServiceFactory.getAuditLogRepository();
+        const classify1  = ServiceFactory.getThreatClassifier();
+
+        ServiceFactory.resetForTesting();
+
+        const threat2    = ServiceFactory.getThreatRepository();
+        const list2      = ServiceFactory.getListThreatsUseCase();
+        const del2       = ServiceFactory.getDeleteThreatUseCase();
+        const user2      = ServiceFactory.getUserRepository();
+        const audit2     = ServiceFactory.getAuditLogRepository();
+        const classify2  = ServiceFactory.getThreatClassifier();
+
+        expect(threat1).not.toBe(threat2);
+        expect(list1).not.toBe(list2);
+        expect(del1).not.toBe(del2);
+        expect(user1).not.toBe(user2);
+        expect(audit1).not.toBe(audit2);
+        expect(classify1).not.toBe(classify2);
+      });
     });
   });
 });

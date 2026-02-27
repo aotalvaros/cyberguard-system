@@ -28,7 +28,7 @@ jest.mock('../../../../../infrastructure/config/logger', () => ({
 }));
 
 import { authMiddleware, AuthRequest } from '../../../../../infrastructure/http/middlewares/auth.middleware';
-import  '../../../../../infrastructure/config/logger';
+import { logger } from '../../../../../infrastructure/config/logger';
 
 
 describe('Auth Middleware', () => {
@@ -49,6 +49,9 @@ describe('Auth Middleware', () => {
     };
     
     nextFunction = jest.fn() as NextFunction;
+
+    jest.spyOn(logger, 'error').mockRestore();
+    jest.spyOn(logger, 'warn').mockRestore();
   });
 
   // ==========================================================================

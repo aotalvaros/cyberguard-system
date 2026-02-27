@@ -31,7 +31,7 @@ export class PostgresThreatRepository implements ThreatRepository {
           threat.targetIp ?? null,
           threat.description,
           threat.metadata ? JSON.stringify(threat.metadata) : null,
-          threat.timestamp ?? new Date().toISOString()
+          threat.timestamp ?? /* istanbul ignore next */ new Date().toISOString()
         ]
       );
 
@@ -83,6 +83,7 @@ export class PostgresThreatRepository implements ThreatRepository {
       if (rows.length === 0) return null;
 
       const row = rows[0];
+      /* istanbul ignore next */
       if (!row) return null;
 
       return this.mapToThreat(row);

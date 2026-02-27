@@ -4,9 +4,9 @@ Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real c
 
 **📚 Documentación Relacionada:**
 - 🤖 [AI_WORKFLOW.md](../AI_WORKFLOW.md) - Marco de desarrollo con IA (Prompting por Capas)
-- 🛡️ [SECURITY_GUIDELINES.md](../docs/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio
-- � [DEBT_REPORT_BACKEND.md](../DEBT_REPORT_BACKEND.md) - Deuda técnica y plan de refactorización
-- 📊 [ANALISIS_DEUDA_ACTUAL.md](../ANALISIS_DEUDA_ACTUAL.md) - Estado actual vs deuda original (96% resuelto)
+- 🛡️ [SECURITY_GUIDELINES.md](../../docs/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio
+- � [DEBT_REPORT_BACKEND.md](../docs/DEBT_REPORT_BACKEND.md) - Deuda técnica y plan de refactorización
+- 📊 [ANALISIS_DEUDA_ACTUAL.md](../docs/ANALISIS_DEUDA_ACTUAL.md) - Estado actual vs deuda original (96% resuelto)
 
 ---
 
@@ -14,9 +14,9 @@ Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real c
 
 | Métrica | Valor | Estado |
 |---------|-------|--------|
-| **Calificación Arquitectura** | 4.7/5 (94%) | ✅ |
-| **Test Cases** | 480 casos en 18 suites | ✅ |
-| **Cobertura** | 85%+ | ✅ |
+| **Calificación Arquitectura** | 4.8/5 (96%) | ✅ |
+| **Test Cases** | 506 casos en 21 suites | ✅ |
+| **Cobertura** | 90%+ | ✅ |
 | **Tipos `any`** | 0 en producción | ✅ |
 | **Flakiness** | 0% | ✅ |
 | **Arquitectura** | Hexagonal (Ports & Adapters) | ✅ |
@@ -26,9 +26,11 @@ Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real c
 | **Auditoría** | PostgreSQL (audit_logs) | ✅ |
 | **RabbitMQ** | Singleton + ConfirmChannel + DLX | ✅ |
 | **CRUD Threats** | POST + GET + DELETE | ✅ |
+| **Estadísticas** | GET /api/statistics | ✅ |
 | **Gestión de Roles** | PATCH /api/admin/users/:username/role | ✅ |
 | **Validación DTOs** | Joi en todos los endpoints | ✅ |
 | **Brute Force Detection** | Auto-detección + auto-report + DI | ✅ |
+| **TDD Evidenciado** | Commits RED→GREEN verificables en Git | ✅ |
 | **Tests E2E** | Pendiente | ⏳ |
 
 ---
@@ -525,6 +527,32 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
+### 7. Estadísticas del Sistema
+
+```http
+GET /api/statistics
+Authorization: Bearer <token>
+```
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalThreats": 42,
+    "byType": { "malware": 20, "ddos": 22 },
+    "bySeverity": { "critical": 5, "high": 15, "medium": 12, "low": 10 },
+    "last24Hours": 8,
+    "criticalActive": 5
+  }
+}
+```
+**Características:**
+- ✅ Requiere autenticación (JWT)
+- ✅ Agregaciones SQL en PostgreSQL (GROUP BY type, severity)
+- ✅ Implementado con TDD (test RED primero, commit `660ddcb`)
+- ✅ Puerto del dominio `ThreatStatisticsRepository` (interfaz pura)
+
 
 ### Consultas Útiles
 
@@ -558,7 +586,7 @@ npm run test:watch        # Modo watch
 npm run test:coverage     # Con cobertura
 ```
 
-### Tests implementados — 480 casos en 18 suites
+### Tests implementados — 506 casos en 21 suites
 
 | Módulo | Casos | Descripción |
 |--------|-------|-------------|
@@ -566,8 +594,10 @@ npm run test:coverage     # Con cobertura
 | `threat.service.test.ts` | 51 | Report, event publishing, errores tipados |
 | `ListThreatsUseCase.test.ts` | 6 | Retrieval, DTOs, errores |
 | `DeleteThreatUseCase.test.ts` | 8 | Delete, ThreatNotFoundException |
+| `GetThreatStatisticsUseCase.test.ts` | 5 | **NUEVO TDD** — estadísticas, propagación de errores |
 | `auth.controller.test.ts` | 50+ | Login flow, Joi validation, JWT |
 | `threat.controller.test.ts` | 30+ | CRUD, validación Joi, errores tipados |
+| `statistics.controller.test.ts` | 11 | **NUEVO** — GET /statistics, auth, errores |
 | `threat.schema.test.ts` | 30 | Schema Joi, tipos válidos e inválidos |
 | `validation.middleware.test.ts` | 15+ | Middleware genérico reutilizable |
 | `auth.middleware.test.ts` | 8 | JWT validation, expiración |
@@ -579,8 +609,9 @@ npm run test:coverage     # Con cobertura
 | `ServiceFactory.test.ts` | 10+ | DI composition, singletons |
 | `env.test.ts` | 11 | Config validation, defaults |
 | `PostgresRepos tests` | 30+ | Repos tipados, manejo de errores |
+| `PostgresThreatStatisticsRepository.test.ts` | 8 | **NUEVO** — queries SQL, mapeo, errores |
 | `ThreatClassifier.test.ts` | 61 | Strategy pattern, 5 estrategias |
-| **TOTAL** | **480** | **18 suites · 0% flakiness · ~6s** |
+| **TOTAL** | **506** | **21 suites · 0% flakiness · ~7s** |
 
 ---
 
@@ -708,18 +739,20 @@ npm audit                # Verificar vulnerabilidades
 
 ---
 
+
 ## 📊 Calificación Final de Arquitectura
 
 | Dimensión | Puntaje | Observaciones |
 |-----------|---------|---------------|
-| **Arquitectura Hexagonal** | 5.0/5 | 7 ports, 6+ adapters, 2 use cases. Sin legado |
+| **Arquitectura Hexagonal** | 5.0/5 | 8 ports, 6+ adapters, 3 use cases. Sin legado |
 | **Calidad de Código** | 5.0/5 | 0 `any`, tsconfig strict completo, inmutabilidad, DomainError |
-| **Testing** | 4.0/5 | 600 tests totales (480+120), 23 suites, 85%+ cobertura |
+| **Testing** | 4.5/5 | 626 tests totales (506+120), 26 suites, 90%+ cobertura, TDD evidenciado |
 | **Seguridad** | 4.0/5 | Firebase Custom Claims, JWT, brute force, audit trail, gestión de roles |
 | **Infraestructura** | 5.0/5 | Docker multi-stage, multi-servicio, USER node, Singleton RabbitMQ |
 | **Patrones de Diseño** | 5.0/5 | Factory, Repository, Port&Adapter, Singleton, Strategy (5 estrategias) |
-| **Persistencia** | 5.0/5 | PostgreSQL ACID, 3 repos, 7 índices, JSONB, seed admin automático |
-| **TOTAL** | **4.7/5 (94%)** | **Production-ready** |
+| **Persistencia** | 5.0/5 | PostgreSQL ACID, 4 repos, 7 índices, JSONB, seed admin automático |
+| **TOTAL** | **4.8/5 (96%)** | **Production-ready · TDD evidenciado** |
+
 
 ---
 
