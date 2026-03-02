@@ -413,5 +413,13 @@ Este documento es **vivo** y debe actualizarse cuando:
 - El QA encuentre un patrón recurrente de error de IA
 - Se adopte una nueva herramienta o práctica
 
-**Última actualización**: 13 Feb 2026 (QA Audit Complete)  
+### Cambios recientes (14 Feb 2026 — 27 Feb 2026)
+- **Worker v1.4.0 (20 Feb 2026)**: actualizaciones en `backend/worker` — corrección Redis, mejoras en roles y endpoint admin, README actualizado.
+- **Threat Statistics / Analytics (23-25 Feb 2026)**: nueva feature `GET /api/statistics` en backend; ciclo TDD completo, pruebas de integración y cobertura real reportada (25 Feb 2026). Artefactos OpenSpec para `threat-statistics-dashboard` (creado 2026-02-23) y componente `statistics-widget` en frontend.
+- **Dashboard & UX**: integración de widget de estadísticas en frontend V2; sincronización con backend de analytics; componentes presentacionales añadidos bajo `presentation/components/dashboard/statistics-widget/`.
+- **Testing y QA**: estrategia de tests actualizada (suite completa reportada el 25 Feb 2026), TDD reforzado para nuevas features y eliminación de exclusiones de cobertura.
+- **Prácticas y Paradigmas**: adopción más estricta de feature-by-feature (feature flags), TDD como política, y mayor exigencia de `Human Checks` en lógica crítica.
+- **Documentación y Análisis**: análisis de deuda y sesiones de corrección (sesión 20 Feb 2026) con acciones en roles, endpoints administrativos y fixes menores.
+
+**Última actualización**: 27 Feb 2026 (Incluye cambios: Worker v1.4.0, Threat Statistics, Testing updates)  
 **Responsable**: Equipo CyberGuard (Cloud Architect & Backend Developer + Frontend Developer & QA Engineer)
