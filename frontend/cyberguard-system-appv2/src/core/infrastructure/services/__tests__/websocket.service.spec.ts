@@ -1,3 +1,4 @@
+// Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { WebSocketService } from '../websocket.service';

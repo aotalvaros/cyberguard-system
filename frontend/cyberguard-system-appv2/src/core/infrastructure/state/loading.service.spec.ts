@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { LoadingService, LoadingOperation } from './loading.service';

@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect } from 'vitest';
 import { AuthMapper, toLoginRequestDto, toUser, toAuthResponse } from '../auth.mapper';
 import { LoginCredentials } from '../../../domain/models/login-credentials.model';

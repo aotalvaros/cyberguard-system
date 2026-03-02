@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { 
   AppErrorType, 
