@@ -41,5 +41,6 @@ temp/
 *.tsbuildinfo
 -e 
 # Amazon Q duplicates (already in .github/)
-.amazonq/prompts/
-.amazonq/skills/
+.amazonq/
+
+.github/**
