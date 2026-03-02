@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+// Tipo de prueba: Unitario
 import { TestBed } from '@angular/core/testing';
 import { LogoutUseCase } from '../logout.use-case';
 import { AuthRepository } from '../../../domain/ports/auth.repository';
