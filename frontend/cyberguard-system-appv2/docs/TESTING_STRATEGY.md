@@ -8,11 +8,11 @@ Este documento define la estrategia de Quality Assurance (QA) para el frontend d
 
 | Métrica | Valor | Objetivo |
 |---------|-------|----------|
-| Statements | 93.88% | ≥80% ✅ |
-| Branches | 91.81% | ≥70% ✅ |
-| Functions | 91.83% | ≥80% ✅ |
-| Lines | 97.68% | ≥80% ✅ |
-| Tests Passing | 321/321 | 100% ✅ |
+| Statements | 94.31% | ≥80% ✅ |
+| Branches | 92.31% | ≥70% ✅ |
+| Functions | 92.35% | ≥80% ✅ |
+| Lines | 94.31% | ≥80% ✅ |
+| Tests Passing | 325/325 | 100% ✅ |
 
 ---
 
@@ -65,6 +65,9 @@ Se realizaron **19 commits atómicos** siguiendo el ciclo TDD:
 | 17 | 🟢 GREEN | `feat(presentation): integrate StatisticsWidget in Dashboard` |
 | 18 | 🔵 REFACTOR | `refactor(di): configure StatisticsRepository DI provider` |
 | 19 | 🔵 REFACTOR | `refactor(coverage): improve WebSocket testability` |
+| 20 | 🔴 RED | `test(presentation): add failing test for Alerts integration` |
+| 21 | 🟢 GREEN | `feat(presentation): implement Alerts integration test` |
+| 22 | 🟢 GREEN | `docs: add TDD.md (testing guidance) and update AI_WORKFLOW.md` |
 
 ### Flujo TDD por Capa (Inside-Out)
 
@@ -139,6 +142,18 @@ export abstract class StatisticsRepository {
 | **Menos bugs en producción** | Defectos detectados temprano |
 
 ---
+
+## Cambios recientes (resumen)
+
+- Añadidos 2 tests de integración estilo TestBed: `dashboard.integration.spec.ts` y `alerts.integration.spec.ts`.
+- Añadido `TDD.md` en `frontend/cyberguard-system-appv2/docs/` con la guía de trabajo TDD y listado de pruebas.
+- Actualizada `AI_WORKFLOW.md` con el histórico de los cambios relacionados a testing.
+- Branch creada: `feat/integration-tests-tdd-docs-2026-03-02` y PR abierto: https://github.com/aotalvaros/cyberguard-system/pull/48 (base: `develop`).
+
+Notas técnicas:
+- Las pruebas de integración usan adaptadores in-memory y mocks para WebSocket y repositorios, evitando servicios externos.
+- Se aplicó mocking unitario consistente: `HttpClientTestingModule` para HTTP, stubs/impls para puertos, y factories para WebSocket.
+
 
 ## Arquitectura de Testing
 
