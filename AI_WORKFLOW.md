@@ -398,6 +398,11 @@ En cada bloque de lógica compleja, agregar:
 ## Métricas de Éxito
 
 - **Cobertura de Tests**: > 80%
+
+## Cambios Recientes (automatizados)
+
+- 2026-03-01: Añadida prueba de integración `alerts.integration.spec.ts` para `Alerts` (WebSocket in-memory, eliminación y limpieza) en el frontend V2.
+- 2026-03-01: Añadido `TDD.md` en `frontend/cyberguard-system-appv2/docs/` documentando la estrategia TDD aplicada y la clasificación de pruebas (unitarias vs integración).
 - **Human Checks Documentados**: Mínimo 5 por microservicio
 - **Vulnerabilidades Detectadas por QA**: 0 en producción
 - **Anti-Patterns Documentados**: Mínimo 2 en README.md
