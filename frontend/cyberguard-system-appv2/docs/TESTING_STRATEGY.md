@@ -179,6 +179,23 @@ Notas técnicas:
 
 ---
 
+## Clasificación específica: `infrastructure`
+
+Las pruebas ubicadas en la carpeta `infrastructure` contienen una mezcla de estilos y propósitos. Para evitar ambigüedades, aquí se define cómo las clasificamos en este proyecto:
+
+- **Unitarias**: pruebas que verifican funciones puras, mappers, y transformaciones sin dependencia de Angular DI ni `HttpClient`. Ejemplos: `threat.mapper.spec.ts`, `auth.mapper.spec.ts`. Estas pruebas deben ejecutarse aisladas y rápidas.
+- **De integración**: pruebas que ejercitan la interacción entre piezas de infraestructura y la plataforma Angular (por ejemplo, `HttpClient`, interceptors, providers DI, o adaptadores WebSocket). Si un test usa `TestBed` con `HttpClientTestingModule`, inyecta un `RepositoryImpl`, o valida el comportamiento de un `Interceptor` en el pipeline HTTP, lo consideramos una prueba de integración porque verifica la interacción entre módulos.
+
+Ejemplos prácticos:
+
+- `statistics-repository.impl.spec.ts` — si usa `HttpTestingController` para simular respuestas HTTP, clasificar como **Integración**.
+- `websocket-repository.impl.spec.ts` — si simula el socket y verifica la integración con el `DomainService`/`Component`, clasificar como **Integración**.
+- `threat.mapper.spec.ts` — pruebas puras de mapeo de DTO → Domain model, clasificar como **Unitario**.
+- `error.interceptor.spec.ts` — cuando se testea mediante `HttpClientTestingModule` y se valida el flujo de errores a través del interceptor, clasificar como **Integración**.
+
+Recomendación operativa: documentar en la cabecera del archivo de test el tipo (`// Tipo de prueba: Unitario` o `// Tipo de prueba: Integración`), y mantener los tests unitarios sin `TestBed` para velocidad, relegando `TestBed` y módulos de Angular a pruebas integrales.
+
+
 ## 1. VERIFICACIÓN (¿Lo construimos correctamente?)
 
 La verificación se enfoca en confirmar que el código cumple con las especificaciones técnicas y funciona según lo diseñado.
