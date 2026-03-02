@@ -459,3 +459,46 @@ Test Files  36 passed (36)
 
 - Equipo de Desarrollo CyberGuard
 - Fecha: 23 de febrero de 2026
+
+## 10. Dependencias de pruebas y archivos clave
+
+### 10.1 Dependencias usadas para Tests Unitarios
+
+- `vitest` (devDependency) — runner y assertions (archivo: `package.json` devDependencies). Ejemplos de uso en:
+  - `src/core/domain/models/__tests__/threat-statistics.model.spec.ts`
+  - `src/core/application/use-cases/__tests__/get-statistics.use-case.spec.ts`
+  - `src/core/infrastructure/mappers/__tests__/threat.mapper.spec.ts`
+  - `src/core/infrastructure/services/__tests__/statistics-repository.impl.spec.ts`
+
+- `jsdom` — entorno DOM para tests que usan renderizado/DOM APIs. Usado por tests de componentes y de integración (ej.: `dashboard.component.spec.ts`).
+
+- `@vitest/coverage-v8` — generador de cobertura (provisto por V8). Configuración en `vitest.config.ts`.
+
+- `@angular/core/testing` y utilidades de Angular — `TestBed`, `ComponentFixture`, `fakeAsync`, etc. Ejemplos de archivos:
+  - `src/presentation/components/alerts/__tests__/alerts.component.spec.ts`
+  - `src/presentation/guards/__tests__/auth.guard.spec.ts`
+
+- `@angular/common/http/testing` (`HttpClientTestingModule`, `HttpTestingController`) — mock de HTTP en unit tests de repositorios/servicios:
+  - `src/core/infrastructure/services/__tests__/statistics-repository.impl.spec.ts`
+  - `src/core/infrastructure/services/__tests__/threat-repository.impl.spec.ts`
+
+### 10.2 Dependencias usadas para Tests de Integración
+
+- `vitest` + `jsdom` — mismo runner y entorno para integration specs que ejecutan `TestBed`.
+- `@angular/core/testing` (`TestBed`) — para montar módulos y providers reales o test doubles. Integración relevante en:
+  - `src/presentation/components/dashboard/__tests__/dashboard.integration.spec.ts`
+  - `src/presentation/components/alerts/__tests__/alerts.integration.spec.ts`
+
+- Adaptadores in-memory / mocks creados en las propias pruebas — localizados en los mismos archivos `__tests__` (se usan factories y `BehaviorSubject` para simular WebSocket y streams).
+
+### 10.3 Dónde están declaradas estas dependencias
+
+- `frontend/cyberguard-system-appv2/package.json` — sección `devDependencies` contiene `vitest`, `jsdom`, `@vitest/coverage-v8`.
+- Las utilidades de Angular provienen de las dependencias de `@angular/*` listadas en `dependencies`.
+
+### 10.4 Notas sobre el uso de mocks
+
+- Mocks de HTTP: `HttpClientTestingModule` + `HttpTestingController` se usan para interceptar y resolver peticiones en pruebas unitarias de repositorios.
+- Mocks de WebSocket: tests de alerts usan factories / `BehaviorSubject` para emitir eventos sin sockets reales. Revisa `alerts.integration.spec.ts` y `alerts.component.spec.ts`.
+- Mocks de Storage y Repositories: se proporcionan stubs que implementan los puertos (`ThreatRepository`, `StatisticsRepository`, `AuthRepository`) en `__tests__` cuando se requiere aislamiento.
+
