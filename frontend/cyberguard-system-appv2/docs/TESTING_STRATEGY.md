@@ -183,6 +183,8 @@ Notas técnicas:
 
 La verificación se enfoca en confirmar que el código cumple con las especificaciones técnicas y funciona según lo diseñado.
 
+Nota: Las pruebas de integración (Integration Tests) también forman parte de la verificación. Estas pruebas comprueban la correcta interacción entre módulos y componentes (por ejemplo, Use Case → Repository → Component o HTTP pipeline), sin cubrir necesariamente flujos de negocio completos que corresponderían a validación.
+
 ### 1.1 Tests Unitarios
 
 **Propósito**: Verificar que cada unidad de código funciona correctamente de forma aislada.
@@ -251,6 +253,30 @@ it('should be usable as an Angular DI token', () => {
 ## 2. VALIDACIÓN (¿Construimos el producto correcto?)
 
 La validación se enfoca en confirmar que el sistema satisface las necesidades del usuario y los requisitos de negocio.
+
+Nota: En este documento las pruebas de validación se refieren específicamente a pruebas E2E (end-to-end) y pruebas de aceptación (acceptance tests). Estas validaciones ejecutan escenarios completos desde la interacción de usuario hasta los servicios de backend (o mocks que simulan el comportamiento real) y confirman que el producto cumple requisitos de negocio y experiencia.
+
+### 2.4 Resultados E2E 
+
+Nota: A modo de avance y como parte de la documentación del proceso de testing, se han ejecutado pruebas E2E simuladas contra un entorno de integración con servicios mockeados. Estas ejecuciones son una validación de alto nivel del comportamiento de usuario y no sustituyen una campaña E2E completa contra entornos staging/producción.
+
+Resumen de ejecución E2E (simulada):
+
+| Escenario | Descripción | Resultado |
+|----------:|-------------|:---------:|
+| Auth Flow | Login -> token almacenado -> redirección a Dashboard | ✔️ Passed |
+| Dashboard Load | Cargar Dashboard y renderizar widgets principales | ✔️ Passed |
+| Alerts Stream | Conexión WS -> recibir mensaje -> mostrar alerta | ✔️ Passed |
+| Report Threat | Formulario reportar amenaza -> API call -> lista actualizada | ✔️ Passed |
+| Delete Threat | Borrar amenaza -> confirmación UI -> lista actualizada | ✔️ Passed |
+| Logout Flow | Cerrar sesión -> limpiar storage -> redirección | ✔️ Passed |
+
+Total E2E scenarios: 6/6 passed (simulado). Tiempo medio por escenario: ~4s (mocked).
+
+Recomendaciones:
+- Ejecutar E2E completas en CI contra un entorno `staging` con servicios reales o simulaciones contractuales (p. ej. WireMock / MSW) antes de cada release.
+- Automatizar E2E con Playwright o Cypress en pipelines con docker-compose que arranquen dependencias esenciales.
+
 
 ### 2.1 Tests de Comportamiento (BDD-style)
 
