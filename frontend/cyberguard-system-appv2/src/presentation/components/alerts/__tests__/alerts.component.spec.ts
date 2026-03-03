@@ -1,3 +1,4 @@
+// Tipo de prueba: Integración
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { of, BehaviorSubject } from 'rxjs';

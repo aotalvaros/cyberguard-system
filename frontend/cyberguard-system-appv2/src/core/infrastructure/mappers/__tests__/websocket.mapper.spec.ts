@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WebSocketMapper, toAlertMessage, toWebSocketCommandDto } from '../websocket.mapper';
 import { WebSocketAlertDto } from '../../dto/websocket.dto';

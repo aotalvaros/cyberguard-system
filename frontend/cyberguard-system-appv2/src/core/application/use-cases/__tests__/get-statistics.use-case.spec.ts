@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError, firstValueFrom } from 'rxjs';

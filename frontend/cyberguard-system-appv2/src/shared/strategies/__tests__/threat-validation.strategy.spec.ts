@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+// Tipo de prueba: Unitario
 import {
   MalwareValidationStrategy,
   PhishingValidationStrategy,

@@ -1,3 +1,4 @@
+// Tipo de prueba: Integración
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';

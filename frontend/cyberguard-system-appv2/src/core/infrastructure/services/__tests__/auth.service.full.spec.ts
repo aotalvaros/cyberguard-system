@@ -1,3 +1,5 @@
+// Tipo de prueba: Integración
+// Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth.service';

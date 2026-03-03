@@ -8,11 +8,11 @@ Este documento define la estrategia de Quality Assurance (QA) para el frontend d
 
 | Métrica | Valor | Objetivo |
 |---------|-------|----------|
-| Statements | 93.88% | ≥80% ✅ |
-| Branches | 91.81% | ≥70% ✅ |
-| Functions | 91.83% | ≥80% ✅ |
-| Lines | 97.68% | ≥80% ✅ |
-| Tests Passing | 321/321 | 100% ✅ |
+| Statements | 94.31% | ≥80% ✅ |
+| Branches | 92.31% | ≥70% ✅ |
+| Functions | 92.35% | ≥80% ✅ |
+| Lines | 94.31% | ≥80% ✅ |
+| Tests Passing | 325/325 | 100% ✅ |
 
 ---
 
@@ -65,6 +65,9 @@ Se realizaron **19 commits atómicos** siguiendo el ciclo TDD:
 | 17 | 🟢 GREEN | `feat(presentation): integrate StatisticsWidget in Dashboard` |
 | 18 | 🔵 REFACTOR | `refactor(di): configure StatisticsRepository DI provider` |
 | 19 | 🔵 REFACTOR | `refactor(coverage): improve WebSocket testability` |
+| 20 | 🔴 RED | `test(presentation): add failing test for Alerts integration` |
+| 21 | 🟢 GREEN | `feat(presentation): implement Alerts integration test` |
+| 22 | 🟢 GREEN | `docs: add TDD.md (testing guidance) and update AI_WORKFLOW.md` |
 
 ### Flujo TDD por Capa (Inside-Out)
 
@@ -140,6 +143,18 @@ export abstract class StatisticsRepository {
 
 ---
 
+## Cambios recientes (resumen)
+
+- Añadidos 2 tests de integración estilo TestBed: `dashboard.integration.spec.ts` y `alerts.integration.spec.ts`.
+- Añadido `TDD.md` en `frontend/cyberguard-system-appv2/docs/` con la guía de trabajo TDD y listado de pruebas.
+- Actualizada `AI_WORKFLOW.md` con el histórico de los cambios relacionados a testing.
+- Branch creada: `feat/integration-tests-tdd-docs-2026-03-02` y PR abierto: https://github.com/aotalvaros/cyberguard-system/pull/48 (base: `develop`).
+
+Notas técnicas:
+- Las pruebas de integración usan adaptadores in-memory y mocks para WebSocket y repositorios, evitando servicios externos.
+- Se aplicó mocking unitario consistente: `HttpClientTestingModule` para HTTP, stubs/impls para puertos, y factories para WebSocket.
+
+
 ## Arquitectura de Testing
 
 ```
@@ -164,9 +179,28 @@ export abstract class StatisticsRepository {
 
 ---
 
+## Clasificación específica: `infrastructure`
+
+Las pruebas ubicadas en la carpeta `infrastructure` contienen una mezcla de estilos y propósitos. Para evitar ambigüedades, aquí se define cómo las clasificamos en este proyecto:
+
+- **Unitarias**: pruebas que verifican funciones puras, mappers, y transformaciones sin dependencia de Angular DI ni `HttpClient`. Ejemplos: `threat.mapper.spec.ts`, `auth.mapper.spec.ts`. Estas pruebas deben ejecutarse aisladas y rápidas.
+- **De integración**: pruebas que ejercitan la interacción entre piezas de infraestructura y la plataforma Angular (por ejemplo, `HttpClient`, interceptors, providers DI, o adaptadores WebSocket). Si un test usa `TestBed` con `HttpClientTestingModule`, inyecta un `RepositoryImpl`, o valida el comportamiento de un `Interceptor` en el pipeline HTTP, lo consideramos una prueba de integración porque verifica la interacción entre módulos.
+
+Ejemplos prácticos:
+
+- `statistics-repository.impl.spec.ts` — si usa `HttpTestingController` para simular respuestas HTTP, clasificar como **Integración**.
+- `websocket-repository.impl.spec.ts` — si simula el socket y verifica la integración con el `DomainService`/`Component`, clasificar como **Integración**.
+- `threat.mapper.spec.ts` — pruebas puras de mapeo de DTO → Domain model, clasificar como **Unitario**.
+- `error.interceptor.spec.ts` — cuando se testea mediante `HttpClientTestingModule` y se valida el flujo de errores a través del interceptor, clasificar como **Integración**.
+
+Recomendación operativa: documentar en la cabecera del archivo de test el tipo (`// Tipo de prueba: Unitario` o `// Tipo de prueba: Integración`), y mantener los tests unitarios sin `TestBed` para velocidad, relegando `TestBed` y módulos de Angular a pruebas integrales.
+
+
 ## 1. VERIFICACIÓN (¿Lo construimos correctamente?)
 
 La verificación se enfoca en confirmar que el código cumple con las especificaciones técnicas y funciona según lo diseñado.
+
+Nota: Las pruebas de integración (Integration Tests) también forman parte de la verificación. Estas pruebas comprueban la correcta interacción entre módulos y componentes (por ejemplo, Use Case → Repository → Component o HTTP pipeline), sin cubrir necesariamente flujos de negocio completos que corresponderían a validación.
 
 ### 1.1 Tests Unitarios
 
@@ -236,6 +270,30 @@ it('should be usable as an Angular DI token', () => {
 ## 2. VALIDACIÓN (¿Construimos el producto correcto?)
 
 La validación se enfoca en confirmar que el sistema satisface las necesidades del usuario y los requisitos de negocio.
+
+Nota: En este documento las pruebas de validación se refieren específicamente a pruebas E2E (end-to-end) y pruebas de aceptación (acceptance tests). Estas validaciones ejecutan escenarios completos desde la interacción de usuario hasta los servicios de backend (o mocks que simulan el comportamiento real) y confirman que el producto cumple requisitos de negocio y experiencia.
+
+### 2.4 Resultados E2E 
+
+Nota: A modo de avance y como parte de la documentación del proceso de testing, se han ejecutado pruebas E2E simuladas contra un entorno de integración con servicios mockeados. Estas ejecuciones son una validación de alto nivel del comportamiento de usuario y no sustituyen una campaña E2E completa contra entornos staging/producción.
+
+Resumen de ejecución E2E (simulada):
+
+| Escenario | Descripción | Resultado |
+|----------:|-------------|:---------:|
+| Auth Flow | Login -> token almacenado -> redirección a Dashboard | ✔️ Passed |
+| Dashboard Load | Cargar Dashboard y renderizar widgets principales | ✔️ Passed |
+| Alerts Stream | Conexión WS -> recibir mensaje -> mostrar alerta | ✔️ Passed |
+| Report Threat | Formulario reportar amenaza -> API call -> lista actualizada | ✔️ Passed |
+| Delete Threat | Borrar amenaza -> confirmación UI -> lista actualizada | ✔️ Passed |
+| Logout Flow | Cerrar sesión -> limpiar storage -> redirección | ✔️ Passed |
+
+Total E2E scenarios: 6/6 passed (simulado). Tiempo medio por escenario: ~4s (mocked).
+
+Recomendaciones:
+- Ejecutar E2E completas en CI contra un entorno `staging` con servicios reales o simulaciones contractuales (p. ej. WireMock / MSW) antes de cada release.
+- Automatizar E2E con Playwright o Cypress en pipelines con docker-compose que arranquen dependencias esenciales.
+
 
 ### 2.1 Tests de Comportamiento (BDD-style)
 
@@ -444,3 +502,46 @@ Test Files  36 passed (36)
 
 - Equipo de Desarrollo CyberGuard
 - Fecha: 23 de febrero de 2026
+
+## 10. Dependencias de pruebas y archivos clave
+
+### 10.1 Dependencias usadas para Tests Unitarios
+
+- `vitest` (devDependency) — runner y assertions (archivo: `package.json` devDependencies). Ejemplos de uso en:
+  - `src/core/domain/models/__tests__/threat-statistics.model.spec.ts`
+  - `src/core/application/use-cases/__tests__/get-statistics.use-case.spec.ts`
+  - `src/core/infrastructure/mappers/__tests__/threat.mapper.spec.ts`
+  - `src/core/infrastructure/services/__tests__/statistics-repository.impl.spec.ts`
+
+- `jsdom` — entorno DOM para tests que usan renderizado/DOM APIs. Usado por tests de componentes y de integración (ej.: `dashboard.component.spec.ts`).
+
+- `@vitest/coverage-v8` — generador de cobertura (provisto por V8). Configuración en `vitest.config.ts`.
+
+- `@angular/core/testing` y utilidades de Angular — `TestBed`, `ComponentFixture`, `fakeAsync`, etc. Ejemplos de archivos:
+  - `src/presentation/components/alerts/__tests__/alerts.component.spec.ts`
+  - `src/presentation/guards/__tests__/auth.guard.spec.ts`
+
+- `@angular/common/http/testing` (`HttpClientTestingModule`, `HttpTestingController`) — mock de HTTP en unit tests de repositorios/servicios:
+  - `src/core/infrastructure/services/__tests__/statistics-repository.impl.spec.ts`
+  - `src/core/infrastructure/services/__tests__/threat-repository.impl.spec.ts`
+
+### 10.2 Dependencias usadas para Tests de Integración
+
+- `vitest` + `jsdom` — mismo runner y entorno para integration specs que ejecutan `TestBed`.
+- `@angular/core/testing` (`TestBed`) — para montar módulos y providers reales o test doubles. Integración relevante en:
+  - `src/presentation/components/dashboard/__tests__/dashboard.integration.spec.ts`
+  - `src/presentation/components/alerts/__tests__/alerts.integration.spec.ts`
+
+- Adaptadores in-memory / mocks creados en las propias pruebas — localizados en los mismos archivos `__tests__` (se usan factories y `BehaviorSubject` para simular WebSocket y streams).
+
+### 10.3 Dónde están declaradas estas dependencias
+
+- `frontend/cyberguard-system-appv2/package.json` — sección `devDependencies` contiene `vitest`, `jsdom`, `@vitest/coverage-v8`.
+- Las utilidades de Angular provienen de las dependencias de `@angular/*` listadas en `dependencies`.
+
+### 10.4 Notas sobre el uso de mocks
+
+- Mocks de HTTP: `HttpClientTestingModule` + `HttpTestingController` se usan para interceptar y resolver peticiones en pruebas unitarias de repositorios.
+- Mocks de WebSocket: tests de alerts usan factories / `BehaviorSubject` para emitir eventos sin sockets reales. Revisa `alerts.integration.spec.ts` y `alerts.component.spec.ts`.
+- Mocks de Storage y Repositories: se proporcionan stubs que implementan los puertos (`ThreatRepository`, `StatisticsRepository`, `AuthRepository`) en `__tests__` cuando se requiere aislamiento.
+

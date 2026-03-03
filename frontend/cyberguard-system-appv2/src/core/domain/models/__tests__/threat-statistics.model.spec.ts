@@ -1,3 +1,4 @@
+// Tipo de prueba: Unitario
 import { describe, it, expect } from 'vitest';
 import {
   EMPTY_STATISTICS,

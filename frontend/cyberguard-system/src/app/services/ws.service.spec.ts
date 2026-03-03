@@ -1,3 +1,4 @@
+// Tipo de prueba: Integración
 import { TestBed } from '@angular/core/testing';
 import { WsService } from './ws.service';
 
