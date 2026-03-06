@@ -141,7 +141,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: frontend/cyberguard-system-appv2
-        run: npm test -- --coverage --watchAll=false
+        run: npm test -- --run --coverage
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -169,7 +169,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: backend/producer
-        run: npm test -- --coverage --testPathPattern="unit|domain|application"
+        run: npm test -- --coverage --testPathPatterns="unit|domain|application"
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -197,7 +197,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: backend/worker
-        run: npm test -- --coverage
+        run: npx jest --ci --coverage --maxWorkers=2
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -293,7 +293,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: test-secret-key-for-ci
           NODE_ENV: test
-        run: npm test -- --testPathPattern="integration|e2e"
+        run: npm test -- --testPathPatterns="integration|e2e"
 
   # ============================================
   # JOB 4: Security Scan (Trivy con SARIF)
