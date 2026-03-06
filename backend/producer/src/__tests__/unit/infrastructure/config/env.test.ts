@@ -71,7 +71,10 @@ describe('Environment Configuration', () => {
       process.env.PORT = '8080';
       process.env.RABBITMQ_URL = 'amqp://localhost:5672';
       process.env.JWT_SECRET = 'test-secret';
-
+      // ✅ AGREGAR ESTAS LÍNEAS FALTANTES:
+      process.env.FIREBASE_API_KEY = 'fake-key-for-test';
+      process.env.FIREBASE_AUTH_DOMAIN = 'test.firebaseapp.com';
+      process.env.FIREBASE_PROJECT_ID = 'test-project';
 
       jest.unstable_mockModule('../../../../infrastructure/config/logger', () => ({
         logger: mockLogger
