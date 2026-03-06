@@ -222,10 +222,8 @@ jobs:
   # ============================================
   # JOB 3: Integration Tests (Black Box)
   # ============================================
-  
-  # 3.1 Backend Integration Tests
-  integration-tests-backend:
-    name: Integration Tests Backend (Black Box)
+  integration-tests:
+    name: Integration Tests (Black Box)
     runs-on: ubuntu-latest
     needs: [changes, unit-tests-backend]
     if: |
@@ -785,23 +783,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Results:" >> $GITHUB_STEP_SUMMARY
           echo "- Change Detection: ${{ needs.changes.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Unit Tests (Caja Blanca - Component):" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: ${{ needs.unit-tests-frontend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: ${{ needs.unit-tests-backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Worker: ${{ needs.unit-tests-worker.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Integration Tests (Caja Negra - Black Box):" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: ${{ needs.integration-tests-backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Worker: ${{ needs.integration-tests-worker.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend (E2E): ${{ needs.integration-tests-frontend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Security Scans:" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: ${{ needs.security-scan-frontend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: ${{ needs.security-scan-backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Worker: ${{ needs.security-scan-worker.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Build & Deploy:" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Frontend: ${{ needs.unit-tests-frontend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Backend: ${{ needs.unit-tests-backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Worker: ${{ needs.unit-tests-worker.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Frontend: ${{ needs.security-scan-frontend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Backend: ${{ needs.security-scan-backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Worker: ${{ needs.security-scan-worker.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Build & Push: ${{ needs.docker-build-push.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changes Detected:" >> $GITHUB_STEP_SUMMARY
