@@ -43,4 +43,6 @@ temp/
 # Amazon Q duplicates (already in .github/)
 .amazonq/
 
-.github/**
+# GitHub - Ignorar todo excepto workflows
+.github/*
+!.github/workflows/

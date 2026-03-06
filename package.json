@@ -4,9 +4,10 @@
   "description": "Sistema distribuido de alertas de ciberseguridad en tiempo real",
   "private": true,
   "scripts": {
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:build": "docker compose build"
   },
   "keywords": [
     "cybersecurity",
