@@ -222,8 +222,10 @@ jobs:
   # ============================================
   # JOB 3: Integration Tests (Black Box)
   # ============================================
-  integration-tests:
-    name: Integration Tests (Black Box)
+  
+  # 3.1 Backend Integration Tests
+  integration-tests-backend:
+    name: Integration Tests Backend (Black Box)
     runs-on: ubuntu-latest
     needs: [changes, unit-tests-backend]
     if: |
