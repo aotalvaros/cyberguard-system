@@ -16,7 +16,7 @@ env:
 # ============================================
 jobs:
   changes:
-    name: 🔍 Detect Changes
+    name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
@@ -44,7 +44,7 @@ jobs:
   # JOB 1: Lint & Build (Condicional)
   # ============================================
   lint-frontend:
-    name: 🔍 Lint Frontend
+    name: Lint Frontend
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
@@ -69,7 +69,7 @@ jobs:
         run: npm run build
 
   lint-backend:
-    name: 🔍 Lint Backend
+    name: Lint Backend
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.backend == 'true'
@@ -94,7 +94,7 @@ jobs:
         run: npm run build
 
   lint-worker:
-    name: 🔍 Lint Worker
+    name: Lint Worker
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.worker == 'true'
@@ -122,7 +122,7 @@ jobs:
   # JOB 2: Unit Tests - Componente (Caja Blanca)
   # ============================================
   unit-tests-frontend:
-    name: 🧪 Unit Tests Frontend (Component)
+    name: Unit Tests Frontend (Component)
     runs-on: ubuntu-latest
     needs: [changes, lint-frontend]
     if: |
@@ -141,7 +141,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: frontend/cyberguard-system-appv2
-        run: npm test -- --run --coverage
+        run: npm run test:ci
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -150,7 +150,7 @@ jobs:
           flags: frontend-unit
 
   unit-tests-backend:
-    name: 🧪 Unit Tests Backend (Component)
+    name: Unit Tests Backend (Component)
     runs-on: ubuntu-latest
     needs: [changes, lint-backend]
     if: |
@@ -169,7 +169,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: backend/producer
-        run: npm test -- --coverage --testPathPatterns="unit|domain|application"
+        run: npm run test:ci
       
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -178,7 +178,7 @@ jobs:
           flags: backend-unit
 
   unit-tests-worker:
-    name: 🧪 Unit Tests Worker (Component)
+    name: Unit Tests Worker (Component)
     runs-on: ubuntu-latest
     needs: [changes, lint-worker]
     if: |
@@ -197,7 +197,7 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: backend/worker
-        run: npx jest --ci --coverage --maxWorkers=2
+        run: npm run test:ci
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -206,10 +206,10 @@ jobs:
           flags: worker-unit
 
   # ============================================
-  # JOB 3: Integration Tests (Caja Negra)
+  # JOB 3: Integration Tests (Black Box)
   # ============================================
   integration-tests:
-    name: 🔗 Integration Tests (Black Box)
+    name: Integration Tests (Black Box)
     runs-on: ubuntu-latest
     needs: [changes, unit-tests-backend, unit-tests-worker]
     if: |
@@ -299,7 +299,7 @@ jobs:
   # JOB 4: Security Scan (Trivy con SARIF)
   # ============================================
   security-scan-frontend:
-    name: 🔒 Security Scan Frontend
+    name: Security Scan Frontend
     runs-on: ubuntu-latest
     needs: [changes, lint-frontend]
     if: |
@@ -334,7 +334,7 @@ jobs:
         run: npm audit --audit-level=high || true
 
   security-scan-backend:
-    name: 🔒 Security Scan Backend
+    name: Security Scan Backend
     runs-on: ubuntu-latest
     needs: [changes, lint-backend]
     if: |
@@ -369,7 +369,7 @@ jobs:
         run: npm audit --audit-level=high || true
 
   security-scan-worker:
-    name: 🔒 Security Scan Worker
+    name: Security Scan Worker
     runs-on: ubuntu-latest
     needs: [changes, lint-worker]
     if: |
@@ -407,7 +407,7 @@ jobs:
   # JOB 5: Docker Build & Push to GHCR
   # ============================================
   docker-build-push:
-    name: 🐳 Docker Build & Push
+    name: Docker Build & Push
     runs-on: ubuntu-latest
     needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests, security-scan-frontend, security-scan-backend, security-scan-worker]
     if: |
@@ -501,7 +501,7 @@ jobs:
   # JOB 6: Deploy to Staging (develop branch)
   # ============================================
   deploy-staging:
-    name: 🚀 Deploy to Staging
+    name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: docker-build-push
     if: |
@@ -516,19 +516,19 @@ jobs:
       
       - name: Deploy to Staging
         run: |
-          echo "🎯 Deploying to Staging environment..."
-          echo "📦 Images pushed to GHCR:"
+          echo "Deploying to Staging environment..."
+          echo "Images pushed to GHCR:"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:develop-${{ github.sha }}"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:develop-${{ github.sha }}"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-worker:develop-${{ github.sha }}"
-          echo "✅ Staging deployment completed"
+          echo "Staging deployment completed"
           # Aquí agregarías tu lógica de deployment real
 
   # ============================================
   # JOB 7: Release & Deploy to Production (main branch)
   # ============================================
   deploy-production:
-    name: 🚀 Deploy to Production
+    name: Deploy to Production
     runs-on: ubuntu-latest
     needs: docker-build-push
     if: |
@@ -547,12 +547,12 @@ jobs:
       
       - name: Deploy to Production
         run: |
-          echo "🎯 Deploying to Production environment..."
-          echo "📦 Images pushed to GHCR:"
+          echo "Deploying to Production environment..."
+          echo "Images pushed to GHCR:"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:main-${{ github.sha }}"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:main-${{ github.sha }}"
           echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-worker:main-${{ github.sha }}"
-          echo "✅ Production deployment completed"
+          echo "Production deployment completed"
           # Aquí agregarías tu lógica de deployment real
 
       - name: Create Release Tag
@@ -562,13 +562,13 @@ jobs:
           git config user.email "actions@github.com"
           git tag -a $VERSION -m "Release $VERSION - SHA: ${{ github.sha }}"
           git push origin $VERSION
-          echo "🎉 Released version: $VERSION"
+          echo "Released version: $VERSION"
 
   # ============================================
   # JOB 8: Summary Report
   # ============================================
   summary:
-    name: 📊 Pipeline Summary
+    name: Pipeline Summary
     runs-on: ubuntu-latest
     needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests, security-scan-frontend, security-scan-backend, security-scan-worker, docker-build-push]
     if: always()
@@ -576,20 +576,20 @@ jobs:
     steps:
       - name: Generate Summary
         run: |
-          echo "## 🚀 CyberGuard CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## CyberGuard CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Results:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 Change Detection: ${{ needs.changes.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Unit Tests Frontend: ${{ needs.unit-tests-frontend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Unit Tests Backend: ${{ needs.unit-tests-backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Unit Tests Worker: ${{ needs.unit-tests-worker.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔗 Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 Security Scan Frontend: ${{ needs.security-scan-frontend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 Security Scan Backend: ${{ needs.security-scan-backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 Security Scan Worker: ${{ needs.security-scan-worker.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐳 Docker Build & Push: ${{ needs.docker-build-push.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- Change Detection: ${{ needs.changes.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Frontend: ${{ needs.unit-tests-frontend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Backend: ${{ needs.unit-tests-backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests Worker: ${{ needs.unit-tests-worker.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Frontend: ${{ needs.security-scan-frontend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Backend: ${{ needs.security-scan-backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan Worker: ${{ needs.security-scan-worker.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker Build & Push: ${{ needs.docker-build-push.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔄 Changes Detected:" >> $GITHUB_STEP_SUMMARY
+          echo "### Changes Detected:" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend: ${{ needs.changes.outputs.frontend }}" >> $GITHUB_STEP_SUMMARY
           echo "- Backend: ${{ needs.changes.outputs.backend }}" >> $GITHUB_STEP_SUMMARY
           echo "- Worker: ${{ needs.changes.outputs.worker }}" >> $GITHUB_STEP_SUMMARY

@@ -39,7 +39,7 @@ jest.mock('../../../../../application/services/threat.service', () => ({
 
 
 import  '../../../../../infrastructure/config/logger';
-import { bruteForceDetection, resetBruteForceState, getBruteForceState } from '../../../../../infrastructure/http/middlewares/bruteforce.middleware';
+import { bruteForceDetection, resetBruteForceState, getBruteForceState, stopBruteForceCleanup } from '../../../../../infrastructure/http/middlewares/bruteforce.middleware';
 
 describe('Brute Force Detection Middleware', () => {
   let app: express.Application;
@@ -87,6 +87,10 @@ describe('Brute Force Detection Middleware', () => {
   afterEach(() => {
     jest.clearAllMocks();
     resetBruteForceState(); 
+  });
+
+  afterAll(() => {
+    stopBruteForceCleanup();
   });
 
   // ==========================================================================

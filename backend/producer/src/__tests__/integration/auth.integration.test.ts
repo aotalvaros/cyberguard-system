@@ -40,7 +40,7 @@
  *            - login satisfactorio → token JWT verificable criptográficamente
  *            - usuario sin registro en Postgres → se auto-crea (lógica AuthService)
  */
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterAll } from '@jest/globals';
 import request from 'supertest';
 import express, { type Express } from 'express';
 import jwt from 'jsonwebtoken';
@@ -103,7 +103,7 @@ jest.mock('../../infrastructure/persistence/PostgresThreatRepository');
 
 // ─── Imports DESPUÉS de los mocks (jest.mock() se hoista al tope) ─────────────
 import authRouter from '../../infrastructure/http/controllers/auth.controller';
-import { resetBruteForceState } from '../../infrastructure/http/middlewares/bruteforce.middleware';
+import { resetBruteForceState, stopBruteForceCleanup } from '../../infrastructure/http/middlewares/bruteforce.middleware';
 
 // ─── Fixtures: fila de usuario existente en PostgreSQL ───────────────────────
 const existingUserRow = {
@@ -133,6 +133,10 @@ describe('Integration: POST /api/auth/login — Full Chain', () => {
   beforeEach(() => {
     app = buildApp();
     resetBruteForceState(); // Limpiar estado del Map en memoria entre tests
+  });
+
+  afterAll(() => {
+    stopBruteForceCleanup();
   });
 
   // ──────────────────────────────────────────────────────────────────────────
