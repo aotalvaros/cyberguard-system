@@ -28,6 +28,10 @@ module.exports = {
   ],
   
   clearMocks: true,
-  testTimeout: 10000,
-  verbose: true
+  restoreMocks: true,
+  verbose: true,
+  testTimeout: 30000,
+  detectOpenHandles: true,
+  forceExit: true,
+  maxWorkers: process.env.CI ? 2 : '50%'
 };

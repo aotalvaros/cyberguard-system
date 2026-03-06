@@ -7,9 +7,10 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest --watchAll",
+    "test": "jest",
+    "test:ci": "jest --ci --coverage --detectOpenHandles --forceExit --maxWorkers=2",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "amqplib": "^0.10.3",

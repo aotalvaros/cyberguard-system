@@ -104,7 +104,7 @@ async function trackFailedAttempt(ip: string, username?: string) {
 }
 
 // Limpiar intentos antiguos cada 10 minutos
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [ip, attempt] of loginAttempts.entries()) {
     if (now - attempt.firstAttempt > TIME_WINDOW) {
@@ -112,3 +112,8 @@ setInterval(() => {
     }
   }
 }, 10 * 60 * 1000);
+
+// Permitir limpieza del intervalo en tests para evitar open handles
+export function stopBruteForceCleanup(): void {
+  clearInterval(cleanupInterval);
+}
