@@ -169,6 +169,15 @@ jobs:
       
       - name: Run Unit Tests
         working-directory: backend/producer
+        env:
+          # Variables requeridas para tests
+          PORT: 3000
+          RABBITMQ_URL: amqp://localhost:5672
+          JWT_SECRET: test-secret-for-ci-only
+          FIREBASE_API_KEY: fake-api-key-for-testing
+          FIREBASE_AUTH_DOMAIN: test.firebaseapp.com
+          FIREBASE_PROJECT_ID: test-project-id
+          NODE_ENV: test
         run: npm run test:ci
       
       - name: Upload Coverage
