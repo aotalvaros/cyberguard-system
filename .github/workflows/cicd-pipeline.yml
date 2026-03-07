@@ -481,131 +481,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Validate TEST_PLAN.md Structure
+      - name: Validate Mandatory QA Files
         run: |
-          echo "Validating QA Test Plan..."
+          echo "### QA Validation Status" >> $GITHUB_STEP_SUMMARY
           
-          # HUMAN CHECK: Archivo principal del equipo QA
-          # Debe contener: 7 principios, estrategia multinivel, test suites
+          # ÚNICO REQUISITO BLOQUEANTE: TEST_PLAN.md
           if [ ! -f "QA/TEST_PLAN.md" ]; then
-            echo "ERROR: QA/TEST_PLAN.md not found"
-            echo ""
-            echo "El equipo QA debe crear QA/TEST_PLAN.md con:"
-            echo "  1. Los 7 principios del testing (aplicados y justificados)"
-            echo "  2. Estrategia de testing multinivel (Componente/Integracion/Sistema)"
-            echo "  3. Diferenciacion entre Caja Blanca y Caja Negra"
-            echo "  4. Test Suites y Test Cases documentados"
-            echo "  5. Criterios de aceptacion"
+            echo "❌ ERROR: QA/TEST_PLAN.md is missing." >> $GITHUB_STEP_SUMMARY
+            echo "El archivo 'QA/TEST_PLAN.md' es obligatorio para continuar."
             exit 1
-          fi
-          
-          # Validar que contiene los 7 principios
-          if ! grep -qi "principio" QA/TEST_PLAN.md; then
-            echo "WARNING: TEST_PLAN.md might be missing Principios del Testing"
           else
-            echo "OK: TEST_PLAN.md contains 'principios'"
+            echo "✅ **TEST_PLAN.md**: Found" >> $GITHUB_STEP_SUMMARY
           fi
-          
-          # Validar que menciona Caja Blanca/Negra
-          if ! grep -qiE "caja (blanca|negra|white|black)" QA/TEST_PLAN.md; then
-            echo "WARNING: TEST_PLAN.md might be missing Caja Blanca/Negra differentiation"
-          else
-            echo "OK: TEST_PLAN.md mentions testing techniques"
-          fi
-          
-          # Validar que menciona test suites o casos de prueba
-          if ! grep -qiE "test (suite|case|casos)" QA/TEST_PLAN.md; then
-            echo "WARNING: TEST_PLAN.md might be missing Test Cases/Suites"
-          else
-            echo "OK: TEST_PLAN.md contains test structure"
-          fi
-          
-          echo "OK: TEST_PLAN.md validation passed"
-      
-      - name: Validate QA Evidence
-        run: |
-          echo "Validating QA Test Evidence..."
-          
-          # Check for evidence documentation
-          if [ ! -f "docs/QA_EVIDENCE.md" ]; then
-            echo "WARNING: docs/QA_EVIDENCE.md not found"
-            echo "   El equipo QA debe documentar evidencia de ejecucion"
-          else
-            echo "OK: Found docs/QA_EVIDENCE.md"
-            
-            # Verificar que tiene referencias a imagenes o reportes
-            if grep -qiE "(screenshot|imagen|coverage|report|resultado)" docs/QA_EVIDENCE.md; then
-              echo "OK: QA_EVIDENCE.md contains test execution references"
-            else
-              echo "WARNING: QA_EVIDENCE.md might be empty or incomplete"
-            fi
-          fi
-          
-          # Check for screenshots/evidence folder
-          if [ -d "docs/images/testing" ] || [ -d "QA/evidence" ]; then
-            SCREENSHOT_COUNT=$(find docs/images/testing QA/evidence -type f 2>/dev/null | wc -l)
-            echo "INFO: Found $SCREENSHOT_COUNT evidence files"
-          else
-            echo "WARNING: No evidence folder found (docs/images/testing or QA/evidence)"
-          fi
-      
-      - name: Validate Team Feedback
-        run: |
-          echo "Validating Team Feedback..."
-          
-          if [ ! -f "FEEDBACK_TEAM-4-QA.md" ]; then
-            echo "WARNING: FEEDBACK_TEAM-4-QA.md not found"
-          else
-            echo "OK: Found FEEDBACK_TEAM-4-QA.md"
-          fi
-      
-      - name: Generate QA Report Summary
-        run: |
-          echo "## QA Documentation Validation Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Check TEST_PLAN.md
-          if [ -f "QA/TEST_PLAN.md" ]; then
-            PLAN_SIZE=$(wc -l < QA/TEST_PLAN.md)
-            echo "OK: **TEST_PLAN.md** - $PLAN_SIZE lines" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "ERROR: **TEST_PLAN.md** - MISSING (REQUIRED)" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          # Check QA_EVIDENCE.md
-          if [ -f "docs/QA_EVIDENCE.md" ]; then
-            EVIDENCE_SIZE=$(wc -l < docs/QA_EVIDENCE.md)
-            echo "OK: **QA_EVIDENCE.md** - $EVIDENCE_SIZE lines" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "WARNING: **QA_EVIDENCE.md** - Missing (recommended)" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          # Check feedback
-          if [ -f "FEEDBACK_TEAM-4-QA.md" ]; then
-            echo "OK: **FEEDBACK_TEAM-4-QA.md** - Present" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "WARNING: **FEEDBACK_TEAM-4-QA.md** - Missing" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### QA Folder Contents:" >> $GITHUB_STEP_SUMMARY
-          if [ -d "QA" ]; then
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            find QA -type f >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "WARNING: QA folder not found" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "INFO: This job validates QA team deliverables per Semana 3 evaluation guide" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Required by QA Team:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`QA/TEST_PLAN.md\` (7 principios, estrategia multinivel, test cases)" >> $GITHUB_STEP_SUMMARY
-          echo "- \`docs/QA_EVIDENCE.md\` (screenshots, coverage reports)" >> $GITHUB_STEP_SUMMARY
-          echo "- Test execution evidence (images/reports)" >> $GITHUB_STEP_SUMMARY
 
+      - name: Check Optional Deliverables
+        if: success()
+        run: |
+          echo "### Optional Deliverables" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificación silenciosa de archivos opcionales
+          [ -f "docs/QA_EVIDENCE.md" ] && STATUS_EVID="Found" || STATUS_EVID="Not provided"
+          [ -f "FEEDBACK_TEAM-4-QA.md" ] && STATUS_FEED="Found" || STATUS_FEED="Not provided"
+          
+          echo "- **Evidence Document**: $STATUS_EVID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Team Feedback**: $STATUS_FEED" >> $GITHUB_STEP_SUMMARY
+          
+          # Listado de la carpeta QA solo si existe
+          if [ -d "QA" ]; then
+            echo -e "\n**QA Folder Contents:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            ls -R QA >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
   # ============================================
   # JOB 5: Docker Build & Push to GHCR
   # ============================================
