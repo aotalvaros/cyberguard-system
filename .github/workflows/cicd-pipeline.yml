@@ -298,7 +298,7 @@ jobs:
           FIREBASE_AUTH_DOMAIN: test.firebaseapp.com
           FIREBASE_PROJECT_ID: test-project-id
           NODE_ENV: test
-        run: npm test -- --testPathPattern="integration"
+        run: npm test -- "integration"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
