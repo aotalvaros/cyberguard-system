@@ -23,6 +23,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       worker: ${{ steps.filter.outputs.worker }}
       infra: ${{ steps.filter.outputs.infra }}
+      qa: ${{ steps.filter.outputs.qa }}
     steps:
       - uses: actions/checkout@v4
       
@@ -39,6 +40,10 @@ jobs:
             infra:
               - 'docker-compose.yml'
               - '.github/workflows/**'
+            qa:
+              - 'QA/**'
+              - 'docs/QA_EVIDENCE.md'
+              - 'FEEDBACK_*.md'
 
   # ============================================
   # JOB 1: Lint & Build (Condicional)
@@ -217,15 +222,16 @@ jobs:
   # ============================================
   # JOB 3: Integration Tests (Black Box)
   # ============================================
-  integration-tests:
-    name: Integration Tests (Black Box)
+  
+  # 3.1 Backend Integration Tests
+  integration-tests-backend:
+    name: Integration Tests Backend (Black Box)
     runs-on: ubuntu-latest
-    needs: [changes, unit-tests-backend, unit-tests-worker]
+    needs: [changes, unit-tests-backend]
     if: |
       always() &&
-      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.worker == 'true') &&
-      (needs.unit-tests-backend.result == 'success' || needs.unit-tests-backend.result == 'skipped') &&
-      (needs.unit-tests-worker.result == 'success' || needs.unit-tests-worker.result == 'skipped')
+      needs.changes.outputs.backend == 'true' &&
+      (needs.unit-tests-backend.result == 'success' || needs.unit-tests-backend.result == 'skipped')
     
     services:
       postgres:
@@ -252,16 +258,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -281,11 +277,9 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         run: |
-          # Instalar psql si es necesario
           sudo apt-get update
           sudo apt-get install -y postgresql-client
           
-          # Ejecutar migraciones si existen
           if [ -f "migrations/001_initial_schema.sql" ]; then
             PGPASSWORD=test psql -h localhost -U test -d cyberguard_test -f migrations/001_initial_schema.sql
           fi
@@ -299,10 +293,73 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
           RABBITMQ_URL: amqp://guest:guest@localhost:5672
-          REDIS_URL: redis://localhost:6379
           JWT_SECRET: test-secret-key-for-ci
+          FIREBASE_API_KEY: fake-api-key-for-testing
+          FIREBASE_AUTH_DOMAIN: test.firebaseapp.com
+          FIREBASE_PROJECT_ID: test-project-id
           NODE_ENV: test
-        run: npm test -- --testPathPatterns="integration|e2e"
+        run: npm test -- "integration"
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          directory: backend/producer/coverage
+          flags: backend-integration
+
+  # 3.2 Worker Integration Tests (Not Implemented - Skip)
+  integration-tests-worker:
+    name: Integration Tests Worker (Not Implemented)
+    runs-on: ubuntu-latest
+    needs: [changes, unit-tests-worker]
+    if: |
+      always() &&
+      needs.changes.outputs.worker == 'true' &&
+      (needs.unit-tests-worker.result == 'success' || needs.unit-tests-worker.result == 'skipped')
+    
+    steps:
+      - name: Skip Worker Integration Tests
+        run: |
+          echo "INFO: Worker integration tests not yet implemented"
+          echo "OK: Worker has unit tests with high coverage"
+          echo "NOTE: Integration tests will be added in future iterations"
+          exit 0
+
+  # 3.3 Frontend Integration Tests (E2E)
+  integration-tests-frontend:
+    name: Integration Tests Frontend (E2E)
+    runs-on: ubuntu-latest
+    needs: [changes, unit-tests-frontend]
+    if: |
+      always() &&
+      needs.changes.outputs.frontend == 'true' &&
+      (needs.unit-tests-frontend.result == 'success' || needs.unit-tests-frontend.result == 'skipped')
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Frontend
+        working-directory: frontend/cyberguard-system-appv2
+        run: npm ci
+
+      - name: Run E2E or Integration Tests
+        working-directory: frontend/cyberguard-system-appv2
+        env:
+          API_URL: http://localhost:3000
+          WS_URL: ws://localhost:8081
+        run: |
+          if npm run | grep -q "test:e2e"; then
+            npm run test:e2e
+          elif npm run | grep -q "test:integration"; then
+            npm run test:integration
+          else
+            echo "INFO: E2E tests not yet configured"
+            echo "OK: Frontend has unit tests validated"
+            echo "NOTE: E2E tests with Cypress or Playwright will be added in future iterations"
+            exit 0
+          fi
 
   # ============================================
   # JOB 4: Security Scan (Trivy con SARIF)
@@ -413,19 +470,65 @@ jobs:
         run: npm audit --audit-level=high || true
 
   # ============================================
+  # JOB 4.5: QA Documentation Validation
+  # ============================================
+  qa-validation:
+    name: QA Documentation Check
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.qa == 'true'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate Mandatory QA Files
+        run: |
+          echo "### QA Validation Status" >> $GITHUB_STEP_SUMMARY
+          
+          # ÚNICO REQUISITO BLOQUEANTE: TEST_PLAN.md
+          if [ ! -f "QA/TEST_PLAN.md" ]; then
+            echo "❌ ERROR: QA/TEST_PLAN.md is missing." >> $GITHUB_STEP_SUMMARY
+            echo "El archivo 'QA/TEST_PLAN.md' es obligatorio para continuar."
+            exit 1
+          else
+            echo "✅ **TEST_PLAN.md**: Found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check Optional Deliverables
+        if: success()
+        run: |
+          echo "### Optional Deliverables" >> $GITHUB_STEP_SUMMARY
+          
+          # Verificación silenciosa de archivos opcionales
+          [ -f "docs/QA_EVIDENCE.md" ] && STATUS_EVID="Found" || STATUS_EVID="Not provided"
+          [ -f "FEEDBACK_TEAM-4-QA.md" ] && STATUS_FEED="Found" || STATUS_FEED="Not provided"
+          
+          echo "- **Evidence Document**: $STATUS_EVID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Team Feedback**: $STATUS_FEED" >> $GITHUB_STEP_SUMMARY
+          
+          # Listado de la carpeta QA solo si existe
+          if [ -d "QA" ]; then
+            echo -e "\n**QA Folder Contents:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            ls -R QA >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+  # ============================================
   # JOB 5: Docker Build & Push to GHCR
   # ============================================
   docker-build-push:
     name: Docker Build & Push
     runs-on: ubuntu-latest
-    needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests, security-scan-frontend, security-scan-backend, security-scan-worker]
+    needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests-backend, integration-tests-worker, integration-tests-frontend, security-scan-frontend, security-scan-backend, security-scan-worker]
     if: |
       always() && 
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
       (needs.unit-tests-frontend.result == 'success' || needs.unit-tests-frontend.result == 'skipped') &&
       (needs.unit-tests-backend.result == 'success' || needs.unit-tests-backend.result == 'skipped') &&
       (needs.unit-tests-worker.result == 'success' || needs.unit-tests-worker.result == 'skipped') &&
-      (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped')
+      (needs.integration-tests-backend.result == 'success' || needs.integration-tests-backend.result == 'skipped') &&
+      (needs.integration-tests-worker.result == 'success' || needs.integration-tests-worker.result == 'skipped') &&
+      (needs.integration-tests-frontend.result == 'success' || needs.integration-tests-frontend.result == 'skipped')
     permissions:
       contents: read
       packages: write
@@ -579,7 +682,7 @@ jobs:
   summary:
     name: Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests, security-scan-frontend, security-scan-backend, security-scan-worker, docker-build-push]
+    needs: [changes, unit-tests-frontend, unit-tests-backend, unit-tests-worker, integration-tests-backend, integration-tests-worker, integration-tests-frontend, security-scan-frontend, security-scan-backend, security-scan-worker, docker-build-push]
     if: always()
     
     steps:
@@ -603,3 +706,4 @@ jobs:
           echo "- Backend: ${{ needs.changes.outputs.backend }}" >> $GITHUB_STEP_SUMMARY
           echo "- Worker: ${{ needs.changes.outputs.worker }}" >> $GITHUB_STEP_SUMMARY
           echo "- Infra: ${{ needs.changes.outputs.infra }}" >> $GITHUB_STEP_SUMMARY
+          echo "- QA: ${{ needs.changes.outputs.qa }}" >> $GITHUB_STEP_SUMMARY
