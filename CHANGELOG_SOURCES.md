@@ -50,6 +50,92 @@ Durante un pensamiento exhaustivo me di cuenta que primero se debe garantizar la
 **Necesito** poder acceder a mis datos personales para consultarlos o modificarlos.
 **Para** garantizar que la información que tiene de mí el sistema  sea precisa y concisa. 
 
+Le decimos SKAI que con el contexto de aplicacion ya existente, el bussines conext y el readme.md nos identifique que componentes se veran afectados en la arquitectura por la nueva funcionalidad y que patrones de diseño seran necesarios o como detectar los ya implementados. El objetivo es obtener una estimación de impacto antes de iniciar el desarrollo, nos responde lo siguiente:
+
+Entendido. El objetivo es realizar un análisis de impacto técnico detallado sobre la arquitectura existente de CyberGuard para estimar el esfuerzo y los riesgos asociados a la implementación de la nueva funcionalidad de notificaciones, antes de comenzar el desarrollo.
+
+A continuación, presento un desglose del impacto por componente arquitectónico y una evaluación de los patrones de diseño involucrados.
+
+---
+
+### **Análisis de Impacto Arquitectónico: Funcionalidad de Notificaciones Externas**
+
+#### **Resumen Ejecutivo del Impacto**
+
+El impacto global de esta nueva funcionalidad en la arquitectura se estima como **Medio**. No requiere un rediseño fundamental del sistema, ya que se acopla de manera natural a la **Arquitectura Orientada a Eventos (EDA)** existente. Sin embargo, afecta a componentes clave (`Backend`, `Worker`, `Frontend`) e introduce nuevas dependencias externas y complejidades en la lógica de negocio, especialmente en el `Worker`.
+
+---
+
+#### **1. Desglose de Impacto por Componente Arquitectónico**
+
+| Componente Afectado | Nivel de Impacto | Descripción Detallada de los Cambios Necesarios |
+| :--- | :--- | :--- |
+| **`Backend API (Producer)`** | **Medio** | **1. Nuevos Endpoints:** Se debe crear un nuevo conjunto de endpoints para la gestión del perfil del administrador (ej. `GET /api/profile`, `PUT /api/profile`).<br>**2. Persistencia de Datos:** Requiere lógica para almacenar y actualizar los nuevos datos del administrador (email, teléfono) en la capa de persistencia (Redis). Se debe evaluar si Redis es adecuado para datos de usuario a largo plazo o si se debería considerar otra solución.<br>**3. Enriquecimiento de Mensajes:** El cambio más importante. Al publicar un mensaje de "nueva amenaza" en RabbitMQ, el `Backend API` ahora deberá enriquecer ese mensaje con la información de contacto del administrador. Esto mantiene al `Worker` desacoplado y sin estado, ya que no necesitará consultar una base de datos para obtener los datos del destinatario.<br>**4. Seguridad:** Los nuevos endpoints deben estar protegidos por el middleware de autenticación JWT existente.<br>**5. Validación:** Se debe extender el uso de Joi para validar los datos del perfil (formato de email, formato de teléfono). |
+| **`Worker (Consumer)`** | **Alto** | **Este es el componente con el mayor impacto.**<br>**1. Lógica de Negocio Principal:** El `Worker` deberá modificar su lógica de consumo. Al recibir un mensaje, deberá parsear la información de contacto y determinar a qué canales externos enviar la notificación (email, WhatsApp).<br>**2. Integración con Servicios de Terceros:** Se deben integrar SDKs o clientes HTTP para comunicarse con las APIs de los proveedores de servicios de notificación (ej. Twilio, SendGrid). Esto introduce nuevas dependencias de red y puntos de fallo.<br>**3. Gestión de Secretos:** El `Worker` necesitará acceso a las claves de API de estos servicios, las cuales deben ser gestionadas de forma segura a través de variables de entorno.<br>**4. Manejo de Errores y Resiliencia:** La lógica de manejo de errores se vuelve crítica. Se debe implementar un sistema robusto de reintentos y gestión de fallos para cuando las APIs externas no respondan o devuelvan errores.<br>**5. Orquestación de Notificaciones:** El `Worker` deberá orquestar el envío a múltiples canales, asegurando que un fallo en el envío de email no impida el envío por WhatsApp. |
+| **`Frontend (Angular App)`** | **Medio** | **1. Nuevas Vistas/Componentes:** Se debe desarrollar una nueva sección de "Perfil de Usuario" donde el administrador pueda ver y editar su información de contacto.<br>**2. Nuevos Servicios:** Se necesita crear un nuevo servicio en Angular (`ProfileService`) para interactuar con los nuevos endpoints del `Backend API` (`GET`, `PUT`).<br>**3. Gestión de Estado:** El estado del perfil del usuario deberá ser gestionado en el frontend, probablemente utilizando RxJS para manejar las operaciones asíncronas y la actualización de la UI.<br>**4. Formularios y Validación:** Implementar formularios reactivos con validaciones del lado del cliente para el email y el número de teléfono. |
+| **`Infraestructura (Docker)`** | **Bajo** | **1. Variables de Entorno:** El archivo `docker-compose.yml` y los archivos `.env` deberán ser actualizados para incluir las nuevas variables de entorno requeridas por el `Worker` y el `Backend` (ej. `TWILIO_API_KEY`, `SENDGRID_API_KEY`, `TWILIO_PHONE_NUMBER`).<br>**2. Conectividad de Red:** Asegurar que el contenedor del `Worker` tenga acceso de salida a Internet para poder comunicarse con las APIs de terceros. |
+
+---
+
+#### **2. Análisis de Patrones de Diseño (Existentes y Nuevos)**
+
+El éxito de esta implementación dependerá de aprovechar correctamente los patrones existentes y aplicar nuevos patrones para gestionar la complejidad añadida.
+
+##### **Patrones Existentes a Potenciar:**
+
+1.  **Arquitectura Orientada a Eventos (EDA) / Publicador-Suscriptor:**
+    *   **Detección:** Este es el patrón central del sistema (`Backend` → `RabbitMQ` → `Worker`).
+    *   **Aplicación:** La nueva funcionalidad encaja perfectamente. El `Backend` sigue publicando un evento genérico (`threat.created`). El `Worker` simplemente añade una nueva responsabilidad a su rol de suscriptor: además de notificar vía WebSocket, ahora también notificará a canales externos. El desacoplamiento se mantiene intacto.
+
+2.  **Inyección de Dependencias (DI):**
+    *   **Detección:** Presente tanto en el `Backend` (a través de la estructura de Express/Node.js) como en el `Frontend` (nativo en Angular).
+    *   **Aplicación:** Se debe utilizar DI para inyectar los nuevos servicios de notificación en la lógica del `Worker` y el `ProfileService` en los componentes de Angular. Esto facilita las pruebas unitarias y la mantenibilidad.
+
+##### **Nuevos Patrones de Diseño a Implementar:**
+
+1.  **Patrón Adaptador (Adapter):**
+    *   **Necesidad:** Para evitar un acoplamiento fuerte con un proveedor específico (ej. Twilio), se debe crear una interfaz de notificación genérica en el `Worker` (ej. `INotificationService`) con un método `send()`.
+    *   **Implementación:** Luego, se crean adaptadores concretos que implementen esa interfaz: `WhatsAppAdapter` (que usa Twilio por debajo) y `EmailAdapter` (que usa SendGrid). Esto permite cambiar de proveedor en el futuro modificando únicamente el adaptador, sin afectar la lógica de negocio principal.
+
+2.  **Patrón de Reintentos con Backoff Exponencial (Retry with Exponential Backoff):**
+    *   **Necesidad:** Las llamadas a APIs externas pueden fallar por problemas transitorios de red. Un reintento inmediato puede sobrecargar el servicio.
+    *   **Implementación:** En el `Worker`, si una llamada a una API de notificación falla, en lugar de descartar el mensaje, se debe implementar una lógica que reintente la operación después de un tiempo de espera que aumenta exponencialmente con cada fallo (ej. 1s, 2s, 4s, 8s), hasta un número máximo de intentos.
+
+3.  **Patrón de Cola de Mensajes Fallidos (Dead Letter Queue - DLQ):**
+    *   **Necesidad:** ¿Qué hacer si un mensaje falla repetidamente incluso después de varios reintentos? No debe perderse ni bloquear la cola principal.
+    *   **Implementación:** Se debe configurar una DLQ en RabbitMQ. Si el `Worker` no puede procesar un mensaje después del número máximo de reintentos, lo rechaza (`nack`) y RabbitMQ lo enrutará a la DLQ para su posterior análisis manual o reprocesamiento.
+
+---
+
+### **Estimación de Impacto Consolidada**
+
+| Área | Esfuerzo Estimado | Riesgo Técnico | Justificación |
+| :--- | :--- | :--- | :--- |
+| **Backend** | **Medio** | **Bajo** | Tareas bien definidas: crear endpoints CRUD y enriquecer un mensaje. La lógica es estándar y el riesgo de regresión es bajo si se siguen los patrones existentes. |
+| **Worker** | **Alto** | **Alto** | Es el núcleo del cambio. La integración con APIs de terceros, la gestión de fallos, la resiliencia y la seguridad de las credenciales introducen una complejidad y un riesgo significativos. |
+| **Frontend** | **Medio** | **Bajo** | Requiere trabajo de UI/UX y lógica de cliente, pero son tareas estándar dentro del framework Angular. El riesgo de afectar otras partes de la aplicación es mínimo. |
+| **Infraestructura** | **Bajo** | **Bajo** | La modificación se limita a la gestión de configuración (variables de entorno), una tarea de bajo riesgo. |
+| **General** | **Medio** | **Medio** | El esfuerzo se concentra en el `Worker`, pero el riesgo general se mitiga porque la arquitectura EDA existente es la adecuada para esta expansión. El principal riesgo es la dependencia y la fiabilidad de los servicios externos. |
+
+Esta estimación previa concluye que el desarrollo es factible y se alinea bien con la arquitectura actual, pero se debe asignar tiempo y recursos significativos para garantizar que la implementación en el **`Worker`** sea robusta, resiliente y segura.
+
+### Desicion humanas sobre los posibles riesgos e impactos, incluyendo los patrones de diseño
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Sugerencia de implementacion tecnica por IA
+
 
 Le dije a la IA que me sugiriera, teniendo en cuenta el bussines context y readme.md como podriamos implementar estos cambios, la arquitectura, los patrones de diseño y que me diera las fuentas que utilizo para responderme:
 
