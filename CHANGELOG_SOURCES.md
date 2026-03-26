@@ -212,5 +212,7 @@ Estas sugerencias están alineadas a tu monorepo, arquitectura event-driven y us
 - [Microservices Patterns - Chris Richardson](https://microservices.io/patterns/index.html)
 
 
+Ayer tuvimos una reunion donde hablabamos de una manera más profunda sobre la definicion de features, por lo cual refactorizare el documento google docs para que los criterios de aceptación ahora esten en formato gherkin, ademas, agregare un valor global que encasillara el proposito de esta feature.
 
-### Desicion de implementación por humano:
+
+Definimos también los fuera de alcance de la nueva feature, para que todas las partes del negocio tengan claro realmente que es lo que se realizará durante esta nueva feature.
