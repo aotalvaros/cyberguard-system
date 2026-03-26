@@ -121,16 +121,16 @@ Esta estimación previa concluye que el desarrollo es factible y se alinea bien 
 
 ### Desicion humanas sobre los posibles riesgos e impactos, incluyendo los patrones de diseño
 
+**Patrones a implementar**
+
+Decidiremos implementar el patron ADAPTER, esto porque al día de mañana el sistema podrá cambiar de servicios externos dependiendo sus necesidades.
+
+Si el envío o contenido de la notificación depende de la categoría de la amenaza, el patrón que mejor se adapta es Strategy. Nos permite definir una estrategia por categoría (por ejemplo, crítica, media o baja) y elegirla dinámicamente cuando llega el evento, manteniendo el código más limpio, escalable y fácil de mantener. 
 
 
+**Impacto a tener en cuenta**
 
-
-
-
-
-
-
-
+El impacto seria medio-alto, esto porque afectamos el comportamiento del sistema ya existente, debemos modificar la entidad del usuario para agregar un nuevo campo, y las nuevas implementaciones tocan todos los microservicios.
 
 
 
