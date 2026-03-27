@@ -1,3 +1,47 @@
+
+# Registro de Decisiones de Arquitectura
+
+Este documento registra las decisiones clave tomadas durante el diseño y desarrollo del sistema, junto con los recursos que las fundamentan.
+
+| Decisión Tomada | Enlace de Referencia | Justificación de Uso |
+| :--- | :--- | :--- |
+| Identificar la necesidad de notificaciones | [Product Discovery](https://www.productplan.com/glossary/product-discovery/) | Entender cómo descubrir problemas reales de negocio y validar la necesidad de la funcionalidad. |
+| Definir historias de usuario | [User Stories](https://www.atlassian.com/agile/project-management/user-stories) | Utilizar la estructura “Como [rol], quiero [objetivo] para [beneficio]” para definir funcionalidades desde la perspectiva del usuario. |
+| Definir criterios de aceptación (BDD) | [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/) | Aplicar escenarios `Given / When / Then` para especificar y validar el comportamiento esperado del sistema de forma clara. |
+| Modelar arquitectura orientada a eventos | [Event-Driven Architecture](https://microservices.io/patterns/data/event-driven-architecture.html) | Separar la generación de eventos (Productor) del procesamiento de los mismos (Consumidor) para mejorar el desacoplamiento. |
+| Implementar procesamiento desacoplado con colas | [Queue-Based Load Leveling](https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling) | Usar colas para gestionar picos de carga, desacoplar tareas y mejorar la disponibilidad del sistema. |
+| Aplicar patrón Observer | [Observer Pattern](https://refactoring.guru/design-patterns/observer) | Disparar acciones (como el envío de notificaciones) en respuesta a eventos específicos (como la generación de una alerta). |
+| Aplicar patrón Adapter | [Adapter Pattern](https://refactoring.guru/design-patterns/adapter) | Crear una interfaz unificada para abstraer las integraciones con servicios externos (correo, WhatsApp), permitiendo intercambiarlos fácilmente. |
+| Aplicar patrón Strategy | [Strategy Pattern](https://refactoring.guru/design-patterns/strategy) | Permitir la selección dinámica de algoritmos para personalizar el contenido de las notificaciones según su categoría o canal. |
+| Selección de APIs de correo electrónico | [SendGrid Docs](https://sendgrid.com/docs/) | Entender los requerimientos técnicos para la integración de envío de correos electrónicos de forma programática. |
+| Selección de API de WhatsApp | [WhatsApp Business Platform](https://developers.facebook.com/docs/whatsapp) | Analizar la documentación para el envío de mensajes automatizados a través de la plataforma oficial de WhatsApp. |
+| Definir atributos de calidad | [ISO/IEC 25010](https://iso25000.com/index.php/en/iso-25000-standards/iso-25010) | Identificar y priorizar atributos de calidad no funcionales como seguridad, disponibilidad y fiabilidad como pilares del diseño. |
+| Asegurar alta disponibilidad | [AWS Well-Architected Framework](https://aws.amazon.com/architecture/) | Aplicar principios de diseño para construir sistemas tolerantes a fallos y con alta disponibilidad. |
+| Implementar observabilidad y logs | [The Twelve-Factor App: Logs](https://12factor.net/logs) | Tratar los logs como flujos de eventos, centralizándolos y separándolos de la lógica de la aplicación para facilitar el monitoreo. |
+| Monitoreo del sistema | [OpenTelemetry Docs](https://opentelemetry.io/docs/) | Utilizar un estándar abierto para la recolección de métricas, trazas y logs que permitan la observabilidad del sistema. |
+| Manejo de fallos con reintentos | [Retry Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/retry) | Implementar una estrategia de reintentos para manejar fallos transitorios en la comunicación con servicios externos sin impactar el sistema. |
+| Garantizar procesamiento confiable | [Idempotent Consumer](https://microservices.io/post/microservices/patterns/2020/10/16/idempotent-consumer.html) | Diseñar consumidores de eventos que puedan procesar el mismo mensaje múltiples veces sin generar efectos secundarios no deseados. |
+| Definir estimación de historias | [Agile Estimation](https://www.atlassian.com/agile/project-management/estimation) | Utilizar la técnica de "T-Shirt Sizing" (tallas de camiseta) para realizar estimaciones de alto nivel del esfuerzo requerido. |
+| Documentar arquitectura (C4) | [C4 Model](https://c4model.com/) | Representar la arquitectura del software en diferentes niveles de abstracción (contexto, contenedores, componentes) para una mejor comunicación. |
+| Modelar flujo de ejecución | [Sequence Diagrams](https://www.uml-diagrams.org/sequence-diagrams.html) | Crear diagramas de secuencia para visualizar y entender la interacción y el orden de los mensajes entre los diferentes componentes del sistema. |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Bitacora
+
 Hoy quise aplicar el concepto Human First, y saque mi propia FEATURE basandome en las necesidades del negocio, sin embargo, al analizarla exhaustivamente me di cuenta que podria ser considerada un refactor o deuda tecnica, la feature era la siguiente:
 
 - **Feature**: Independizar la categoria de las amenazas para que modificar una ya existente o implementar una nueva no afecte directamente el sistema.
