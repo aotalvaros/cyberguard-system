@@ -1,46 +1,51 @@
+# Bitacora de Decisiones — Cyberguard
 
-# Registro de Decisiones de Arquitectura
+> Este documento cumple dos propositos: es una **fuente de referencia tecnica** con los recursos
+> consultados, y una **bitacora personal** donde fui registrando paso a paso lo que fui haciendo,
+> pensando y decidiendo durante el diseño de la feature.
+> Las decisiones marcadas como **Aplicada** tienen evidencia directa en el documento oficial del proyecto.
 
-Este documento registra las decisiones clave tomadas durante el diseño y desarrollo del sistema, junto con los recursos que las fundamentan.
+---
 
-| Decisión Tomada | Enlace de Referencia | Justificación de Uso |
-| :--- | :--- | :--- |
-| Identificar la necesidad de notificaciones | [Product Discovery](https://www.productplan.com/glossary/product-discovery/) | Entender cómo descubrir problemas reales de negocio y validar la necesidad de la funcionalidad. |
-| Definir historias de usuario | [User Stories](https://www.atlassian.com/agile/project-management/user-stories) | Utilizar la estructura “Como [rol], quiero [objetivo] para [beneficio]” para definir funcionalidades desde la perspectiva del usuario. |
-| Definir criterios de aceptación (BDD) | [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/) | Aplicar escenarios `Given / When / Then` para especificar y validar el comportamiento esperado del sistema de forma clara. |
-| Modelar arquitectura orientada a eventos | [Event-Driven Architecture](https://microservices.io/patterns/data/event-driven-architecture.html) | Separar la generación de eventos (Productor) del procesamiento de los mismos (Consumidor) para mejorar el desacoplamiento. |
-| Implementar procesamiento desacoplado con colas | [Queue-Based Load Leveling](https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling) | Usar colas para gestionar picos de carga, desacoplar tareas y mejorar la disponibilidad del sistema. |
-| Aplicar patrón Observer | [Observer Pattern](https://refactoring.guru/design-patterns/observer) | Disparar acciones (como el envío de notificaciones) en respuesta a eventos específicos (como la generación de una alerta). |
-| Aplicar patrón Adapter | [Adapter Pattern](https://refactoring.guru/design-patterns/adapter) | Crear una interfaz unificada para abstraer las integraciones con servicios externos (correo, WhatsApp), permitiendo intercambiarlos fácilmente. |
-| Aplicar patrón Strategy | [Strategy Pattern](https://refactoring.guru/design-patterns/strategy) | Permitir la selección dinámica de algoritmos para personalizar el contenido de las notificaciones según su categoría o canal. |
-| Selección de APIs de correo electrónico | [SendGrid Docs](https://sendgrid.com/docs/) | Entender los requerimientos técnicos para la integración de envío de correos electrónicos de forma programática. |
-| Selección de API de WhatsApp | [WhatsApp Business Platform](https://developers.facebook.com/docs/whatsapp) | Analizar la documentación para el envío de mensajes automatizados a través de la plataforma oficial de WhatsApp. |
-| Definir atributos de calidad | [ISO/IEC 25010](https://iso25000.com/index.php/en/iso-25000-standards/iso-25010) | Identificar y priorizar atributos de calidad no funcionales como seguridad, disponibilidad y fiabilidad como pilares del diseño. |
-| Asegurar alta disponibilidad | [AWS Well-Architected Framework](https://aws.amazon.com/architecture/) | Aplicar principios de diseño para construir sistemas tolerantes a fallos y con alta disponibilidad. |
-| Implementar observabilidad y logs | [The Twelve-Factor App: Logs](https://12factor.net/logs) | Tratar los logs como flujos de eventos, centralizándolos y separándolos de la lógica de la aplicación para facilitar el monitoreo. |
-| Monitoreo del sistema | [OpenTelemetry Docs](https://opentelemetry.io/docs/) | Utilizar un estándar abierto para la recolección de métricas, trazas y logs que permitan la observabilidad del sistema. |
-| Manejo de fallos con reintentos | [Retry Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/retry) | Implementar una estrategia de reintentos para manejar fallos transitorios en la comunicación con servicios externos sin impactar el sistema. |
-| Garantizar procesamiento confiable | [Idempotent Consumer](https://microservices.io/post/microservices/patterns/2020/10/16/idempotent-consumer.html) | Diseñar consumidores de eventos que puedan procesar el mismo mensaje múltiples veces sin generar efectos secundarios no deseados. |
-| Definir estimación de historias | [Agile Estimation](https://www.atlassian.com/agile/project-management/estimation) | Utilizar la técnica de "T-Shirt Sizing" (tallas de camiseta) para realizar estimaciones de alto nivel del esfuerzo requerido. |
-| Documentar arquitectura (C4) | [C4 Model](https://c4model.com/) | Representar la arquitectura del software en diferentes niveles de abstracción (contexto, contenedores, componentes) para una mejor comunicación. |
-| Modelar flujo de ejecución | [Sequence Diagrams](https://www.uml-diagrams.org/sequence-diagrams.html) | Crear diagramas de secuencia para visualizar y entender la interacción y el orden de los mensajes entre los diferentes componentes del sistema. |
+## Registro de Decisiones
 
+| # | Decision Tomada | Estado | Enlace de Referencia | Justificacion de Uso |
+|:-:|:----------------|:------:|:---------------------|:---------------------|
+| 01 | Identificar la necesidad de notificaciones | Aplicada | [Product Discovery](https://www.productplan.com/glossary/product-discovery/) | Entender como descubrir problemas reales de negocio y validar la necesidad de la funcionalidad. |
+| 02 | Definir historias de usuario | Aplicada | [User Stories](https://www.atlassian.com/agile/project-management/user-stories) | Utilizar la estructura "Como [rol], quiero [objetivo] para [beneficio]" para definir funcionalidades desde la perspectiva del usuario. |
+| 03 | Definir criterios de aceptacion (BDD) | Aplicada | [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/) | Aplicar escenarios `Given / When / Then` para especificar y validar el comportamiento esperado del sistema de forma clara. |
+| 04 | Modelar arquitectura orientada a eventos | Aplicada | [Event-Driven Architecture](https://microservices.io/patterns/data/event-driven-architecture.html) | Separar la generacion de eventos (Producer) del procesamiento de los mismos (Worker) para mejorar el desacoplamiento. |
+| 05 | Implementar procesamiento desacoplado con colas | Aplicada | [Queue-Based Load Leveling](https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling) | Usar colas para gestionar picos de carga, desacoplar tareas y mejorar la disponibilidad del sistema. |
+| 06 | Aplicar patron Observer | Aplicada | [Observer Pattern](https://refactoring.guru/design-patterns/observer) | Disparar acciones (notificaciones) en respuesta a eventos especificos (generacion de una alerta) sin tocar el Producer. |
+| 07 | Aplicar patron Adapter | Aplicada | [Adapter Pattern](https://refactoring.guru/design-patterns/adapter) | Abstraer integraciones externas (correo, WhatsApp) bajo un contrato comun para poder cambiar de proveedor sin afectar la logica interna. |
+| 08 | Aplicar patron Strategy | Aplicada | [Strategy Pattern](https://refactoring.guru/design-patterns/strategy) | Personalizar el contenido de las notificaciones de forma dinamica segun la categoria de la alerta. |
+| 09 | Seleccion de API de correo electronico | Aplicada | [SendGrid Docs](https://sendgrid.com/docs/) | Entender los requerimientos tecnicos para la integracion de envio de correos electronicos de forma programatica. |
+| 10 | Seleccion de API de WhatsApp | Aplicada | [WhatsApp Business Platform](https://developers.facebook.com/docs/whatsapp) | Envio de mensajes automatizados a traves del canal oficial de WhatsApp. |
+| 11 | Definir atributos de calidad | Aplicada | [ISO/IEC 25010](https://iso25000.com/index.php/en/iso-25000-standards/iso-25010) | Identificar seguridad, disponibilidad y fiabilidad como pilares no funcionales del diseño. |
+| 12 | Asegurar alta disponibilidad | Aplicada | [AWS Well-Architected Framework](https://aws.amazon.com/architecture/) | Principios para diseñar sistemas tolerantes a fallos con disponibilidad del 99%. |
+| 13 | Implementar observabilidad y logs | Aplicada | [The Twelve-Factor App: Logs](https://12factor.net/logs) | Tratar los logs como flujos de eventos centralizados e independientes de la logica de la aplicacion. |
+| 14 | Monitoreo del sistema | En evaluacion | [OpenTelemetry Docs](https://opentelemetry.io/docs/) | Recoleccion de metricas y trazabilidad. Consultado como referencia, aun no aplicado explicitamente en el documento oficial. |
+| 15 | Manejo de fallos con reintentos | Aplicada | [Retry Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/retry) | Reintentar envios fallidos sin afectar el flujo general del sistema. |
+| 16 | Garantizar procesamiento confiable | Aplicada | [Idempotent Consumer](https://microservices.io/post/microservices/patterns/2020/10/16/idempotent-consumer.html) | Evitar duplicidad en el procesamiento de alertas garantizando que cada una se procese al menos una vez. |
+| 17 | Definir estimacion de historias | Aplicada | [Agile Estimation](https://www.atlassian.com/agile/project-management/estimation) | Tecnica T-Shirt Sizing para estimacion de esfuerzo en etapas tempranas del diseño. |
+| 18 | Documentar arquitectura (C4) | Aplicada | [C4 Model](https://c4model.com/) | Representar el sistema en niveles de abstraccion (contexto, contenedores, componentes) para una mejor comunicacion. |
+| 19 | Modelar flujo de ejecucion | Aplicada | [Sequence Diagrams](https://www.uml-diagrams.org/sequence-diagrams.html) | Crear diagramas de secuencia para visualizar la interaccion y el orden de los mensajes entre los componentes del sistema. |
 
+---
 
+### Resumen
 
+| Estado | Cantidad |
+|:-------|:--------:|
+| Aplicada en el documento oficial | 18 |
+| En evaluacion (consultada, no aplicada aun) | 1 |
+| **Total** | **19** |
 
+---
 
+## Bitacora Personal
 
-
-
-
-
-
-
-
-
-
-## Bitacora
+---
 
 Hoy quise aplicar el concepto Human First, y saque mi propia FEATURE basandome en las necesidades del negocio, sin embargo, al analizarla exhaustivamente me di cuenta que podria ser considerada un refactor o deuda tecnica, la feature era la siguiente:
 
@@ -94,7 +99,7 @@ Durante un pensamiento exhaustivo me di cuenta que primero se debe garantizar la
 **Necesito** poder acceder a mis datos personales para consultarlos o modificarlos.
 **Para** garantizar que la información que tiene de mí el sistema  sea precisa y concisa. 
 
-Le decimos SKAI que con el contexto de aplicacion ya existente, el bussines conext y el readme.md nos identifique que componentes se veran afectados en la arquitectura por la nueva funcionalidad y que patrones de diseño seran necesarios o como detectar los ya implementados. El objetivo es obtener una estimación de impacto antes de iniciar el desarrollo, nos responde lo siguiente:
+Le decimos a SKAI que con el contexto de aplicacion ya existente, el bussines context y el readme.md nos identifique que componentes se veran afectados en la arquitectura por la nueva funcionalidad y que patrones de diseño seran necesarios o como detectar los ya implementados. El objetivo es obtener una estimación de impacto antes de iniciar el desarrollo, nos responde lo siguiente:
 
 Entendido. El objetivo es realizar un análisis de impacto técnico detallado sobre la arquitectura existente de CyberGuard para estimar el esfuerzo y los riesgos asociados a la implementación de la nueva funcionalidad de notificaciones, antes de comenzar el desarrollo.
 
@@ -102,167 +107,109 @@ A continuación, presento un desglose del impacto por componente arquitectónico
 
 ---
 
-### **Análisis de Impacto Arquitectónico: Funcionalidad de Notificaciones Externas**
+### Análisis de Impacto Arquitectónico: Funcionalidad de Notificaciones Externas
 
-#### **Resumen Ejecutivo del Impacto**
+#### Resumen Ejecutivo del Impacto
 
 El impacto global de esta nueva funcionalidad en la arquitectura se estima como **Medio**. No requiere un rediseño fundamental del sistema, ya que se acopla de manera natural a la **Arquitectura Orientada a Eventos (EDA)** existente. Sin embargo, afecta a componentes clave (`Backend`, `Worker`, `Frontend`) e introduce nuevas dependencias externas y complejidades en la lógica de negocio, especialmente en el `Worker`.
 
 ---
 
-#### **1. Desglose de Impacto por Componente Arquitectónico**
+#### 1. Desglose de Impacto por Componente Arquitectónico
 
-| Componente Afectado | Nivel de Impacto | Descripción Detallada de los Cambios Necesarios |
+| Componente Afectado | Nivel de Impacto | Descripcion Detallada de los Cambios Necesarios |
 | :--- | :--- | :--- |
-| **`Backend API (Producer)`** | **Medio** | **1. Nuevos Endpoints:** Se debe crear un nuevo conjunto de endpoints para la gestión del perfil del administrador (ej. `GET /api/profile`, `PUT /api/profile`).<br>**2. Persistencia de Datos:** Requiere lógica para almacenar y actualizar los nuevos datos del administrador (email, teléfono) en la capa de persistencia (Redis). Se debe evaluar si Redis es adecuado para datos de usuario a largo plazo o si se debería considerar otra solución.<br>**3. Enriquecimiento de Mensajes:** El cambio más importante. Al publicar un mensaje de "nueva amenaza" en RabbitMQ, el `Backend API` ahora deberá enriquecer ese mensaje con la información de contacto del administrador. Esto mantiene al `Worker` desacoplado y sin estado, ya que no necesitará consultar una base de datos para obtener los datos del destinatario.<br>**4. Seguridad:** Los nuevos endpoints deben estar protegidos por el middleware de autenticación JWT existente.<br>**5. Validación:** Se debe extender el uso de Joi para validar los datos del perfil (formato de email, formato de teléfono). |
-| **`Worker (Consumer)`** | **Alto** | **Este es el componente con el mayor impacto.**<br>**1. Lógica de Negocio Principal:** El `Worker` deberá modificar su lógica de consumo. Al recibir un mensaje, deberá parsear la información de contacto y determinar a qué canales externos enviar la notificación (email, WhatsApp).<br>**2. Integración con Servicios de Terceros:** Se deben integrar SDKs o clientes HTTP para comunicarse con las APIs de los proveedores de servicios de notificación (ej. Twilio, SendGrid). Esto introduce nuevas dependencias de red y puntos de fallo.<br>**3. Gestión de Secretos:** El `Worker` necesitará acceso a las claves de API de estos servicios, las cuales deben ser gestionadas de forma segura a través de variables de entorno.<br>**4. Manejo de Errores y Resiliencia:** La lógica de manejo de errores se vuelve crítica. Se debe implementar un sistema robusto de reintentos y gestión de fallos para cuando las APIs externas no respondan o devuelvan errores.<br>**5. Orquestación de Notificaciones:** El `Worker` deberá orquestar el envío a múltiples canales, asegurando que un fallo en el envío de email no impida el envío por WhatsApp. |
-| **`Frontend (Angular App)`** | **Medio** | **1. Nuevas Vistas/Componentes:** Se debe desarrollar una nueva sección de "Perfil de Usuario" donde el administrador pueda ver y editar su información de contacto.<br>**2. Nuevos Servicios:** Se necesita crear un nuevo servicio en Angular (`ProfileService`) para interactuar con los nuevos endpoints del `Backend API` (`GET`, `PUT`).<br>**3. Gestión de Estado:** El estado del perfil del usuario deberá ser gestionado en el frontend, probablemente utilizando RxJS para manejar las operaciones asíncronas y la actualización de la UI.<br>**4. Formularios y Validación:** Implementar formularios reactivos con validaciones del lado del cliente para el email y el número de teléfono. |
-| **`Infraestructura (Docker)`** | **Bajo** | **1. Variables de Entorno:** El archivo `docker-compose.yml` y los archivos `.env` deberán ser actualizados para incluir las nuevas variables de entorno requeridas por el `Worker` y el `Backend` (ej. `TWILIO_API_KEY`, `SENDGRID_API_KEY`, `TWILIO_PHONE_NUMBER`).<br>**2. Conectividad de Red:** Asegurar que el contenedor del `Worker` tenga acceso de salida a Internet para poder comunicarse con las APIs de terceros. |
+| **Backend API (Producer)** | **Medio** | Nuevos endpoints REST para gestion de perfil. Persistencia de datos de contacto en Redis. Enriquecimiento del mensaje publicado en RabbitMQ. Proteccion con JWT y validacion con Joi. |
+| **Worker (Consumer)** | **Alto** | Modificacion de la logica de consumo. Integracion con SDKs de terceros (SendGrid, WhatsApp). Gestion de secretos via variables de entorno. Manejo de errores y reintentos. Orquestacion multi-canal. |
+| **Frontend (Angular App)** | **Medio** | Nueva seccion de Perfil de Usuario. Nuevo ProfileService. Formularios reactivos con validaciones de cliente. |
+| **Infraestructura (Docker)** | **Bajo** | Actualizacion de docker-compose.yml y archivos .env con nuevas variables de entorno. Verificacion de conectividad de red del Worker hacia internet. |
 
 ---
 
-#### **2. Análisis de Patrones de Diseño (Existentes y Nuevos)**
+#### 2. Analisis de Patrones de Diseño (Existentes y Nuevos)
 
-El éxito de esta implementación dependerá de aprovechar correctamente los patrones existentes y aplicar nuevos patrones para gestionar la complejidad añadida.
+##### Patrones Existentes a Potenciar
 
-##### **Patrones Existentes a Potenciar:**
+1. **Arquitectura Orientada a Eventos (EDA) / Publicador-Suscriptor:** El Backend sigue publicando el evento `threat.created`. El Worker añade nuevas responsabilidades sin romper el desacoplamiento existente.
 
-1.  **Arquitectura Orientada a Eventos (EDA) / Publicador-Suscriptor:**
-    *   **Detección:** Este es el patrón central del sistema (`Backend` → `RabbitMQ` → `Worker`).
-    *   **Aplicación:** La nueva funcionalidad encaja perfectamente. El `Backend` sigue publicando un evento genérico (`threat.created`). El `Worker` simplemente añade una nueva responsabilidad a su rol de suscriptor: además de notificar vía WebSocket, ahora también notificará a canales externos. El desacoplamiento se mantiene intacto.
+2. **Inyeccion de Dependencias (DI):** Presente en Backend y Frontend. Se debe utilizar para inyectar los nuevos servicios de notificacion y el ProfileService.
 
-2.  **Inyección de Dependencias (DI):**
-    *   **Detección:** Presente tanto en el `Backend` (a través de la estructura de Express/Node.js) como en el `Frontend` (nativo en Angular).
-    *   **Aplicación:** Se debe utilizar DI para inyectar los nuevos servicios de notificación en la lógica del `Worker` y el `ProfileService` en los componentes de Angular. Esto facilita las pruebas unitarias y la mantenibilidad.
+##### Nuevos Patrones de Diseño a Implementar
 
-##### **Nuevos Patrones de Diseño a Implementar:**
+1. **Patron Adaptador (Adapter):** Definir una interfaz generica `INotificationService` con un metodo `send()`. Crear adaptadores concretos: `WhatsAppAdapter` y `EmailAdapter`.
 
-1.  **Patrón Adaptador (Adapter):**
-    *   **Necesidad:** Para evitar un acoplamiento fuerte con un proveedor específico (ej. Twilio), se debe crear una interfaz de notificación genérica en el `Worker` (ej. `INotificationService`) con un método `send()`.
-    *   **Implementación:** Luego, se crean adaptadores concretos que implementen esa interfaz: `WhatsAppAdapter` (que usa Twilio por debajo) y `EmailAdapter` (que usa SendGrid). Esto permite cambiar de proveedor en el futuro modificando únicamente el adaptador, sin afectar la lógica de negocio principal.
+2. **Patron de Reintentos con Backoff Exponencial:** Si una llamada a una API externa falla, reintentar con tiempos de espera crecientes (1s, 2s, 4s, 8s) hasta un maximo de intentos.
 
-2.  **Patrón de Reintentos con Backoff Exponencial (Retry with Exponential Backoff):**
-    *   **Necesidad:** Las llamadas a APIs externas pueden fallar por problemas transitorios de red. Un reintento inmediato puede sobrecargar el servicio.
-    *   **Implementación:** En el `Worker`, si una llamada a una API de notificación falla, en lugar de descartar el mensaje, se debe implementar una lógica que reintente la operación después de un tiempo de espera que aumenta exponencialmente con cada fallo (ej. 1s, 2s, 4s, 8s), hasta un número máximo de intentos.
-
-3.  **Patrón de Cola de Mensajes Fallidos (Dead Letter Queue - DLQ):**
-    *   **Necesidad:** ¿Qué hacer si un mensaje falla repetidamente incluso después de varios reintentos? No debe perderse ni bloquear la cola principal.
-    *   **Implementación:** Se debe configurar una DLQ en RabbitMQ. Si el `Worker` no puede procesar un mensaje después del número máximo de reintentos, lo rechaza (`nack`) y RabbitMQ lo enrutará a la DLQ para su posterior análisis manual o reprocesamiento.
+3. **Patron de Cola de Mensajes Fallidos (Dead Letter Queue):** Configurar una DLQ en RabbitMQ para mensajes que fallen repetidamente, evitando que bloqueen la cola principal.
 
 ---
 
-### **Estimación de Impacto Consolidada**
+#### Estimacion de Impacto Consolidada
 
-| Área | Esfuerzo Estimado | Riesgo Técnico | Justificación |
+| Area | Esfuerzo Estimado | Riesgo Tecnico | Justificacion |
 | :--- | :--- | :--- | :--- |
-| **Backend** | **Medio** | **Bajo** | Tareas bien definidas: crear endpoints CRUD y enriquecer un mensaje. La lógica es estándar y el riesgo de regresión es bajo si se siguen los patrones existentes. |
-| **Worker** | **Alto** | **Alto** | Es el núcleo del cambio. La integración con APIs de terceros, la gestión de fallos, la resiliencia y la seguridad de las credenciales introducen una complejidad y un riesgo significativos. |
-| **Frontend** | **Medio** | **Bajo** | Requiere trabajo de UI/UX y lógica de cliente, pero son tareas estándar dentro del framework Angular. El riesgo de afectar otras partes de la aplicación es mínimo. |
-| **Infraestructura** | **Bajo** | **Bajo** | La modificación se limita a la gestión de configuración (variables de entorno), una tarea de bajo riesgo. |
-| **General** | **Medio** | **Medio** | El esfuerzo se concentra en el `Worker`, pero el riesgo general se mitiga porque la arquitectura EDA existente es la adecuada para esta expansión. El principal riesgo es la dependencia y la fiabilidad de los servicios externos. |
+| **Backend** | Medio | Bajo | Tareas bien definidas: endpoints CRUD y enriquecimiento de mensajes. Bajo riesgo de regresion. |
+| **Worker** | Alto | Alto | Nucleo del cambio. Integraciones externas, gestion de fallos y seguridad de credenciales. |
+| **Frontend** | Medio | Bajo | Tareas estandar de Angular. Riesgo minimo de afectar otras partes de la aplicacion. |
+| **Infraestructura** | Bajo | Bajo | Solo gestion de configuracion (variables de entorno). |
+| **General** | Medio | Medio | El riesgo principal es la dependencia de servicios externos. La arquitectura EDA existente es la adecuada para esta expansion. |
 
-Esta estimación previa concluye que el desarrollo es factible y se alinea bien con la arquitectura actual, pero se debe asignar tiempo y recursos significativos para garantizar que la implementación en el **`Worker`** sea robusta, resiliente y segura.
+---
 
-### Desicion humanas sobre los posibles riesgos e impactos, incluyendo los patrones de diseño
+### Decisiones humanas sobre los posibles riesgos e impactos, incluyendo los patrones de diseño
 
 **Patrones a implementar**
 
-Decidiremos implementar el patron ADAPTER, esto porque al día de mañana el sistema podrá cambiar de servicios externos dependiendo sus necesidades.
+Decidiremos implementar el patron **Adapter**, esto porque al día de mañana el sistema podrá cambiar de servicios externos dependiendo sus necesidades.
 
-Si el envío o contenido de la notificación depende de la categoría de la amenaza, el patrón que mejor se adapta es Strategy. Nos permite definir una estrategia por categoría (por ejemplo, crítica, media o baja) y elegirla dinámicamente cuando llega el evento, manteniendo el código más limpio, escalable y fácil de mantener. 
-
+Si el envío o contenido de la notificación depende de la categoría de la amenaza, el patrón que mejor se adapta es **Strategy**. Nos permite definir una estrategia por categoría (por ejemplo, crítica, media o baja) y elegirla dinámicamente cuando llega el evento, manteniendo el código más limpio, escalable y fácil de mantener.
 
 **Impacto a tener en cuenta**
 
 El impacto seria medio-alto, esto porque afectamos el comportamiento del sistema ya existente, debemos modificar la entidad del usuario para agregar un nuevo campo, y las nuevas implementaciones tocan todos los microservicios.
 
-
+---
 
 ### Sugerencia de implementacion tecnica por IA
 
+Le dije a la IA que me sugiriera, teniendo en cuenta el bussines context y readme.md como podriamos implementar estos cambios, la arquitectura, los patrones de diseño y que me diera las fuentes que utilizo para responderme:
 
-Le dije a la IA que me sugiriera, teniendo en cuenta el bussines context y readme.md como podriamos implementar estos cambios, la arquitectura, los patrones de diseño y que me diera las fuentas que utilizo para responderme:
+#### Arquitectura Recomendada para las 4 Historias de Usuario
 
-### Arquitectura Recomendada para las 4 Historias de Usuario
+1. **Gestion y edicion de datos personales:** Endpoints REST en el backend (Express.js). Validacion con Joi. Almacenamiento en Redis. Panel de perfil en Angular con formularios reactivos.
 
-#### 1. **Gestión y edición de datos personales**
-- Implementa endpoints REST en el **backend (Express.js)** para consultar y actualizar datos personales del administrador.
-- Usa **Joi** para validar los datos (nombre, correo, número telefónico).
-- Almacena los datos en **Redis** (según tu stack actual) o considera una base de datos relacional si necesitas consultas más complejas.
-- El **frontend Angular** debe tener un panel de perfil donde el usuario pueda ver y editar sus datos, usando Angular Material para formularios y validaciones.
+2. **Agregar datos de contacto adicionales:** Extender el modelo de usuario para incluir el numero telefonico. Validacion y actualizacion via API. Campo editable en el frontend.
 
-#### 2. **Agregar datos de contacto adicionales**
-- Extiende el modelo de usuario en el backend para incluir el número telefónico.
-- Asegura validación y actualización vía API.
-- El frontend debe permitir agregar y editar este campo.
+3. **Notificaciones automaticas en tiempo real:** Al registrar una amenaza, publicar un mensaje en RabbitMQ. El Worker escucha y procesa el envio. El frontend recibe via WebSocket (puerto 8081).
 
-#### 3. **Notificaciones automáticas en tiempo real**
-- Cuando se registre una nueva amenaza en el backend, publica un mensaje en **RabbitMQ**.
-- El **worker** (Node.js Consumer) escucha estos eventos y procesa el envío de notificaciones.
-- El frontend puede recibir notificaciones en tiempo real usando **WebSocket** (puerto 8081) o mediante polling si es necesario.
+4. **Notificaciones por correo electronico y WhatsApp:** El Worker integra SendGrid para correo y la API de WhatsApp Business para mensajeria. Los datos de contacto se obtienen desde Redis. El resultado del envio se registra para trazabilidad.
 
-#### 4. **Notificaciones por correo electrónico y WhatsApp**
-- El **worker** debe integrar servicios externos:
-  - Para correo: usa nodemailer, SendGrid, o similar.
-  - Para WhatsApp: integra la **API de WhatsApp Business**.
-- El worker toma los datos de contacto del administrador desde Redis y envía la notificación por ambos canales.
-- El backend debe registrar el resultado del envío para trazabilidad.
+**Fuentes consultadas por la IA:**
+- [12 Factor App](https://12factor.net/)
+- [RabbitMQ Best Practices](https://www.rabbitmq.com/best-practices.html)
+- [Angular Material Forms](https://material.angular.io/components/form-field/overview)
+- [WhatsApp Business API Docs](https://developers.facebook.com/docs/whatsapp/)
+- [Nodemailer](https://nodemailer.com/about/)
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
 
----
+#### Patrones de Diseño Recomendados por la IA
 
-### Fuentes y buenas prácticas utilizadas
-
-- [12 Factor App](https://12factor.net/) — Separación de configuración, desacoplamiento de servicios.
-- [RabbitMQ Best Practices](https://www.rabbitmq.com/best-practices.html) — Uso de colas para desacoplar procesos y escalar notificaciones.
-- [Node.js Microservices with RabbitMQ](https://dev.to/abiodunjames/building-microservices-with-nodejs-and-rabbitmq-3g1b) — Ejemplo de arquitectura event-driven.
-- [Angular Material Forms](https://material.angular.io/components/form-field/overview) — Formularios reactivos y validación.
-- [WhatsApp Business API Docs](https://developers.facebook.com/docs/whatsapp/) — Envío de mensajes programáticos.
-- [Nodemailer](https://nodemailer.com/about/) — Envío de correos desde Node.js.
-- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/) — Validación y protección de datos personales.
+| Patron | Aplicacion Sugerida |
+|:-------|:--------------------|
+| **Observer** | Backend publica eventos, Workers reaccionan enviando notificaciones via RabbitMQ. |
+| **Factory** | Crear instancias de servicios de notificacion segun el canal requerido. |
+| **Strategy** | Seleccionar dinamicamente el metodo de envio segun preferencia o configuracion. |
+| **Singleton** | Conexiones a Redis, RabbitMQ y clientes de correo con una unica instancia compartida. |
+| **DTO** | Estructurar y validar datos entre frontend, backend y workers. |
+| **Command** | Encapsular acciones como "enviar notificacion" para colas, logs y reintentos. |
+| **Adapter** | Integrar APIs externas adaptando sus interfaces a la logica interna del sistema. |
 
 ---
-
-Estas sugerencias están alineadas a tu monorepo, arquitectura event-driven y uso de microservicios, asegurando escalabilidad, mantenibilidad y cumplimiento de los requisitos funcionales.
-
-### Patrones de Diseño Recomendados
-
-1. **Observer (Publicador/Suscriptor)**
-   - Útil para el sistema de notificaciones: el backend publica eventos (nuevas amenazas) y los workers/subscriptores reaccionan enviando notificaciones.
-   - Implementado naturalmente con RabbitMQ en tu arquitectura.
-
-2. **Factory**
-   - Para crear instancias de servicios de notificación (correo, WhatsApp) según el canal requerido, facilitando la extensión a nuevos canales en el futuro.
-
-3. **Strategy**
-   - Permite seleccionar dinámicamente el método de envío de notificaciones (correo, WhatsApp, SMS, etc.) según la preferencia del usuario o la configuración.
-
-4. **Singleton**
-   - Para la conexión a servicios externos como Redis, RabbitMQ o clientes de correo, asegurando una única instancia compartida en toda la aplicación.
-
-5. **DTO (Data Transfer Object)**
-   - Para estructurar y validar los datos que viajan entre frontend, backend y workers, asegurando consistencia y seguridad.
-
-6. **Command**
-   - Útil para encapsular acciones como “enviar notificación”, permitiendo colas, logs y reintentos automáticos en caso de fallo.
-
-7. **Adapter**
-   - Para integrar APIs externas (WhatsApp, correo), adaptando sus interfaces a la lógica interna del sistema.
-
----
-
-**Fuentes:**
-- [Refactoring Guru - Design Patterns](https://refactoring.guru/design-patterns)
-- [Node.js Design Patterns Book](https://www.nodejsdesignpatterns.com/)
-- [Microservices Patterns - Chris Richardson](https://microservices.io/patterns/index.html)
-
 
 Ayer tuvimos una reunion donde hablabamos de una manera más profunda sobre la definicion de features, por lo cual refactorizare el documento google docs para que los criterios de aceptación ahora esten en formato gherkin, ademas, agregare un valor global que encasillara el proposito de esta feature.
 
-
 Definimos también los fuera de alcance de la nueva feature, para que todas las partes del negocio tengan claro realmente que es lo que se realizará durante esta nueva feature.
-
 
 A continuación definiré el modelo de negocio y las reglas de negocio.
 
-
-Terminé la definicion del documento, inclui  un diagrama C4 para explicar como interactuan los componentes del negocio entre si, también un diagrama de secuencia donde se evidencia paso a paso que hará la nueva feature y como los diferentes componentes del sistema entran ahi, requisitos no funcionales importantes para garantizar atributos de calidad, los patrones de diseños clave, ahora, crearé en este documento una tabla donde pondré todos los links en los que me base para tomar las desiciones arquitectonicas y de negocio.
+Terminé la definicion del documento, inclui un diagrama C4 para explicar como interactuan los componentes del negocio entre si, también un diagrama de secuencia donde se evidencia paso a paso que hará la nueva feature y como los diferentes componentes del sistema entran ahi, requisitos no funcionales importantes para garantizar atributos de calidad, los patrones de diseños clave, ahora, crearé en este documento una tabla donde pondré todos los links en los que me base para tomar las desiciones arquitectonicas y de negocio.
