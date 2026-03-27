@@ -219,3 +219,6 @@ Definimos también los fuera de alcance de la nueva feature, para que todas las 
 
 
 A continuación definiré el modelo de negocio y las reglas de negocio.
+
+
+Terminé la definicion del documento, inclui  un diagrama C4 para explicar como interactuan los componentes del negocio entre si, también un diagrama de secuencia donde se evidencia paso a paso que hará la nueva feature y como los diferentes componentes del sistema entran ahi, requisitos no funcionales importantes para garantizar atributos de calidad, los patrones de diseños clave, ahora, crearé en este documento una tabla donde pondré todos los links en los que me base para tomar las desiciones arquitectonicas y de negocio.
