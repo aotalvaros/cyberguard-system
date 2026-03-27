@@ -216,3 +216,6 @@ Ayer tuvimos una reunion donde hablabamos de una manera más profunda sobre la d
 
 
 Definimos también los fuera de alcance de la nueva feature, para que todas las partes del negocio tengan claro realmente que es lo que se realizará durante esta nueva feature.
+
+
+A continuación definiré el modelo de negocio y las reglas de negocio.
