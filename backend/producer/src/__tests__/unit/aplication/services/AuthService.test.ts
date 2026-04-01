@@ -30,6 +30,8 @@ describe('AuthService', () => {
     username: 'admin',
     email: 'admin@test.com',
     role: 'admin',
+    fullName: null,
+    isActive: true,
     isLocked: false,
     failedAttempts: 0,
     lastLogin: null,
@@ -56,7 +58,9 @@ describe('AuthService', () => {
     mockUserRepository = {
       findById: jest.fn(),
       findByUsername: jest.fn(),
+      findByEmail: jest.fn(),
       findAll: jest.fn(),
+      findAllActive: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),

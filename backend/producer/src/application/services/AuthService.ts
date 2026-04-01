@@ -62,7 +62,9 @@ export class AuthService {
           id: uuidv4(),
           username: result.user.username,
           email: result.user.username,
-          role: result.user.role, 
+          role: result.user.role,
+          fullName: null,
+          isActive: true,
           isLocked: false,
           failedAttempts: 0,
           lastLogin: new Date(),
@@ -85,7 +87,7 @@ export class AuthService {
       }
 
       // Verificar si la cuenta está bloqueada
-      if (user?.isLocked) {
+      if (user.isLocked) {
         await this.auditLogRepository.log({
           userId: user.id,
           action: 'login_blocked',
@@ -101,8 +103,8 @@ export class AuthService {
       }
 
       // Resetear intentos fallidos y actualizar último login
-      await this.userRepository.resetFailedAttempts(user?.id);
-      await this.userRepository.updateLastLogin(user?.id);
+      await this.userRepository.resetFailedAttempts(user.id);
+      await this.userRepository.updateLastLogin(user.id);
 
       // Generar JWT
       const token = this.tokenService.generateToken({
