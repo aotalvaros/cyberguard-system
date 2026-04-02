@@ -7,6 +7,8 @@ import { CreateUserUseCase } from '../../application/use-cases/CreateUserUseCase
 import { UpdateUserUseCase } from '../../application/use-cases/UpdateUserUseCase';
 import { ToggleUserStatusUseCase } from '../../application/use-cases/ToggleUserStatusUseCase';
 import { ListUsersUseCase } from '../../application/use-cases/ListUsersUseCase';
+import { CreateIncidentUseCase } from '../../application/use-cases/CreateIncidentUseCase';
+import { ListIncidentsUseCase } from '../../application/use-cases/ListIncidentsUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
@@ -41,6 +43,8 @@ export class ServiceFactory {
   private static threatClassifier: ThreatClassifier | null = null;
   // IRMS use cases
   private static createUserUseCase: CreateUserUseCase | null = null;
+  private static createIncidentUseCase: CreateIncidentUseCase | null = null;
+  private static listIncidentsUseCase: ListIncidentsUseCase | null = null;
   private static updateUserUseCase: UpdateUserUseCase | null = null;
   private static toggleUserStatusUseCase: ToggleUserStatusUseCase | null = null;
   private static listUsersUseCase: ListUsersUseCase | null = null;
@@ -174,6 +178,30 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del use case de crear incidente (HU-001)
+   */
+  static getCreateIncidentUseCase(): CreateIncidentUseCase {
+    if (!this.createIncidentUseCase) {
+      this.createIncidentUseCase = new CreateIncidentUseCase(
+        this.getThreatRepository(),
+        this.getIncidentRepository(),
+        this.getAuditLogRepository(),
+      );
+    }
+    return this.createIncidentUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de listar incidentes (HU-001)
+   */
+  static getListIncidentsUseCase(): ListIncidentsUseCase {
+    if (!this.listIncidentsUseCase) {
+      this.listIncidentsUseCase = new ListIncidentsUseCase(this.getIncidentRepository());
+    }
+    return this.listIncidentsUseCase;
+  }
+
+  /**
    * ✅ Obtener instancia del servicio de autenticación
    * Inyecta: AuthProvider (port), TokenService (port)
    */
@@ -223,6 +251,8 @@ export class ServiceFactory {
     this.updateUserUseCase = null;
     this.toggleUserStatusUseCase = null;
     this.listUsersUseCase = null;
+    this.createIncidentUseCase = null;
+    this.listIncidentsUseCase = null;
   }
 
   /**

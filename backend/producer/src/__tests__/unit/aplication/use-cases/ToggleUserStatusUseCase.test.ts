@@ -58,17 +58,18 @@ describe('ToggleUserStatusUseCase', () => {
     } as jest.Mocked<AuditLogRepository>;
 
     mockIncidentRepo = {
+      save:                       jest.fn().mockResolvedValue(null as never),
+      findAll:                    jest.fn().mockResolvedValue([] as never),
+      findById:                   jest.fn().mockResolvedValue(null as never),
+      findActiveByThreatId:       jest.fn().mockResolvedValue(null as never),
       findActiveByAssignedUserId: jest.fn().mockResolvedValue([] as never),
       unassignByUserId:           jest.fn().mockResolvedValue(0 as never),
-    } as jest.Mocked<IncidentRepository>;
+    } as unknown as jest.Mocked<IncidentRepository>;
 
     useCase = new ToggleUserStatusUseCase(mockUserRepo, mockAuditRepo, mockIncidentRepo);
   });
 
-  // =========================================================================
-  // DESACTIVACIÓN (CRITERIO-3.1, 3.2)
-  // =========================================================================
-  describe('execute() — deactivate (isActive=false)', () => {
+    describe('execute() — deactivate (isActive=false)', () => {
     it('should deactivate user and reassign active incidents (CRITERIO-3.1)', async () => {
       // GIVEN — 2 incidentes activos
       jest.mocked(mockIncidentRepo.findActiveByAssignedUserId).mockResolvedValue(twoActiveIncidents);
@@ -114,9 +115,6 @@ describe('ToggleUserStatusUseCase', () => {
     });
   });
 
-  // =========================================================================
-  // REACTIVACIÓN (CRITERIO-3.2)
-  // =========================================================================
   describe('execute() — reactivate (isActive=true)', () => {
     it('should reactivate user successfully (CRITERIO-3.2)', async () => {
       // GIVEN — usuario inactivo
@@ -161,9 +159,6 @@ describe('ToggleUserStatusUseCase', () => {
     });
   });
 
-  // =========================================================================
-  // ERROR PATHS (CRITERIO-3.3, 3.4)
-  // =========================================================================
   describe('execute() — error paths', () => {
     it('should throw SelfModificationForbiddenError when admin deactivates own account (CRITERIO-3.3)', async () => {
       // GIVEN — el admin intenta desactivarse a sí mismo

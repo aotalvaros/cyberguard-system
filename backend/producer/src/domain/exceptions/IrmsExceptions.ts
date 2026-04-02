@@ -1,18 +1,24 @@
 
 export class InvalidIncidentCreationError extends Error {
-  constructor(threatId: number, severity: string) {
+  constructor(threatId: string | number, severity: string) {
     super(
-      `Threat ${threatId} has severity '${severity}' which does not qualify for incident creation. ` +
-      `Only 'high' and 'critical' are eligible.`
+      `Solo amenazas con severidad ALTA o CRÍTICA pueden generar incidentes. ` +
+      `Amenaza '${threatId}' tiene severidad '${severity}'.`
     );
     this.name = 'InvalidIncidentCreationError';
   }
 }
 
-
 export class DuplicateIncidentError extends Error {
-  constructor(threatId: number) {
-    super(`An active incident already exists for threat ${threatId}`);
+  constructor(threatId: string | number) {
+    super(`Ya existe un incidente activo para esta amenaza (threatId: ${threatId})`);
     this.name = 'DuplicateIncidentError';
+  }
+}
+
+export class ThreatNotFoundForIncidentError extends Error {
+  constructor(threatId: string) {
+    super(`Threat not found: '${threatId}'`);
+    this.name = 'ThreatNotFoundForIncidentError';
   }
 }
