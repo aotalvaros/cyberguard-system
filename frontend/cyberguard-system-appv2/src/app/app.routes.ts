@@ -26,6 +26,18 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'users',
+    loadComponent: () => import('../presentation/components/user-management/user-management.component')
+      .then(m => m.UserManagementComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'incidents',
+    loadComponent: () => import('../presentation/components/incident-list/incident-list.component')
+      .then(m => m.IncidentListComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/autenticacion'
   }

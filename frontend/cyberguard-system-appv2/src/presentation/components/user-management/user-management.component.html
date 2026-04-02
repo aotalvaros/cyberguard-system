@@ -1,0 +1,159 @@
+<div class="page-container">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>👥 Gestión de Usuarios</h1>
+      <div class="header-actions">
+        <span class="current-user">{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
+        <button (click)="goToIncidents()" class="btn-nav">Incidentes</button>
+        <button (click)="goToDashboard()" class="btn-nav">Dashboard</button>
+        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main">
+
+    @if (success) {
+      <div class="alert alert-success">{{ success }}</div>
+    }
+    @if (error) {
+      <div class="alert alert-error">{{ error }}</div>
+    }
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <h2>Usuarios ({{ total }})</h2>
+      <button (click)="toggleCreateForm()" class="btn-primary">
+        {{ showCreateForm ? 'Cancelar' : '+ Nuevo Usuario' }}
+      </button>
+    </div>
+
+    <!-- Create user form -->
+    @if (showCreateForm) {
+      <div class="form-card">
+        <h3>Crear Usuario</h3>
+        <form [formGroup]="createForm" (ngSubmit)="onCreateUser()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" formControlName="email" placeholder="usuario@example.com"
+                     [class.error]="createForm.get('email')?.invalid && createForm.get('email')?.touched" />
+              @if (createForm.get('email')?.invalid && createForm.get('email')?.touched) {
+                <span class="error-message">Email válido requerido</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Nombre Completo *</label>
+              <input type="text" formControlName="fullName" placeholder="Ana María Torres"
+                     [class.error]="createForm.get('fullName')?.invalid && createForm.get('fullName')?.touched" />
+              @if (createForm.get('fullName')?.invalid && createForm.get('fullName')?.touched) {
+                <span class="error-message">Nombre requerido (mín. 3 chars)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Username *</label>
+              <input type="text" formControlName="username" placeholder="ana.torres"
+                     [class.error]="createForm.get('username')?.invalid && createForm.get('username')?.touched" />
+              @if (createForm.get('username')?.invalid && createForm.get('username')?.touched) {
+                <span class="error-message">Username requerido (mín. 3 chars)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Rol *</label>
+              <select formControlName="role">
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ getRoleLabel(role) }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="createForm.invalid || creating">
+              {{ creating ? 'Creando...' : 'Crear Usuario' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="toggleCreateForm()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Users table -->
+    @if (loading) {
+      <div class="loading">Cargando usuarios...</div>
+    } @else {
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Nombre</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr [class.inactive]="!user.isActive">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.fullName ?? '—' }}</td>
+
+                <!-- Inline edit form for role/fullName -->
+                @if (editingUserId === user.id) {
+                  <td colspan="2">
+                    <form [formGroup]="editForm" (ngSubmit)="onUpdateUser(user.id)" class="inline-form">
+                      <input type="text" formControlName="fullName" placeholder="Nombre" />
+                      <select formControlName="role">
+                        @for (role of roles; track role) {
+                          <option [value]="role">{{ getRoleLabel(role) }}</option>
+                        }
+                      </select>
+                      <button type="submit" class="btn-sm btn-primary" [disabled]="editForm.invalid || updating">
+                        {{ updating ? '...' : 'Guardar' }}
+                      </button>
+                      <button type="button" class="btn-sm btn-secondary" (click)="cancelEdit()">✕</button>
+                    </form>
+                  </td>
+                } @else {
+                  <td><span class="badge role-badge">{{ getRoleLabel(user.role) }}</span></td>
+                  <td>
+                    <span class="badge" [class.badge-active]="user.isActive" [class.badge-inactive]="!user.isActive">
+                      {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                }
+
+                <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+                <td class="actions-cell">
+                  @if (editingUserId !== user.id && user.username !== currentUser?.username) {
+                    <button class="btn-sm btn-edit" (click)="startEdit(user)">✏️ Editar</button>
+                    <button class="btn-sm"
+                            [class.btn-deactivate]="user.isActive"
+                            [class.btn-activate]="!user.isActive"
+                            (click)="onToggleStatus(user)">
+                      {{ user.isActive ? '🔒 Desactivar' : '🔓 Activar' }}
+                    </button>
+                  }
+                  @if (user.username === currentUser?.username) {
+                    <span class="badge badge-info">Tu cuenta</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="empty-state">No hay usuarios registrados.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>

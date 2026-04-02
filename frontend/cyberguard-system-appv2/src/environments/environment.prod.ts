@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.cyberguard.com',
-  wsUrl: 'wss://ws.cyberguard.com'
+  apiUrl: 'http://localhost:3000',
+  wsUrl: 'ws://localhost:8081'
 };

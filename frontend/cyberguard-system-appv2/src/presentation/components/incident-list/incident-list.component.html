@@ -1,0 +1,130 @@
+<div class="page-container">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>🚨 Incidentes</h1>
+      <div class="header-actions">
+        <span class="current-user">{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
+        @if (currentUser?.role === 'admin') {
+          <button (click)="goToUserManagement()" class="btn-nav">Usuarios</button>
+        }
+        <button (click)="goToDashboard()" class="btn-nav">Dashboard</button>
+        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main">
+
+    @if (success) {
+      <div class="alert alert-success">{{ success }}</div>
+    }
+    @if (error) {
+      <div class="alert alert-error">{{ error }}</div>
+    }
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <h2>Incidentes ({{ total }})</h2>
+      @if (canCreate()) {
+        <button (click)="toggleCreateForm()" class="btn-primary">
+          {{ showCreateForm ? 'Cancelar' : '+ Crear Incidente' }}
+        </button>
+      }
+    </div>
+
+    <!-- Create incident form -->
+    @if (showCreateForm) {
+      <div class="form-card">
+        <h3>Crear Incidente desde Amenaza</h3>
+        <p class="form-hint">Los incidentes se crean a partir de amenazas detectadas con severidad <strong>Alta</strong> o <strong>Crítica</strong>. Ingrese el <strong>ID</strong> que aparece en cada tarjeta de alerta del Dashboard.</p>
+        <form [formGroup]="createForm" (ngSubmit)="onCreateIncident()">
+          <div class="form-group">
+            <label>ID de Amenaza (UUID) *</label>
+            <input type="text" formControlName="threatId" placeholder="ej: 3f2504e0-4f89-11d3-9a0c-0305e82c3301"
+                   [class.error]="createForm.get('threatId')?.invalid && createForm.get('threatId')?.touched" />
+            @if (createForm.get('threatId')?.hasError('required') && createForm.get('threatId')?.touched) {
+              <span class="error-message">El ID de la amenaza es requerido</span>
+            }
+            @if (createForm.get('threatId')?.hasError('pattern') && createForm.get('threatId')?.touched) {
+              <span class="error-message">Formato UUID inválido (ej: 3f2504e0-4f89-11d3-9a0c-0305e82c3301)</span>
+            }
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="createForm.invalid || creating">
+              {{ creating ? 'Creando...' : 'Crear Incidente' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="toggleCreateForm()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <form [formGroup]="filterForm" (ngSubmit)="applyFilters()" class="filters-form">
+        <select formControlName="status">
+          @for (opt of statusOptions; track opt) {
+            <option [value]="opt">{{ opt ? getStatusLabel(opt) : 'Todos los estados' }}</option>
+          }
+        </select>
+        <select formControlName="severity">
+          @for (opt of severityOptions; track opt) {
+            <option [value]="opt">{{ opt ? getSeverityLabel(opt) : 'Todas las severidades' }}</option>
+          }
+        </select>
+        <button type="submit" class="btn-secondary btn-sm">Filtrar</button>
+        <button type="button" class="btn-secondary btn-sm" (click)="clearFilters()">Limpiar</button>
+      </form>
+    </div>
+
+    <!-- Incidents table -->
+    @if (loading) {
+      <div class="loading">Cargando incidentes...</div>
+    } @else {
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Título</th>
+              <th>Estado</th>
+              <th>Severidad</th>
+              <th>Tipo</th>
+              <th>IP Origen</th>
+              <th>Creado por</th>
+              <th>Asignado a</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (incident of incidents; track incident.id) {
+              <tr>
+                <td class="id-cell" title="{{ incident.id }}">{{ incident.id | slice:0:8 }}…</td>
+                <td>{{ incident.title }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(incident.status)">
+                    {{ getStatusLabel(incident.status) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getSeverityClass(incident.severity)">
+                    {{ getSeverityLabel(incident.severity) }}
+                  </span>
+                </td>
+                <td>{{ incident.type }}</td>
+                <td>{{ incident.sourceIp ?? '—' }}</td>
+                <td>{{ incident.createdBy | slice:0:8 }}…</td>
+                <td>{{ incident.assignedTo ? (incident.assignedTo | slice:0:8) + '…' : '—' }}</td>
+                <td>{{ incident.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9" class="empty-state">No hay incidentes registrados.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>
