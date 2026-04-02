@@ -52,8 +52,8 @@ export class PostgresIncidentRepository implements IncidentRepository {
           incident.type,
           incident.sourceIp   ?? null,
           incident.description ?? null,
-          incident.createdBy,
-          incident.assignedTo ?? null,
+          incident.createdBy   || null,
+          incident.assignedTo  ?? null,
         ],
       );
       logger.info('Incident saved to DB', { incidentId: incident.id });

@@ -123,7 +123,7 @@ describe('Auth Middleware', () => {
 
     it('should return 401 when token is expired', () => {
       const expiredToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '-1h' }
       );
@@ -138,7 +138,7 @@ describe('Auth Middleware', () => {
 
     it('should return 401 when token signature is invalid', () => {
       const tokenWithWrongSignature = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         'wrong-secret-key',
         { expiresIn: '1h' }
       );
@@ -168,6 +168,23 @@ describe('Auth Middleware', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(401);
       expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid token' });
     });
+
+    it('should return 401 when token is missing user id', () => {
+      const tokenWithoutId = jwt.sign(
+        { username: 'admin', role: 'admin' },
+        mockConfig.jwtSecret,
+        { expiresIn: '1h' }
+      );
+      mockRequest.headers = { authorization: `Bearer ${tokenWithoutId}` };
+
+      authMiddleware(mockRequest as AuthRequest, mockResponse as Response, nextFunction);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(401);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        error: 'Invalid token: missing user identity. Please login again.'
+      });
+      expect(nextFunction).not.toHaveBeenCalled();
+    });
   });
 
   // ==========================================================================
@@ -177,7 +194,7 @@ describe('Auth Middleware', () => {
   describe('Logging', () => {
     it('should log warning when token is expired', () => {
       const expiredToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '-1h' }
       );
@@ -208,7 +225,7 @@ describe('Auth Middleware', () => {
 
     it('should not log when token is valid', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -228,7 +245,7 @@ describe('Auth Middleware', () => {
   describe('Successful Authentication', () => {
     it('should call next() when token is valid', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -243,7 +260,7 @@ describe('Auth Middleware', () => {
 
     it('should attach user to request when token is valid', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -253,6 +270,7 @@ describe('Auth Middleware', () => {
 
       expect(mockRequest.user).toBeDefined();
       expect(mockRequest.user).toEqual({
+        id: 'admin-uid-1',
         username: 'admin',
         role: 'admin',
         iat: expect.any(Number),
@@ -262,7 +280,7 @@ describe('Auth Middleware', () => {
 
     it('should preserve username and role from token', () => {
       const validToken = jwt.sign(
-        { username: 'testuser', role: 'user' },
+        { id: 'user-uid-2', username: 'testuser', role: 'user' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -276,7 +294,7 @@ describe('Auth Middleware', () => {
 
     it('should handle token without Bearer prefix', () => {
       const validToken = jwt.sign(
-        { username: 'testuser', role: 'user' },
+        { id: 'user-uid-2', username: 'testuser', role: 'user' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -291,7 +309,7 @@ describe('Auth Middleware', () => {
 
     it('should handle token with extra spaces after Bearer', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -311,7 +329,7 @@ describe('Auth Middleware', () => {
   describe('Different User Roles', () => {
     it('should handle admin role', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -325,7 +343,7 @@ describe('Auth Middleware', () => {
 
     it('should handle user role', () => {
       const validToken = jwt.sign(
-        { username: 'regularuser', role: 'user' },
+        { id: 'user-uid-3', username: 'regularuser', role: 'user' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -339,7 +357,7 @@ describe('Auth Middleware', () => {
 
     it('should handle custom roles', () => {
       const validToken = jwt.sign(
-        { username: 'moderator', role: 'moderator' },
+        { id: 'mod-uid-4', username: 'moderator', role: 'moderator' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -359,7 +377,7 @@ describe('Auth Middleware', () => {
   describe('Edge Cases', () => {
     it('should handle token with special characters in username', () => {
       const validToken = jwt.sign(
-        { username: 'user@example.com', role: 'admin' },
+        { id: 'email-uid-5', username: 'user@example.com', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -374,7 +392,7 @@ describe('Auth Middleware', () => {
     it('should handle very long usernames', () => {
       const longUsername = 'a'.repeat(100);
       const validToken = jwt.sign(
-        { username: longUsername, role: 'user' },
+        { id: 'long-uid-6', username: longUsername, role: 'user' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -388,6 +406,7 @@ describe('Auth Middleware', () => {
     it('should handle token with additional claims', () => {
       const validToken = jwt.sign(
         { 
+          id: 'admin-uid-1',
           username: 'admin', 
           role: 'admin',
           email: 'admin@example.com',
@@ -407,7 +426,7 @@ describe('Auth Middleware', () => {
 
     it('should handle token about to expire (1 second left)', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1s' }
       );
@@ -421,7 +440,7 @@ describe('Auth Middleware', () => {
 
     it('should handle token with very long expiration', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '365d' }
       );
@@ -441,7 +460,7 @@ describe('Auth Middleware', () => {
   describe('JWT Specific Behaviors', () => {
     it('should validate token iat (issued at) claim', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -454,7 +473,7 @@ describe('Auth Middleware', () => {
 
     it('should validate token exp (expiration) claim', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -467,7 +486,7 @@ describe('Auth Middleware', () => {
 
     it('should reject token with nbf (not before) in the future', () => {
       const futureToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { 
           expiresIn: '1h',
@@ -529,7 +548,7 @@ describe('Auth Middleware', () => {
 
     it('should not call both next() and error response', () => {
       const validToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -562,7 +581,7 @@ describe('Auth Middleware', () => {
   describe('Security', () => {
     it('should differentiate between expired and invalid tokens', () => {
       const expiredToken = jwt.sign(
-        { username: 'admin', role: 'admin' },
+        { id: 'admin-uid-1', username: 'admin', role: 'admin' },
         mockConfig.jwtSecret,
         { expiresIn: '-1h' }
       );

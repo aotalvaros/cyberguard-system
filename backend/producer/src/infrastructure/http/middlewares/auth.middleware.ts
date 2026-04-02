@@ -5,7 +5,7 @@ import { logger } from '../../../infrastructure/config/logger';
 
 export interface AuthRequest extends Request {
   user?: {
-    id?: string;
+    id: string;
     username: string;
     role: string;
   };
@@ -30,7 +30,11 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     // ⚠️ HUMAN CHECK:
     // La IA no manejaba correctamente tokens expirados vs inválidos.
     // Se agrego manejo específico de errores de JWT.
-    const decoded = jwt.verify(token, config.jwtSecret) as { id?: string; username: string; role: string };
+    const decoded = jwt.verify(token, config.jwtSecret) as { id: string; username: string; role: string };
+    if (!decoded.id) {
+      res.status(401).json({ error: 'Invalid token: missing user identity. Please login again.' });
+      return;
+    }
     req.user = decoded;
     next();
   } catch (error: unknown) {

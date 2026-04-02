@@ -5,15 +5,15 @@ jest.mock('../../../../infrastructure/config/env', () => ({
 }));
 
 jest.mock('jsonwebtoken', () => ({
-    sign: jest.fn((payload: { username: string; role: string }, secret: string, options: any) => {
-        return `mocked-token-for-${payload.username}`;
+    sign: jest.fn((payload: { id: string; username: string; role: string }, secret: string, options: any) => {
+        return `mocked-token::${payload.id}::${payload.username}::${payload.role}`;
     }),
     verify: jest.fn((token: string, secret: string) => {
-        if (token === 'invalid.token.value' || token === 'mocked-token-for-invalid') {
+        if (token === 'invalid.token.value') {
             throw new Error('Invalid token');
         }
-        const username = token.replace('mocked-token-for-', '');
-        return { username, role: 'user' };
+        const parts = token.split('::');
+        return { id: parts[1], username: parts[2], role: parts[3] };
     })
 }));
 
@@ -36,7 +36,7 @@ describe('JWTTokenService', () => {
     })
 
   it('generateToken should return a valid JWT containing the payload', () => {
-    const payload = { username: 'admin', role: 'user' };
+    const payload = { id: 'user-1', username: 'admin', role: 'user' };
     const token = service.generateToken(payload);
 
     expect(typeof token).toBe('string');
@@ -46,7 +46,7 @@ describe('JWTTokenService', () => {
   });
 
   it('verifyToken should return payload for a valid token', () => {
-    const payload = { username: 'analyst', role: 'user' };
+    const payload = { id: 'user-2', username: 'analyst', role: 'user' };
     const token = jwt.sign(payload, 'test-secret', { expiresIn: '8h' });
 
     const result = service.verifyToken(token);

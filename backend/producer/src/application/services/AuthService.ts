@@ -108,6 +108,7 @@ export class AuthService {
 
       // Generar JWT
       const token = this.tokenService.generateToken({
+        id: user.id,
         username: user.username,
         role: user.role
       });

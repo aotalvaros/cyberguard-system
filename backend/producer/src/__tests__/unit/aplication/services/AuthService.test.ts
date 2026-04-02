@@ -168,6 +168,7 @@ describe('AuthService', () => {
 
       expect(mockTokenService.generateToken).toHaveBeenCalledTimes(1);
       expect(mockTokenService.generateToken).toHaveBeenCalledWith({
+        id: 'user-id-123',
         username: 'admin',
         role: 'admin'
       });
