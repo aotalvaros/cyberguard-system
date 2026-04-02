@@ -169,7 +169,14 @@ describe('PostgresIncidentRepository', () => {
         expect.objectContaining({ error: 'non_error_string' }),
       );
     });
-  });
+    it('should pass null for createdBy when it is an empty string (falsy)', async () => {
+      mockQuery.mockResolvedValueOnce([{ ...baseRow, created_by: '' }]);
+
+      await repo.save({ ...inputRecord, createdBy: '' });
+
+      const params = (mockQuery as jest.Mock).mock.calls[0]![1] as unknown[];
+      expect(params[8]).toBeNull(); // createdBy is index 8, '' || null → null
+    });  });
 
   // ── findAll() ────────────────────────────────────────────────────────────────
 
@@ -249,6 +256,15 @@ describe('PostgresIncidentRepository', () => {
         'Failed to list incidents',
         expect.objectContaining({ error: 'DB timeout' }),
       );
+    });
+
+    it('should not add WHERE clause when filters object is empty (optional chaining hits false branches)', async () => {
+      mockQuery.mockResolvedValueOnce([baseRow]);
+
+      await repo.findAll({});
+
+      const sql = (mockQuery as jest.Mock).mock.calls[0]![0] as string;
+      expect(sql).not.toContain('WHERE');
     });
   });
 
@@ -364,6 +380,16 @@ describe('PostgresIncidentRepository', () => {
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to find active incidents by assigned user',
         expect.objectContaining({ error: 'Timeout' }),
+      );
+    });
+
+    it('should stringify non-Error thrown from findActiveByAssignedUserId()', async () => {
+      mockQuery.mockRejectedValueOnce('socket_reset' as never);
+
+      await expect(repo.findActiveByAssignedUserId('user-1')).rejects.toBe('socket_reset');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to find active incidents by assigned user',
+        expect.objectContaining({ error: 'socket_reset' }),
       );
     });
   });

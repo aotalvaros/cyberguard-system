@@ -192,6 +192,20 @@ describe('incident.controller (IRMS — HU-001)', () => {
         }),
       );
     });
+
+    it('should use empty string as createdBy when req.user has no id (covers ?? fallback)', async () => {
+      mockCreateExecute.mockResolvedValueOnce({ incident: savedIncident } as never);
+
+      // Pass null as id so req.user.id is null → req.user?.id ?? '' → ''
+      const res = await request(makeApp('soc_analyst', null as unknown as string))
+        .post('/incidents')
+        .send({ threatId: 'aebc3f8d-4c2e-4e9f-a1d1-0f1234567890' });
+
+      expect(res.status).toBe(201);
+      expect(mockCreateExecute).toHaveBeenCalledWith(
+        expect.objectContaining({ createdBy: '' }),
+      );
+    });
   });
 
   // ── GET /incidents ───────────────────────────────────────────────────────────
@@ -243,6 +257,20 @@ describe('incident.controller (IRMS — HU-001)', () => {
 
       expect(mockListExecute).toHaveBeenCalledWith(
         expect.objectContaining({ status: 'assigned', severity: 'critical' }),
+      );
+    });
+
+    it('should ignore non-string query params (array format) and apply no filters', async () => {
+      mockListExecute.mockResolvedValueOnce({ incidents: [], total: 0 } as never);
+
+      // Express parses ?status[]=open as an array, so typeof is 'object' not 'string'
+      await request(makeApp()).get('/incidents?status[]=open&severity[]=high');
+
+      expect(mockListExecute).toHaveBeenCalledWith(
+        expect.not.objectContaining({ status: expect.anything() }),
+      );
+      expect(mockListExecute).toHaveBeenCalledWith(
+        expect.not.objectContaining({ severity: expect.anything() }),
       );
     });
 
