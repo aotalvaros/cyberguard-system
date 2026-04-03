@@ -1,0 +1,220 @@
+/* ===== CSS VARIABLES ===== */
+:host {
+  --sidebar-width-expanded: 220px;
+  --sidebar-width-collapsed: 60px;
+  --sidebar-bg: #1a1a2e;
+  --sidebar-accent: #667eea;
+  --sidebar-accent-hover: #764ba2;
+  --sidebar-text: #e0e0e0;
+  --sidebar-text-muted: #9e9e9e;
+  --sidebar-border: rgba(102, 126, 234, 0.2);
+  --sidebar-active-bg: rgba(102, 126, 234, 0.25);
+  --transition: 260ms ease;
+  display: block;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+/* ===== BASE SIDEBAR ===== */
+.sidebar {
+  height: 100vh;
+  width: var(--sidebar-width-expanded);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition);
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.sidebar--collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+/* ===== TOGGLE BUTTON ===== */
+.sidebar__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--sidebar-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color var(--transition);
+}
+
+.sidebar--collapsed .sidebar__toggle {
+  justify-content: center;
+}
+
+.sidebar__toggle:hover {
+  color: var(--sidebar-accent);
+}
+
+.toggle-icon {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ===== BRAND ===== */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 1.25rem;
+  border-bottom: 1px solid var(--sidebar-border);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar--collapsed .sidebar__brand {
+  justify-content: center;
+  padding: 0.75rem 0 1.25rem;
+}
+
+.brand-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
+}
+
+/* ===== NAV LIST ===== */
+.sidebar__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar__item {
+  margin: 0.15rem 0.5rem;
+}
+
+/* ===== NAV LINK ===== */
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--sidebar-text);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+
+.sidebar__link:hover {
+  background: var(--sidebar-active-bg);
+  color: #fff;
+}
+
+.sidebar__link--active {
+  background: var(--sidebar-active-bg) !important;
+  color: #fff !important;
+  border-left: 3px solid var(--sidebar-accent);
+}
+
+.sidebar--collapsed .sidebar__link {
+  justify-content: center;
+  padding: 0.65rem;
+}
+
+.sidebar--collapsed .sidebar__link--active {
+  border-left: none;
+  border-bottom: 2px solid var(--sidebar-accent);
+}
+
+.nav-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.nav-label {
+  opacity: 1;
+  transition: opacity var(--transition);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== FOOTER ===== */
+.sidebar__footer {
+  padding: 0.75rem;
+  border-top: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar--collapsed .sidebar__footer {
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow: hidden;
+}
+
+.user-username {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: var(--sidebar-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 8px;
+  color: var(--sidebar-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.btn-logout:hover {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.4);
+}

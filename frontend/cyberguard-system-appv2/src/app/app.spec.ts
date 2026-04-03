@@ -6,6 +6,8 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from '../core/infrastructure/services/auth.service';
 import { WebSocketService } from '../core/infrastructure/services/websocket.service';
+import { GetCurrentUserUseCase } from '../core/application/use-cases/get-current-user.use-case';
+import { LogoutUseCase } from '../core/application/use-cases/logout.use-case';
 
 describe('App', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };
@@ -21,7 +23,9 @@ describe('App', () => {
         provideRouter([]),
         provideHttpClient(),
         { provide: AuthService, useValue: mockAuthService },
-        { provide: WebSocketService, useValue: mockWsService }
+        { provide: WebSocketService, useValue: mockWsService },
+        { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue(null) } },
+        { provide: LogoutUseCase, useValue: { execute: vi.fn() } }
       ]
     }).compileComponents();
   });

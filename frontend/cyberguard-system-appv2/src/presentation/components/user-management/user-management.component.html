@@ -2,10 +2,8 @@
   <header class="page-header">
     <div class="header-content">
       <h1>👥 Gestión de Usuarios</h1>
-      <div class="header-actions">
-        <span class="current-user">{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
-        <button (click)="goToIncidents()" class="btn-nav">Incidentes</button>
-        <button (click)="goToDashboard()" class="btn-nav">Dashboard</button>
+      <div class="user-info">
+        <span>{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
         <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
       </div>
     </div>
