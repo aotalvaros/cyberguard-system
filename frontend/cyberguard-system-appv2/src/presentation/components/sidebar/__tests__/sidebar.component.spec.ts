@@ -6,7 +6,6 @@ import { provideRouter } from '@angular/router';
 
 import { SidebarComponent } from '../sidebar.component';
 import { GetCurrentUserUseCase } from '../../../../core/application/use-cases/get-current-user.use-case';
-import { LogoutUseCase } from '../../../../core/application/use-cases/logout.use-case';
 
 const SIDEBAR_COLLAPSED_KEY = 'cyberguard_sidebar_collapsed';
 
@@ -18,7 +17,6 @@ async function buildFixture(
     providers: [
       provideRouter([]),
       { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue(user) } },
-      { provide: LogoutUseCase,         useValue: { execute: vi.fn() } },
     ],
   }).compileComponents();
 
