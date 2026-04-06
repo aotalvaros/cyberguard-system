@@ -17,11 +17,10 @@ Sistema distribuido de alertas de ciberseguridad en tiempo real con arquitectura
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API (Producer)
-├── worker/            # Node.js Consumer
+├── frontend/          # Angular App (V2 activa: cyberguard-system-appv2)
+├── backend/           # Node.js API Producer (TypeScript hexagonal)
 ├── docs/              # Documentación técnica
-└── docker-compose.yml # RabbitMQ
+└── docker-compose.yml # RabbitMQ + Redis + PostgreSQL + Backend + Worker + Frontend
 ```
 
 ### Flujo de Datos
@@ -66,7 +65,8 @@ cyberguard-system/
 ## 📋 Prerequisitos
 
 - Docker & Docker Compose
-- Git- Cuenta y proyecto en **Firebase** (Authentication habilitado)
+- Git
+- Cuenta y proyecto en **Firebase** (Authentication habilitado)
 ---
 
 ## 🔧 Instalación y Configuración
@@ -129,11 +129,16 @@ cd cyberguard-system
 ```bash
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 docker run -d --name cyberguard-redis -p 6379:6379 redis:7-alpine
+docker run -d --name cyberguard-postgres \
+  -e POSTGRES_DB=cyberguard_db \
+  -e POSTGRES_USER=cyberguard \
+  -e POSTGRES_PASSWORD=cyberguard_secret \
+  -p 5432:5432 postgres:15-alpine
 ```
 
 #### 3. Configurar y levantar Backend
 ```bash
-cd backend
+cd backend/producer
 cp .env.example .env
 npm install
 npm run dev
@@ -164,20 +169,22 @@ npm start
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API Producer
-├── worker/            # Node.js Consumer
-├── docs/              # Documentación
-│   ├── architecture/      # Diagramas y análisis arquitectónico
-│   ├── security/          # Guías y análisis de seguridad
-│   ├── qa/                # Evidencias y feedback QA
-│   ├── feedback/          # Feedback del equipo
-│   ├── project/           # Contexto, decisiones y changelog
-│   ├── guides/            # Guías de herramientas
+├── frontend/
+│   └── cyberguard-system-appv2/   # Angular 21 (activo)
+├── backend/
+│   ├── producer/                  # Node.js API Producer (TypeScript hexagonal)
+│   └── worker/                    # Node.js Consumer (Redis + WebSocket)
+├── docs/                          # Documentación
+│   ├── architecture/              # Diagramas y análisis arquitectónico
+│   ├── security/                  # Guías y análisis de seguridad
+│   ├── qa/                        # Evidencias y feedback QA
+│   ├── feedback/                  # Feedback del equipo
+│   ├── project/                   # Contexto, decisiones y changelog
+│   ├── guides/                    # Guías de herramientas
 │   ├── diagrams/
 │   └── images/
-├── docker-compose.yml # RabbitMQ
-├── AI_WORKFLOW.md     # Estrategia de trabajo con IA
+├── docker-compose.yml             # RabbitMQ + Redis + PostgreSQL + Backend + Worker + Frontend
+├── AI_WORKFLOW.md                 # Estrategia de trabajo con IA
 ├── README.md
 └── package.json
 ```
@@ -248,13 +255,13 @@ npx jest GetThreatStatisticsUseCase --no-coverage
 | 🔴 RED | `660ddcb` | Tests escritos antes de la implementación |
 | 🟢 GREEN | `99fb71d` | Implementación mínima para pasar los tests |
 | 🔵 REFACTOR | `ad5d1d1` | Tests de infraestructura y controller |
-9
+
 Ver estrategia completa en [TESTING_STRATEGY_BACKEND.md](backend/producer/TESTING_STRATEGY_BACKEND.md)
 
 
 ### Frontend (Angular + Vitest)
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm test                 # Ejecutar tests con Vitest
 npm run test:demo        # Demo tests (detección de bugs)
 ```
@@ -281,7 +288,7 @@ docker compose ps            # Ver estado de servicios
 
 **Backend:**
 ```bash
-cd backend
+cd backend/producer
 npm run dev      # Modo desarrollo
 npm test         # Ejecutar tests
 ```
@@ -294,7 +301,7 @@ npm start        # Iniciar worker
 
 **Frontend:**
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm start        # Servidor de desarrollo
 npm test         # Ejecutar tests
 npm run build    # Build de producción
@@ -305,7 +312,7 @@ npm run build    # Build de producción
 ## 🛡️ Seguridad
 
 - ✅ Variables de entorno para credenciales
-- ✅ Validación de inputs con Joi/Zod
+- ✅ Validación de inputs con Joi
 - ✅ Sanitización de datos
 - ✅ Rate limiting en API
 - ✅ CORS configurado
