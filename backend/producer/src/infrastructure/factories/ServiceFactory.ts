@@ -3,6 +3,12 @@ import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
 import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
+import { CreateUserUseCase } from '../../application/use-cases/CreateUserUseCase';
+import { UpdateUserUseCase } from '../../application/use-cases/UpdateUserUseCase';
+import { ToggleUserStatusUseCase } from '../../application/use-cases/ToggleUserStatusUseCase';
+import { ListUsersUseCase } from '../../application/use-cases/ListUsersUseCase';
+import { CreateIncidentUseCase } from '../../application/use-cases/CreateIncidentUseCase';
+import { ListIncidentsUseCase } from '../../application/use-cases/ListIncidentsUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
@@ -10,9 +16,11 @@ import { JWTTokenService } from '../providers/JWTTokenService';
 import { PostgresThreatRepository } from '../persistence/PostgresThreatRepository';
 import { PostgresUserRepository } from '../persistence/PostgresUserRepository';
 import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepository';
+import { PostgresIncidentRepository } from '../persistence/PostgresIncidentRepository';
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { UserRepository } from '../../domain/ports/UserRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
+import { IncidentRepository } from '../../domain/ports/IncidentRepository';
 import { ThreatClassifier } from '../../domain/services/ThreatClassifier';
 import {
   MalwareClassificationStrategy,
@@ -31,7 +39,15 @@ export class ServiceFactory {
   private static authService: AuthService | null = null;
   private static userRepository: UserRepository | null = null;
   private static auditLogRepository: AuditLogRepository | null = null;
+  private static incidentRepository: IncidentRepository | null = null;
   private static threatClassifier: ThreatClassifier | null = null;
+  // IRMS use cases
+  private static createUserUseCase: CreateUserUseCase | null = null;
+  private static createIncidentUseCase: CreateIncidentUseCase | null = null;
+  private static listIncidentsUseCase: ListIncidentsUseCase | null = null;
+  private static updateUserUseCase: UpdateUserUseCase | null = null;
+  private static toggleUserStatusUseCase: ToggleUserStatusUseCase | null = null;
+  private static listUsersUseCase: ListUsersUseCase | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -101,6 +117,91 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del repositorio de incidentes
+   * Implementa IncidentRepository (port)
+   */
+  static getIncidentRepository(): IncidentRepository {
+    if (!this.incidentRepository) {
+      this.incidentRepository = new PostgresIncidentRepository();
+    }
+    return this.incidentRepository;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de crear usuario (HU-008.1)
+   */
+  static getCreateUserUseCase(): CreateUserUseCase {
+    if (!this.createUserUseCase) {
+      this.createUserUseCase = new CreateUserUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository(),
+      );
+    }
+    return this.createUserUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de actualizar usuario (HU-008.2)
+   */
+  static getUpdateUserUseCase(): UpdateUserUseCase {
+    if (!this.updateUserUseCase) {
+      this.updateUserUseCase = new UpdateUserUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository(),
+      );
+    }
+    return this.updateUserUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de toggle status (HU-008.3)
+   */
+  static getToggleUserStatusUseCase(): ToggleUserStatusUseCase {
+    if (!this.toggleUserStatusUseCase) {
+      this.toggleUserStatusUseCase = new ToggleUserStatusUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository(),
+        this.getIncidentRepository(),
+      );
+    }
+    return this.toggleUserStatusUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de listar usuarios (HU-008)
+   */
+  static getListUsersUseCase(): ListUsersUseCase {
+    if (!this.listUsersUseCase) {
+      this.listUsersUseCase = new ListUsersUseCase(this.getUserRepository());
+    }
+    return this.listUsersUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de crear incidente (HU-001)
+   */
+  static getCreateIncidentUseCase(): CreateIncidentUseCase {
+    if (!this.createIncidentUseCase) {
+      this.createIncidentUseCase = new CreateIncidentUseCase(
+        this.getThreatRepository(),
+        this.getIncidentRepository(),
+        this.getAuditLogRepository(),
+      );
+    }
+    return this.createIncidentUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de listar incidentes (HU-001)
+   */
+  static getListIncidentsUseCase(): ListIncidentsUseCase {
+    if (!this.listIncidentsUseCase) {
+      this.listIncidentsUseCase = new ListIncidentsUseCase(this.getIncidentRepository());
+    }
+    return this.listIncidentsUseCase;
+  }
+
+  /**
    * ✅ Obtener instancia del servicio de autenticación
    * Inyecta: AuthProvider (port), TokenService (port)
    */
@@ -144,7 +245,14 @@ export class ServiceFactory {
     this.authService = null;
     this.userRepository = null;
     this.auditLogRepository = null;
+    this.incidentRepository = null;
     this.threatClassifier = null;
+    this.createUserUseCase = null;
+    this.updateUserUseCase = null;
+    this.toggleUserStatusUseCase = null;
+    this.listUsersUseCase = null;
+    this.createIncidentUseCase = null;
+    this.listIncidentsUseCase = null;
   }
 
   /**

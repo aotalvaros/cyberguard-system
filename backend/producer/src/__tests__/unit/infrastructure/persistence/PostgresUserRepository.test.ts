@@ -25,6 +25,8 @@ const baseRow = {
   username:        'alice',
   email:           'alice@example.com',
   role:            'analyst',
+  full_name:       null,
+  is_active:       true,
   is_locked:       false,
   failed_attempts: 0,
   last_login:      '2026-02-01T08:00:00.000Z',
@@ -37,6 +39,8 @@ const baseRecord = {
   username:        'alice',
   email:           'alice@example.com',
   role:            'analyst',
+  fullName:        null,
+  isActive:        true,
   isLocked:        false,
   failedAttempts:  0,
   lastLogin:       new Date('2026-02-01T08:00:00.000Z'),
@@ -334,10 +338,11 @@ describe('PostgresUserRepository', () => {
       expect(result.isLocked).toBe(true);
       expect(result.failedAttempts).toBe(3);
       const params = mockQuery.mock.calls[0]?.[1] as unknown[];
-      expect(params?.[1]).toBe('admin');       // role defined (left ?? branch)
-      expect(params?.[2]).toBe(true);          // isLocked defined
-      expect(params?.[3]).toBe(3);             // failedAttempts defined
-      expect(params?.[4]).toBeInstanceOf(Date); // lastLogin defined
+      expect(params?.[1]).toBe('admin');        // $2 = role
+      // $3 = fullName (null — not in this partial update, will be undefined → null via ??)
+      expect(params?.[4]).toBe(true);           // $5 = isLocked
+      expect(params?.[5]).toBe(3);              // $6 = failedAttempts
+      expect(params?.[6]).toBeInstanceOf(Date); // $7 = lastLogin
     });
   });
 

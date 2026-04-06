@@ -14,6 +14,10 @@ import { StatisticsRepository } from '../core/domain/ports/statistics.repository
 // Backend endpoint available — use real implementation
 import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
 import { StatisticsMockRepository } from '../core/infrastructure/services/statistics-mock-repository.impl';
+import { UserAdminRepository } from '../core/domain/ports/user-admin.repository';
+import { UserAdminRepositoryImpl } from '../core/infrastructure/services/user-admin-repository.impl';
+import { IncidentRepository } from '../core/domain/ports/incident.repository';
+import { IncidentRepositoryImpl } from '../core/infrastructure/services/incident-repository.impl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,5 +33,8 @@ export const appConfig: ApplicationConfig = {
     { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
     // Use real repository now that backend endpoint exists
     { provide: StatisticsRepository, useClass: StatisticsRepositoryImpl },
+    // IRMS — HU-008 + HU-001
+    { provide: UserAdminRepository, useClass: UserAdminRepositoryImpl },
+    { provide: IncidentRepository,   useClass: IncidentRepositoryImpl },
   ]
 };

@@ -1,15 +1,11 @@
-/**
- * Port: UserRepository
- * 
- * Define el contrato para la persistencia de usuarios.
- * El dominio depende de esta interfaz; la infraestructura la implementa.
- */
 
 export interface UserRecord {
   readonly id: string;
   readonly username: string;
   readonly email: string;
   readonly role: string;
+  readonly fullName: string | null;  
+  readonly isActive: boolean;         
   readonly isLocked: boolean;
   readonly failedAttempts: number;
   readonly lastLogin: Date | null;
@@ -20,7 +16,9 @@ export interface UserRecord {
 export interface UserRepository {
   findById(id: string): Promise<UserRecord | null>;
   findByUsername(username: string): Promise<UserRecord | null>;
+  findByEmail(email: string): Promise<UserRecord | null>;   
   findAll(): Promise<UserRecord[]>;
+  findAllActive(): Promise<UserRecord[]>;                  
   save(user: UserRecord): Promise<UserRecord>;
   update(id: string, data: Partial<UserRecord>): Promise<UserRecord>;
   delete(id: string): Promise<boolean>;
