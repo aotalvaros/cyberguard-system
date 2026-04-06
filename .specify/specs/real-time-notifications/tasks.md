@@ -17,13 +17,13 @@
 
 | ID | Tarea | Capa | Estimación |
 |----|-------|------|-----------|
-| TASK-01 | [RED] Test boundary 200 mensajes | Infrastructure | 15 min |
-| TASK-02 | [RED] Tests backoff exponencial (3 tests) | Infrastructure | 20 min |
-| TASK-03 | [GREEN] Refactor `scheduleReconnect()` → backoff exponencial | Infrastructure | 30 min |
-| TASK-04 | [GREEN] Añadir `ConnectionStatus` al port + `connectionStatus$` al impl | Domain + Infrastructure | 20 min |
-| TASK-05 | [GREEN] Actualizar `WebSocketService` fachada | Infrastructure | 10 min |
-| TASK-06 | [GREEN] Actualizar `AlertsComponent` ts + html (4 estados) | Presentation | 20 min |
-| TASK-07 | Verificación suite completa `npx vitest run` | — | 5 min |
+| TASK-01 | ✅ [RED] Test boundary 200 mensajes | Infrastructure | 15 min |
+| TASK-02 | ✅ [RED] Tests backoff exponencial (3 tests) | Infrastructure | 20 min |
+| TASK-03 | ✅ [GREEN] Refactor `scheduleReconnect()` → backoff exponencial | Infrastructure | 30 min |
+| TASK-04 | ✅ [GREEN] Añadir `ConnectionStatus` al port + `connectionStatus$` al impl | Domain + Infrastructure | 20 min |
+| TASK-05 | ✅ [GREEN] Actualizar `WebSocketService` fachada | Infrastructure | 10 min |
+| TASK-06 | ✅ [GREEN] Actualizar `AlertsComponent` ts + html (4 estados) | Presentation | 20 min |
+| TASK-07 | ✅ Verificación suite completa `npx vitest run` | — | 5 min |
 
 ---
 
@@ -34,7 +34,7 @@
 **Rama:** `feature/ep-02/real-time-notifications/task-01`
 **Archivo:** `src/core/infrastructure/services/__tests__/websocket-repository.impl.spec.ts`
 
-- [ ] Añadir dentro del `describe('addMessage')` existente:
+- [x] Añadir dentro del `describe('addMessage')` existente:
   ```typescript
   it('should cap messages at MAX_MESSAGES (200)', async () => {
     for (let i = 0; i < 201; i++) {
@@ -50,7 +50,7 @@
     expect(messages[0].eventId).toBe('evt-200'); // más reciente al frente
   });
   ```
-- [ ] Confirmar que el test PASA (la lógica de `.slice(0, MAX_MESSAGES)` ya existe en `addMessage()`)
+- [x] Confirmar que el test PASA (la lógica de `.slice(0, MAX_MESSAGES)` ya existe en `addMessage()`)
 
 > **Nota:** Este test es GREEN de inmediato — su valor es documentar el comportamiento
 > y prevenir regresiones si alguien modifica `addMessage()` en el futuro.
@@ -64,7 +64,7 @@
 **Rama:** `feature/ep-02/real-time-notifications/task-02`
 **Archivo:** `src/core/infrastructure/services/__tests__/websocket-repository.impl.spec.ts`
 
-- [ ] Añadir nuevo `describe('exponential backoff reconnect')` después del `describe('scheduleReconnect')` existente:
+- [x] Añadir nuevo `describe('exponential backoff reconnect')` con 3 tests:
 
   **Test 1 — delays crecientes:**
   ```typescript
@@ -140,7 +140,7 @@
   });
   ```
 
-- [ ] Confirmar que los 3 tests FALLAN (RED) — `connectionStatus$` y backoff no existen aún
+- [x] Confirmar que los 3 tests FALLAN (RED) — `connectionStatus$` y backoff no existen aún ✅ Verificado RED
 
 **Verificación:** `npx vitest run --reporter=verbose websocket-repository.impl` → 3 tests FAIL (RED esperado).
 
@@ -153,18 +153,18 @@
 **Rama:** `feature/ep-02/real-time-notifications/task-03`
 **Archivo:** `src/core/infrastructure/services/websocket-repository.impl.ts`
 
-- [ ] Añadir tipo exportado `ConnectionStatus`:
+- [x] Añadir tipo exportado `ConnectionStatus`:
   ```typescript
   export type ConnectionStatus = 'CONNECTED' | 'DISCONNECTED' | 'CONNECTING' | 'ERROR';
   ```
-- [ ] Reemplazar `reconnectInterval` por:
+- [x] Reemplazar `reconnectInterval` por:
   ```typescript
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempt = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   readonly connectionStatus$ = new BehaviorSubject<ConnectionStatus>('DISCONNECTED');
   ```
-- [ ] Reemplazar `scheduleReconnect()`:
+- [x] Reemplazar `scheduleReconnect()`:
   ```typescript
   protected scheduleReconnect(): void {
     if (this.reconnectAttempt >= this.MAX_RECONNECT_ATTEMPTS) {
@@ -177,7 +177,7 @@
     this.reconnectTimeout = setTimeout(() => this.connect(), delay);
   }
   ```
-- [ ] Añadir `clearReconnect()`:
+- [x] Añadir `clearReconnect()`:
   ```typescript
   protected clearReconnect(): void {
     if (this.reconnectTimeout) {
@@ -187,19 +187,19 @@
     this.reconnectAttempt = 0;
   }
   ```
-- [ ] Actualizar `connect()`:
+- [x] Actualizar `connect()`:
   - `onopen` → `this.clearReconnect(); this.connectionStatus$.next('CONNECTED');`
   - `onclose` → `this.connected = false; this.scheduleReconnect();`
   - `catch` → `this.scheduleReconnect();`
-- [ ] Actualizar `disconnect()`:
+- [x] Actualizar `disconnect()`:
   - `this.clearReconnect(); this.connectionStatus$.next('DISCONNECTED');`
-- [ ] Añadir getter `getConnectionStatus$()`:
+- [x] Añadir getter `getConnectionStatus$()`:
   ```typescript
   getConnectionStatus$(): Observable<ConnectionStatus> {
     return this.connectionStatus$.asObservable();
   }
   ```
-- [ ] Confirmar que los 3 tests de TASK-02 pasan (GREEN)
+- [x] Confirmar que los 3 tests de TASK-02 pasan (GREEN)
 
 **Verificación:** `npx vitest run --reporter=verbose websocket-repository.impl` → todos PASS.
 
@@ -210,7 +210,7 @@
 **Rama:** `feature/ep-02/real-time-notifications/task-03` *(misma sub-rama)*
 **Archivo:** `src/core/domain/ports/websocket.repository.ts`
 
-- [ ] Añadir export del tipo y método abstracto:
+- [x] Añadir export del tipo y método abstracto:
   ```typescript
   import { Observable } from 'rxjs';
   import { AlertMessage } from '../models/alert-message.model';
@@ -227,8 +227,8 @@
     abstract getConnectionStatus$(): Observable<ConnectionStatus>; // ← nuevo
   }
   ```
-- [ ] Importar `ConnectionStatus` en `websocket-repository.impl.ts` desde el port (reemplazar definición local)
-- [ ] Confirmar: `npx tsc --noEmit` sin errores
+- [x] Importar `ConnectionStatus` en `websocket-repository.impl.ts` desde el port (reemplazar definición local)
+- [x] Confirmar: `npx tsc --noEmit` sin errores
 
 **Verificación:** Compilación limpia.
 
@@ -239,11 +239,11 @@
 **Rama:** `feature/ep-02/real-time-notifications/task-03` *(misma sub-rama)*
 **Archivo:** `src/core/infrastructure/services/websocket.service.ts`
 
-- [ ] Añadir import:
+- [x] Añadir import:
   ```typescript
   import { ConnectionStatus } from '../../domain/ports/websocket.repository';
   ```
-- [ ] Añadir método fachada:
+- [x] Añadir método fachada:
   ```typescript
   getConnectionStatus$(): Observable<ConnectionStatus> {
     return this.wsRepository.getConnectionStatus$();
@@ -260,9 +260,9 @@
 **Archivos:** `alerts.component.ts` + `alerts.component.html` + `alerts.component.css`
 
 **alerts.component.ts:**
-- [ ] Importar `ConnectionStatus` desde el port
-- [ ] Reemplazar `connected = false` por `connectionStatus: ConnectionStatus = 'DISCONNECTED'`
-- [ ] Añadir mapa de labels (fuera de la clase, const):
+- [x] Importar `ConnectionStatus` desde el port
+- [x] Reemplazar `connected = false` por `connectionStatus: ConnectionStatus = 'DISCONNECTED'`
+- [x] Añadir mapa de labels (fuera de la clase, const):
   ```typescript
   const STATUS_LABELS: Record<ConnectionStatus, string> = {
     CONNECTED:    '● Conectado',
@@ -271,21 +271,21 @@
     ERROR:        '✕ Sin conexión',
   };
   ```
-- [ ] En `ngOnInit()`, añadir suscripción:
+- [x] En `ngOnInit()`, añadir suscripción:
   ```typescript
   this.wsService.getConnectionStatus$().subscribe(status => {
     this.connectionStatus = status;
     this.cdr.detectChanges();
   });
   ```
-- [ ] Exponer `statusLabel` en el componente:
+- [x] Exponer `statusLabel` en el componente:
   ```typescript
   readonly statusLabel = STATUS_LABELS;
   ```
-- [ ] ⚠️ HUMAN CHECK: Sustituir uso de `this.connected` (getter `isAdmin` no se toca — no depende de `connected`)
+- [x] ⚠️ HUMAN CHECK: Sustituir uso de `this.connected` (getter `isAdmin` no se toca — no depende de `connected`)
 
 **alerts.component.html:**
-- [ ] Reemplazar el `<span class="connection-status">` actual:
+- [x] Reemplazar el `<span class="connection-status">` actual:
   ```html
   <span class="connection-status"
         [class]="'status-' + connectionStatus.toLowerCase()">
@@ -294,7 +294,7 @@
   ```
 
 **alerts.component.css:**
-- [ ] Añadir clases para los 4 estados:
+- [x] Añadir clases para los 4 estados:
   ```css
   .status-connected    { color: #28a745; }
   .status-disconnected { color: #6c757d; }
@@ -311,10 +311,10 @@
 ### TASK-07 · Suite completa Vitest
 **Estimación:** 5 min
 
-- [ ] Ejecutar: `npx vitest run --reporter=verbose`
-- [ ] Confirmar: TASK-01 (boundary) + TASK-02 (backoff ×3) + suite existente → todos PASS
-- [ ] Confirmar: `npx tsc --noEmit` → 0 errores
-- [ ] Commit: `feat(real-time-notifications): backoff exponencial + 4 estados de conexión (#15 tests)`
+- [x] Ejecutar: `npx vitest run --reporter=verbose`
+- [x] Confirmar: TASK-01 (boundary) + TASK-02 (backoff ×3) + suite existente → todos PASS (80 tests GREEN)
+- [x] Confirmar: `npx tsc --noEmit` → 0 errores
+- [x] Commit: `feat(real-time-notifications): backoff exponencial + 4 estados de conexión` → `b265664`
 
 ---
 
