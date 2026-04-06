@@ -2,8 +2,8 @@
   <div class="alerts-header">
     <h3>🔔 Alertas en Tiempo Real</h3>
     <div class="alerts-actions">
-      <span class="connection-status" [class.connected]="connected">
-        {{ connected ? '● Conectado' : '○ Desconectado' }}
+      <span class="connection-status" [class]="'status-' + connectionStatus.toLowerCase()">
+        {{ statusLabel[connectionStatus] }}
       </span>
       @if (alerts.length > 0) {
         <button (click)="exportToJSON()" class="btn-export">⬇️ Exportar</button>
