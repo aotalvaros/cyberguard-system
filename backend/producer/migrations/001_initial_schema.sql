@@ -84,12 +84,41 @@ CREATE INDEX IF NOT EXISTS idx_incidents_assigned_to ON incidents(assigned_to) W
 CREATE INDEX IF NOT EXISTS idx_users_is_active      ON users(is_active);
 
 -- Seed: Admin user
-INSERT INTO users (id, username, email, role, is_active, is_locked, failed_attempts, created_at, updated_at)
+INSERT INTO users (id, username, email, full_name, role, is_active, is_locked, failed_attempts, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'admin',
   'admin@cyberguard.com',
+  'Administrador',
   'admin',
+  true,
+  false,
+  0,
+  NOW(),
+  NOW()
+) ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO users (id, username, email, full_name, role, is_active, is_locked, failed_attempts, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'incident.handler',
+  'incident.handler@cyberguard.com',
+  'Incident Handler',
+  'incident_handler',
+  true,
+  false,
+  0,
+  NOW(),
+  NOW()
+) ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO users (id, username, email, full_name, role, is_active, is_locked, failed_attempts, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'soc',
+  'soc@cyberguard.com',
+  'Analista SOC',
+  'soc_analyst',
   true,
   false,
   0,

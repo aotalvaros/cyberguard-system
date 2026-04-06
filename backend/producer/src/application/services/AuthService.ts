@@ -132,7 +132,7 @@ export class AuthService {
         token,
         user: {
           id: user.id,
-          username: rawUsername,  // Devuelve el username exacto que escribió el usuario
+          username: user.username, 
           role: user.role
         }
       };
