@@ -21,13 +21,24 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  message: 'Too many requests from this IP'
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 300,                 
+  message: 'Too many requests from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use('/api/', limiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 30,                  
+  message: 'Too many login attempts from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/auth', authLimiter);
+app.use('/api/', globalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 
