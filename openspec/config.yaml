@@ -1,34 +1,20 @@
 schema: spec-driven
 
-# Project context
-# See constitution.md for full rules and standards.
-context: |
-  Project: CyberGuard System — distributed cybersecurity alert system
-  Stack: Angular 21+, Node.js 20+ (Express + TypeScript), PostgreSQL 15, Redis 7, RabbitMQ 3.12, Firebase Auth + JWT
-  Architecture: Hexagonal (Domain / Application / Infrastructure) — both Backend and Frontend
-  Design Patterns: Strategy, Factory, Repository, Observer, Facade, Use Case, Middleware Chain
-  Principles: SOLID strict, Clean Code (zero any, strict TS, readonly domain), TDD (Red→Green→Refactor)
-  Testing: Jest + Supertest (backend), Vitest + jsdom (frontend), ≥90% coverage threshold
-  Security: See constitution.md §6 — mandatory pre-merge checklist (13 domains)
-  Commits: Conventional Commits (feat/fix/docs/test/refactor), TDD-specific commit format
-  Constitution: openspec/constitution.md — ALL specs, proposals, designs and tasks MUST comply
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
 
-# Per-artifact rules
-rules:
-  proposal:
-    - Must include Why, What Changes, Capabilities, and Impact sections
-    - Must specify impacted files with full paths
-    - Must declare breaking changes explicitly
-  spec:
-    - Use BDD format (Given/When/Then) or WHEN/THEN for scenarios
-    - Use SHALL/MUST for mandatory requirements
-    - Each requirement must have at least one verifiable scenario
-    - Separate Frontend and Backend requirements explicitly
-  tasks:
-    - Maximum 2 hours per task
-    - Each task must be verifiable with a test or concrete evidence
-    - Include the hexagonal layer affected (Domain, Application, Infrastructure, Presentation)
-  design:
-    - Must reference design patterns from constitution.md §2
-    - Must specify API contracts with exact types (request/response)
-    - Must indicate which ports are created or extended
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours

@@ -320,28 +320,33 @@ refactor(REFACTOR): [descripción de mejora]
 
 ---
 
-## 10. Reglas para Artefactos OpenSpec
+## 10. Reglas para Artefactos Spec Kit
 
-### 10.1 Proposals
-- DEBEN incluir: `Why`, `What Changes`, `Capabilities`, `Impact`.
-- DEBEN especificar archivos impactados con rutas completas.
-- DEBEN declarar si hay breaking changes.
-
-### 10.2 Specs
+### 10.1 Specifications (spec.md)
 - Formato BDD: `Given / When / Then` o `WHEN / THEN`.
 - Usar `SHALL` / `MUST` para requisitos obligatorios.
 - Cada requirement DEBE tener al menos un scenario verificable.
 - Separar requirements de Frontend y Backend explícitamente.
+- Definir en `.specify/specs/<feature-id>/spec.md`.
 
-### 10.3 Tasks
+### 10.2 Plans (plan.md)
+- DEBEN referenciar los patrones de diseño de esta constitución (§2).
+- DEBEN especificar contracts de API (request/response con tipos exactos).
+- DEBEN indicar qué ports se crean o extienden.
+- DEBEN incluir la capa hexagonal afectada (Domain, Application, Infrastructure, Presentation).
+- Definir en `.specify/specs/<feature-id>/plan.md`.
+
+### 10.3 Tasks (tasks.md)
 - Máximo 2 horas por tarea.
 - Cada tarea debe ser verificable con un test o evidencia concreta.
-- Incluir la capa hexagonal afectada (Domain, Application, Infrastructure, Presentation).
+- Incluir la capa hexagonal afectada.
+- Respetar el orden TDD: test tasks antes de implementation tasks.
+- Tareas paralelas marcadas con `[P]`.
+- Definir en `.specify/specs/<feature-id>/tasks.md`.
 
-### 10.4 Design
-- DEBE referenciar los patrones de diseño de esta constitución.
-- DEBE especificar contracts de API (request/response con tipos exactos).
-- DEBE indicar qué ports se crean o extienden.
+### 10.4 Constitution Updates
+- Cambios a esta constitución requieren justificación documentada.
+- Se actualiza cuando se adopta un nuevo patrón, tecnología o se modifica un threshold de calidad.
 
 ---
 
