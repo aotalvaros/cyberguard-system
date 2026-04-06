@@ -449,12 +449,33 @@ Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
 
 ## 📚 Documentación Adicional
 
-- [AI_WORKFLOW.md](./AI_WORKFLOW.md) - Estrategia de trabajo con IA
-- [docs/security/SECURITY_GUIDELINES.md](./docs/security/SECURITY_GUIDELINES.md) - Checklist de seguridad
-- [docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md](./docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md) - Análisis de impacto para diagramas C4 y de secuencia (Threat Statistics)
-- [frontend/cyberguard-system-appv2/docs/README.md](./frontend/cyberguard-system-appv2/docs/README.md) - Guía frontend (incluye sección de Threat Statistics)
-- [docs/diagrams/sequence-threat-statistics.drawio.xml](./docs/diagrams/sequence-threat-statistics.drawio.xml) - Secuencia funcional de notificación omnicanal
-- [docs/diagrams/c4-threat-statistics.drawio.xml](./docs/diagrams/c4-threat-statistics.drawio.xml) - C4 legible con separación explícita Frontend/Backend y componentes nuevos anidados
+### Proyecto
+- [AI_WORKFLOW.md](./AI_WORKFLOW.md) - Bitácora viva de desarrollo con IA
+- [docs/project/PROJECT_CONTEXT.md](./docs/project/PROJECT_CONTEXT.md) - Contexto completo: arquitectura, contratos API, variables de entorno
+- [docs/project/DECISION_LOG.md](./docs/project/DECISION_LOG.md) - Registro de decisiones técnicas
+- [docs/project/CHANGELOG_SOURCES.md](./docs/project/CHANGELOG_SOURCES.md) - Fuentes y bitácora de decisiones de diseño
+- [docs/project/Guía de Evaluación - Semana 3 Mid Level (2).md](./docs/project/Guía%20de%20Evaluación%20-%20Semana%203%20Mid%20Level%20(2).md) - Criterios de evaluación Semana 3
+
+### Arquitectura
+- [docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md](./docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md) - Análisis de impacto C4 y secuencia (Threat Statistics)
+- [docs/architecture/HEXAGONAL_FRONTEND.md](./docs/architecture/HEXAGONAL_FRONTEND.md) - Arquitectura hexagonal del Frontend V2
+- [docs/diagrams/sequence-threat-statistics.drawio.xml](./docs/diagrams/sequence-threat-statistics.drawio.xml) - Diagrama de secuencia: carga de estadísticas
+- [docs/diagrams/c4-threat-statistics.drawio.xml](./docs/diagrams/c4-threat-statistics.drawio.xml) - Diagrama C4: Threat Statistics
+- [docs/diagrams/component-notification-feature.drawio.xml](./docs/diagrams/component-notification-feature.drawio.xml) - Diagrama de componentes: notificación omnicanal
+
+### Seguridad
+- [docs/security/SECURITY_GUIDELINES.md](./docs/security/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio por PR
+- [docs/security/PLANNED_ATTACK.md](./docs/security/PLANNED_ATTACK.md) - Análisis de vectores de ataque planificados
+
+### QA y Feedback
+- [docs/qa/QA_EVIDENCE.md](./docs/qa/QA_EVIDENCE.md) - Evidencias y criterios de aceptación
+- [docs/qa/FEEDBACK_TEAM-4-QA.md](./docs/qa/FEEDBACK_TEAM-4-QA.md) - Auditoría QA AI-First (23.5/25)
+- [docs/feedback/FEEDBACK_DAVID.md](./docs/feedback/FEEDBACK_DAVID.md) - Feedback David
+- [docs/feedback/FEEDBACK_Jhorman.md](./docs/feedback/FEEDBACK_Jhorman.md) - Feedback Jhorman
+
+### Guías y Frontend
+- [docs/guides/TOOLS_GUIDE.md](./docs/guides/TOOLS_GUIDE.md) - Guía de herramientas del proyecto
+- [frontend/cyberguard-system-appv2/docs/README.md](./frontend/cyberguard-system-appv2/docs/README.md) - Guía completa del Frontend V2 (incluye Threat Statistics)
 
 ---
 
