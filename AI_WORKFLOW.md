@@ -13,7 +13,7 @@
 #### Commit 1️⃣: Scaffolding Base del Proyecto
 - ✅ Estructura multiservicio: Backend, Frontend, Worker
 - ✅ Configuración de TypeScript en backend
-- ✅ Angular 19+ para frontend
+- ✅ Angular 21+ para frontend
 - ✅ Docker Compose para orquestación local
 - **Estado:** Proyecto monorepo listo para desarrollo
 
@@ -75,9 +75,10 @@
 - ✅ Dockerfile para Backend (Producer)
 - ✅ Dockerfile para Worker (Consumer + WebSocket)
 - ✅ Dockerfile para Frontend (Angular + Nginx)
-- ✅ Docker Compose orquestando 5 servicios:
+- ✅ Docker Compose orquestando 6 servicios:
   - RabbitMQ (broker de mensajes)
-  - Redis (persistencia de historial)
+  - Redis (historial de alertas — Worker únicamente)
+  - **PostgreSQL 15** (persistencia principal del Backend)
   - Backend API (puerto 3000)
   - Worker (WebSocket puerto 8081)
   - Frontend (puerto 4200)
@@ -112,15 +113,15 @@
 - **Score:** 9.8/10 (mejora de +5.3 puntos desde V1)
 - **Estado:** Frontend production-ready con arquitectura escalable
 
-### Estado Actual: Operacional, Containerizado y Arquitectura Hexagonal
-- Backend listo para extensión
-- Frontend V2 con arquitectura hexagonal (9.8/10)
+### Estado Actual: Operacional, Containerizado y Arquitectura Hexagonal (FE + BE)
+- Backend hexagonal TypeScript — PostgreSQL como persistencia principal
+- Firebase Auth como identity provider + JWT para sesiones
+- Frontend V2 con arquitectura hexagonal (Angular 21, score 9.8/10)
 - Worker consumiendo RabbitMQ y emitiendo por WebSocket
-- Redis persistiendo historial de alertas
+- Redis persistiendo historial de alertas (Worker únicamente)
 - Sistema de notificaciones en tiempo real operativo
-- **Todo el sistema dockerizado y orquestado con Docker Compose**
+- **6 servicios dockerizados y orquestados con Docker Compose**
 - **Despliegue con un solo comando: `docker compose up --build`**
-- **Frontend refactorizado con 5 patrones de diseño y SOLID completo**
 - Arquitectura de microservicios preparada
 - Documentación de seguridad implementada
 - Workflow IA definido y operativo
@@ -134,6 +135,22 @@
 - ✅ Roadmap: 8 optimizaciones identificadas (11-18h)
 - **Responsable:** Frontend Developer & QA Engineer
 - **Estado:** Sistema listo para producción, testing 100% operativo
+
+#### Commit 1️⃣1️⃣: Refactorización Backend a Arquitectura Hexagonal + PostgreSQL + Firebase Auth
+- ✅ Migración completa de JavaScript a **TypeScript**
+- ✅ Arquitectura Hexagonal: Domain / Application / Infrastructure
+- ✅ Persistencia: In-Memory/Redis → **PostgreSQL 15** (usuarios, amenazas, audit_logs)
+- ✅ Autenticación: JWT simple → **Firebase Auth** (identity provider) + JWT para sesiones
+- ✅ Nuevos endpoints: `GET /api/threats`, `DELETE /api/threats/:id`, `GET /api/statistics`, `PATCH /api/admin/users/:username/role`
+- ✅ Roles: `admin`, `analyst`, `viewer` gestionados en PostgreSQL
+- ✅ Middleware `bruteForceDetection` explícito
+- ✅ `AuditLogRepository` — trazabilidad completa de acciones
+- ✅ `ServiceFactory` para inyección de dependencias
+- ✅ Migración inicial: `backend/producer/migrations/001_initial_schema.sql`
+- ✅ 21 suites de tests (~506 tests) — cobertura de todas las capas hexagonales
+- ✅ Docker Compose actualizado: añade servicio `postgres` con health check
+- **Responsable:** Cloud Architect & Backend Developer
+- **Estado:** Backend production-ready con arquitectura hexagonal, persistencia ACID y autenticación enterprise
 
 ---
 
@@ -336,11 +353,11 @@ El QA Engineer debe verificar en CADA Pull Request:
 
 ### Evidencia QA
 El QA Engineer debe registrar evidencias de ejecucion y hallazgos en:
-- [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+- [docs/qa/QA_EVIDENCE.md](docs/qa/QA_EVIDENCE.md)
 
 Incluye:
 - Criterios de aceptacion validados
-- Checklist de seguridad (segun [docs/SECURITY_GUIDELINES.md](docs/SECURITY_GUIDELINES.md))
+- Checklist de seguridad (segun [docs/security/SECURITY_GUIDELINES.md](docs/security/SECURITY_GUIDELINES.md))
 - Pruebas de estres con metricas
 - Bugs encontrados y solucion aplicada
 - Capturas y adjuntos en [docs/images](docs/images)
@@ -403,6 +420,8 @@ En cada bloque de lógica compleja, agregar:
 
 - 2026-03-01: Añadida prueba de integración `alerts.integration.spec.ts` para `Alerts` (WebSocket in-memory, eliminación y limpieza) en el frontend V2.
 - 2026-03-01: Añadido `TDD.md` en `frontend/cyberguard-system-appv2/docs/` documentando la estrategia TDD aplicada y la clasificación de pruebas (unitarias vs integración).
+- 2026-03-01: Añadida referencia funcional en `frontend/cyberguard-system-appv2/docs/README.md` para la feature de notificacion omnicanal.
+- 2026-03-27: Diagrama C4 reorganizado con subgrupos visuales por modulos existentes/nuevos dentro de cada zona (Frontend, Backend, Worker), flechas discretas y agrupacion de infraestructura y externos en zonas separadas para mayor legibilidad operacional.
 - **Human Checks Documentados**: Mínimo 5 por microservicio
 - **Vulnerabilidades Detectadas por QA**: 0 en producción
 - **Anti-Patterns Documentados**: Mínimo 2 en README.md
@@ -424,7 +443,13 @@ Este documento es **vivo** y debe actualizarse cuando:
 - **Dashboard & UX**: integración de widget de estadísticas en frontend V2; sincronización con backend de analytics; componentes presentacionales añadidos bajo `presentation/components/dashboard/statistics-widget/`.
 - **Testing y QA**: estrategia de tests actualizada (suite completa reportada el 25 Feb 2026), TDD reforzado para nuevas features y eliminación de exclusiones de cobertura.
 - **Prácticas y Paradigmas**: adopción más estricta de feature-by-feature (feature flags), TDD como política, y mayor exigencia de `Human Checks` en lógica crítica.
-- **Documentación y Análisis**: análisis de deuda y sesiones de corrección (sesión 20 Feb 2026) con acciones en roles, endpoints administrativos y fixes menores.
+- **Documentación y Análisis**: análisis de deuda y sesiones de corrección (sesión 20 Feb 2026) con acciones en roles, endpoints administrativos y fixes menores. Creación del documento de impacto arquitectónico para la feature de estadísticas (`docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md`).
 
-**Última actualización**: 27 Feb 2026 (Incluye cambios: Worker v1.4.0, Threat Statistics, Testing updates)  
+**Última actualización**: 06 Abr 2026 (Includes: Backend hexagonal migration docs + docs/ restructuring sync)  
 **Responsable**: Equipo CyberGuard (Cloud Architect & Backend Developer + Frontend Developer & QA Engineer)
+
+---
+
+### [AI_WORKFLOW.md](file:///home/jhonathan-aparicio/Escritorio/cyberguard-system/AI_WORKFLOW.md)
+
+Registrar ajuste de diagramas según la nueva iniciativa funcional.
