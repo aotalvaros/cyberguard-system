@@ -1,5 +1,5 @@
 import { query } from '../config/database';
-import { UserRepository, UserRecord } from '../../domain/ports/UserRepository';
+import { UserRepository, UserRecord, ProfileUpdateData } from '../../domain/ports/UserRepository';
 import { logger } from '../config/logger';
 
 
@@ -8,6 +8,7 @@ interface UserRow {
   readonly username: string;
   readonly email: string;
   readonly role: string;
+  readonly phone: string | null;
   readonly is_locked: boolean;
   readonly failed_attempts: number;
   readonly last_login: string | null;
@@ -21,6 +22,7 @@ function rowToUser(row: UserRow): UserRecord {
     username: row.username,
     email: row.email,
     role: row.role,
+    phone: row.phone ?? null,
     isLocked: row.is_locked,
     failedAttempts: row.failed_attempts,
     lastLogin: row.last_login ? new Date(row.last_login) : null,
@@ -51,6 +53,50 @@ export class PostgresUserRepository implements UserRepository {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('Failed to find user by username', { username, error: message });
+      throw error;
+    }
+  }
+
+  async findByEmail(email: string): Promise<UserRecord | null> {
+    try {
+      // ⚠️ HUMAN CHECK: query parametrizada — sin concatenación de strings (§6.1 #3)
+      const rows = await query<UserRow>('SELECT * FROM users WHERE email = $1', [email]);
+      const row = rows[0];
+      return row ? rowToUser(row) : null;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to find user by email', { email, error: message });
+      throw error;
+    }
+  }
+
+  async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
+    try {
+      // ⚠️ HUMAN CHECK: solo username, email y phone — role/isLocked/failedAttempts excluidos (ISP §3.4)
+      const rows = await query<UserRow>(
+        `UPDATE users SET
+           username   = COALESCE($2, username),
+           email      = COALESCE($3, email),
+           phone      = COALESCE($4, phone),
+           updated_at = NOW()
+         WHERE id = $1
+         RETURNING *`,
+        [
+          id,
+          data.username ?? null,
+          data.email    ?? null,
+          data.phone    ?? null,
+        ]
+      );
+      const row = rows[0];
+      if (!row) {
+        throw new Error(`Failed to update profile: no row returned for userId ${id}`);
+      }
+      logger.info('Profile updated in PostgreSQL', { userId: id, fields: Object.keys(data) });
+      return rowToUser(row);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to update profile', { userId: id, error: message });
       throw error;
     }
   }

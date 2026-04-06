@@ -3,6 +3,8 @@ import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
 import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
+import { GetAdminProfileUseCase } from '../../application/use-cases/GetAdminProfileUseCase';
+import { UpdateAdminProfileUseCase } from '../../application/use-cases/UpdateAdminProfileUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
@@ -32,6 +34,8 @@ export class ServiceFactory {
   private static userRepository: UserRepository | null = null;
   private static auditLogRepository: AuditLogRepository | null = null;
   private static threatClassifier: ThreatClassifier | null = null;
+  private static getAdminProfileUseCase: GetAdminProfileUseCase | null = null;
+  private static updateAdminProfileUseCase: UpdateAdminProfileUseCase | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -134,6 +138,31 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del use case de consulta de perfil
+   * Inyecta: UserRepository (port)
+   */
+  static getGetAdminProfileUseCase(): GetAdminProfileUseCase {
+    if (!this.getAdminProfileUseCase) {
+      this.getAdminProfileUseCase = new GetAdminProfileUseCase(this.getUserRepository());
+    }
+    return this.getAdminProfileUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de actualización de perfil
+   * Inyecta: UserRepository (port), AuditLogRepository (port)
+   */
+  static getUpdateAdminProfileUseCase(): UpdateAdminProfileUseCase {
+    if (!this.updateAdminProfileUseCase) {
+      this.updateAdminProfileUseCase = new UpdateAdminProfileUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository()
+      );
+    }
+    return this.updateAdminProfileUseCase;
+  }
+
+  /**
    * ✅ Resetear todas las instancias (solo para testing)
    */
   static resetForTesting(): void {
@@ -145,6 +174,8 @@ export class ServiceFactory {
     this.userRepository = null;
     this.auditLogRepository = null;
     this.threatClassifier = null;
+    this.getAdminProfileUseCase = null;
+    this.updateAdminProfileUseCase = null;
   }
 
   /**
