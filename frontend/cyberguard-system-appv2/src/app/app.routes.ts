@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../presentation/guards/auth.guard';
 import { adminGuard } from '../presentation/guards/admin.guard';
+import { noAuthGuard } from '../presentation/guards/no-auth.guard';
 
 export const routes: Routes = [
   {
@@ -11,7 +12,8 @@ export const routes: Routes = [
   {
     path: 'autenticacion',
     loadComponent: () => import('../presentation/components/autenticacion/autenticacion.component')
-      .then(m => m.AutenticacionComponent)
+      .then(m => m.AutenticacionComponent),
+    canActivate: [noAuthGuard]
   },
   {
     path: 'dashboard',

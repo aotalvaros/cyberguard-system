@@ -43,3 +43,5 @@ temp/
 # Amazon Q duplicates (already in .github/)
 .amazonq/
 
+
+.fake

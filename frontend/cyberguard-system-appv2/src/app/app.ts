@@ -32,10 +32,19 @@ export class App implements OnInit {
     { initialValue: this.router.url }
   );
 
-  /** Show sidebar only when the user is authenticated and not on the login page */
+  /**
+   * Show sidebar only when the user is authenticated and not on the login page.
+   *
+   * Fix: uses authService.isAuthenticated() (checks localStorage token) instead
+   * of only getCurrentUserUseCase.execute() to avoid showing the sidebar during
+   * the brief window where router.url is still '/' (before redirect to /autenticacion)
+   * while a stale user object exists in localStorage from a previous session.
+   */
   showSidebar = computed(() => {
     const url = this.currentUrl() ?? '';
-    return !url.includes('/autenticacion') && !!this.getCurrentUserUseCase.execute();
+    return !url.includes('/autenticacion')
+      && this.authService.isAuthenticated()
+      && !!this.getCurrentUserUseCase.execute();
   });
 
   ngOnInit(): void {
