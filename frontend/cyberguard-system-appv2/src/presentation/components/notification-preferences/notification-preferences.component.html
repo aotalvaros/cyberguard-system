@@ -1,0 +1,50 @@
+<section class="notification-preferences">
+  <h3>Preferencias de Notificación</h3>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <!-- Email Section -->
+    <div class="pref-section">
+      <label class="toggle-label">
+        <input type="checkbox" formControlName="emailEnabled" />
+        <span>Notificaciones por Email</span>
+      </label>
+      <div class="field-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="admin@cyberguard.com"
+        />
+      </div>
+    </div>
+
+    <!-- WhatsApp Section -->
+    <div class="pref-section">
+      <label class="toggle-label">
+        <input type="checkbox" formControlName="whatsappEnabled" />
+        <span>Notificaciones por WhatsApp</span>
+      </label>
+      <div class="field-group">
+        <label for="phone">Teléfono (E.164)</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          placeholder="+573001234567"
+        />
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="saving">
+      {{ saving ? 'Guardando...' : 'Guardar Preferencias' }}
+    </button>
+  </form>
+
+  @if (saveSuccess) {
+    <p class="msg-success">Preferencias guardadas correctamente.</p>
+  }
+  @if (savingError) {
+    <p class="msg-error">{{ savingError }}</p>
+  }
+</section>

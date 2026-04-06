@@ -11,6 +11,9 @@
 
   <main class="dashboard-main">
     <app-statistics-widget />
+    @if (user?.role === 'admin') {
+      <app-notification-preferences />
+    }
 
     <div class="threat-form-card">
       <h2>Reportar Amenaza</h2>
