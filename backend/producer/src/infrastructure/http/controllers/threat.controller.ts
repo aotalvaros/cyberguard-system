@@ -6,11 +6,7 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { bruteForceDetection } from '../middlewares/bruteforce.middleware';
 import { validate } from '../middlewares/validation.middleware';
 import { createThreatSchema } from '../validators/threat.schema';
-
-
 const router = Router();
-
-
 router.use(authMiddleware);
 router.use(bruteForceDetection);
 
@@ -38,8 +34,6 @@ router.post('/', validate(createThreatSchema), async (req: Request, res: Respons
     });
   }
 });
-
-
 router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
 
@@ -59,8 +53,6 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     });
   }
 });
-
-
 router.delete('/:threatId', async (req: Request, res: Response): Promise<void> => {
   try {
     const { threatId } = req.params;

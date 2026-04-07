@@ -27,9 +27,6 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   }
 
   try {
-    // ⚠️ HUMAN CHECK:
-    // La IA no manejaba correctamente tokens expirados vs inválidos.
-    // Se agrego manejo específico de errores de JWT.
     const decoded = jwt.verify(token, config.jwtSecret) as { id: string; username: string; role: string };
     if (!decoded.id) {
       res.status(401).json({ error: 'Invalid token: missing user identity. Please login again.' });
