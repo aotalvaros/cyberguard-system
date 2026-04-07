@@ -5,10 +5,6 @@ import {
 } from '../../domain/ports/ThreatClassificationStrategy';
 import { ThreatType, SeverityLevel } from '../../domain/entities/Threat';
 
-/**
- * Strategy para clasificación de amenazas tipo Malware.
- * Evalúa riesgo basado en severidad y presencia de indicadores conocidos.
- */
 export class MalwareClassificationStrategy implements ThreatClassificationStrategy {
   readonly supportedType: ThreatType = 'malware';
 
@@ -55,10 +51,6 @@ export class MalwareClassificationStrategy implements ThreatClassificationStrate
   }
 }
 
-/**
- * Strategy para clasificación de amenazas tipo Intrusión.
- * Evalúa riesgo basado en frecuencia de intentos y patrones de acceso.
- */
 export class IntrusionClassificationStrategy implements ThreatClassificationStrategy {
   readonly supportedType: ThreatType = 'intrusion';
 
@@ -106,9 +98,6 @@ export class IntrusionClassificationStrategy implements ThreatClassificationStra
   }
 }
 
-/**
- * Strategy para clasificación de amenazas tipo Phishing.
- */
 export class PhishingClassificationStrategy implements ThreatClassificationStrategy {
   readonly supportedType: ThreatType = 'phishing';
 
@@ -144,9 +133,6 @@ export class PhishingClassificationStrategy implements ThreatClassificationStrat
   }
 }
 
-/**
- * Strategy para clasificación de amenazas tipo DDoS.
- */
 export class DdosClassificationStrategy implements ThreatClassificationStrategy {
   readonly supportedType: ThreatType = 'ddos';
 
@@ -158,7 +144,7 @@ export class DdosClassificationStrategy implements ThreatClassificationStrategy 
       riskScore,
       recommendedSeverity: riskScore >= 70 ? 'critical' : context.severity,
       tags: ['ddos', 'network-attack'],
-      autoBlock: true, // DDoS siempre auto-block
+      autoBlock: true,
     };
   }
 
@@ -173,22 +159,19 @@ export class DdosClassificationStrategy implements ThreatClassificationStrategy 
   }
 }
 
-/**
- * Strategy para clasificación de amenazas tipo Ransomware.
- */
 export class RansomwareClassificationStrategy implements ThreatClassificationStrategy {
   readonly supportedType: ThreatType = 'ransomware';
 
   analyze(context: ThreatContext): ThreatAnalysisResult {
-    // Ransomware siempre es de alto riesgo
+
     const baseSeverityScore = this.getSeverityScore(context.severity);
-    const riskScore = Math.min(100, baseSeverityScore + 10); // +10 inherent risk
+    const riskScore = Math.min(100, baseSeverityScore + 10);
 
     return {
       riskScore,
-      recommendedSeverity: 'critical', // Ransomware siempre escalado a critical
+      recommendedSeverity: 'critical',
       tags: this.generateTags(context),
-      autoBlock: true, // Ransomware siempre auto-block
+      autoBlock: true,
     };
   }
 

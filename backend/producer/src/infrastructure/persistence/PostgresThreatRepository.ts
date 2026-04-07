@@ -2,7 +2,6 @@ import { query } from '../config/database';
 import { ThreatRepository, Threat } from '../../domain/ports/ThreatRepository';
 import { logger } from '../config/logger';
 
-
 interface ThreatRow {
   readonly id: string;
   readonly event_id: string;
@@ -80,7 +79,7 @@ export class PostgresThreatRepository implements ThreatRepository {
       if (rows.length === 0) return null;
 
       const row = rows[0];
-      /* istanbul ignore next */
+
       if (!row) return null;
 
       return this.mapToThreat(row);

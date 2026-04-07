@@ -1,17 +1,3 @@
-/**
- * Profile Controller
- *
- * Expone los endpoints REST para consulta y actualización del perfil del
- * administrador autenticado.
- *
- * Rutas:
- *   GET  /api/profile  → GetAdminProfileUseCase
- *   PATCH /api/profile → UpdateAdminProfileUseCase
- *
- * Seguridad: authMiddleware valida JWT en todas las rutas.
- * Validación: middleware validate() + Joi schema (updateProfileSchema).
- * Error mapping: DomainError codes → HTTP status codes.
- */
 import { Router, Response } from 'express';
 import { authMiddleware, AuthRequest } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validation.middleware';
@@ -22,14 +8,6 @@ import { logger } from '../../config/logger';
 
 const router = Router();
 
-/**
- * GET /api/profile
- * Retorna el perfil del administrador autenticado.
- *
- * Response 200: { username, email, role, phone, createdAt }
- * Response 401: JWT inválido o ausente (authMiddleware)
- * Response 404: usuario no encontrado (ProfileNotFoundException)
- */
 router.get(
   '/',
   authMiddleware,
@@ -56,17 +34,6 @@ router.get(
   }
 );
 
-/**
- * PATCH /api/profile
- * Actualiza los datos de perfil del administrador autenticado.
- *
- * Body (al menos un campo): { username?, email?, phone? }
- * Response 200: { username, email, role, phone, createdAt }
- * Response 400: body inválido o intento de modificar role
- * Response 401: JWT inválido o ausente
- * Response 404: usuario no encontrado
- * Response 409: email ya en uso por otro usuario
- */
 router.patch(
   '/',
   authMiddleware,
@@ -95,10 +62,6 @@ router.patch(
   }
 );
 
-/**
- * Mapea DomainError.code a HTTP status code.
- * OCP §3.2: extender este mapa sin modificar los handlers.
- */
 function domainErrorToStatus(code: string): number {
   const map: Record<string, number> = {
     PROFILE_NOT_FOUND:              404,

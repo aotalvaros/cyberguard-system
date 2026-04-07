@@ -9,11 +9,11 @@ export async function connectAndConsume(onMessage: (data: unknown, routingKey: s
   try {
     connection = await amqp.connect(RABBITMQ_URL);
     if (!connection) throw new Error('Failed to establish connection');
-    
+
     connection.on('error', (err: Error) => logger.error('RabbitMQ connection error', { error: err.message }));
     connection.on('close', () => {
       logger.warn('RabbitMQ connection closed, reconnecting in 2s');
-      setTimeout(() => connectAndConsume(onMessage).catch(() => {/*ignore*/}), 2000);
+      setTimeout(() => connectAndConsume(onMessage).catch(() => {}), 2000);
     });
     const ch = await connection.createChannel();
     channel = ch;
@@ -41,7 +41,7 @@ export async function connectAndConsume(onMessage: (data: unknown, routingKey: s
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     logger.error('Failed to connect to RabbitMQ', { error: errorMessage });
-    setTimeout(() => connectAndConsume(onMessage).catch(() => {/*ignore*/}), 2000);
+    setTimeout(() => connectAndConsume(onMessage).catch(() => {}), 2000);
   }
 }
 
@@ -50,6 +50,6 @@ export async function closeRabbit() {
     await channel?.close();
     await connection?.close();
   } catch (e) {
-    // ignore
+
   }
 }

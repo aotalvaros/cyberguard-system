@@ -1,6 +1,6 @@
 <nav class="sidebar" [class.sidebar--collapsed]="collapsed()">
 
-  <!-- Toggle button -->
+  
   <button
     class="sidebar__toggle"
     (click)="toggleCollapse()"
@@ -11,7 +11,7 @@
     <span class="toggle-icon">{{ collapsed() ? '»' : '«' }}</span>
   </button>
 
-  <!-- Brand -->
+  
   <div class="sidebar__brand">
     <span class="brand-icon">CG</span>
     @if (!collapsed()) {
@@ -19,7 +19,7 @@
     }
   </div>
 
-  <!-- Navigation items -->
+  
   <ul class="sidebar__nav" role="navigation" aria-label="Menú principal">
     @for (item of visibleItems(); track item.route) {
       <li class="sidebar__item">

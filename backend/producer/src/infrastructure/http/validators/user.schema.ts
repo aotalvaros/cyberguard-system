@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import { VALID_IRMS_ROLES } from '../../../domain/value-objects/UserRole';
 
-
 export const createUserSchema = Joi.object({
   email:    Joi.string().email().required().messages({
     'string.email': 'El correo electrónico tiene un formato inválido',

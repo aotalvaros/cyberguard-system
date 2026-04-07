@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import { resolve, join, basename } from 'node:path';
 import { beforeAll, afterEach } from 'vitest';
 
-// Polyfill CloseEvent for Node.js test environment (needed by WebSocket tests)
 if (typeof globalThis.CloseEvent === 'undefined') {
   (globalThis as any).CloseEvent = class CloseEvent extends Event {
     code: number;

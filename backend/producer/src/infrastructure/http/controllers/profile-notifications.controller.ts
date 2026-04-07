@@ -6,10 +6,6 @@ import { logger } from '../../config/logger';
 
 export const profileNotificationsRouter = Router();
 
-/**
- * GET /api/profile/notification-preferences
- * Retorna las preferencias de notificación del usuario autenticado.
- */
 profileNotificationsRouter.get(
   '/',
   authMiddleware,
@@ -27,10 +23,6 @@ profileNotificationsRouter.get(
   }
 );
 
-/**
- * PUT /api/profile/notification-preferences
- * Actualiza las preferencias de notificación del usuario autenticado.
- */
 profileNotificationsRouter.put(
   '/',
   authMiddleware,
@@ -38,7 +30,7 @@ profileNotificationsRouter.put(
     const { error, value } = saveNotifPreferencesSchema.validate(req.body);
     if (error) {
       res.status(400).json({
-        error: error.details[0]?.message ?? /* istanbul ignore next */ 'Validation error',
+        error: error.details[0]?.message ??  'Validation error',
       });
       return;
     }

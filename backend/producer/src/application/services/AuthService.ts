@@ -12,7 +12,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly auditLogRepository: AuditLogRepository
   ) {}
-  
+
   async login(
     credentials: LoginCredentials,
     ipAddress?: string,
@@ -43,16 +43,12 @@ export class AuthService {
         return result;
       }
 
-      // Buscar usuario en PostgreSQL.
-      // Normalizar: si viene 'admin@cyberguard.com' intentar primero con la parte
-      // local ('admin') para respetar el seed, y si no, buscar con el email completo.
       const rawUsername = result.user.username;
       const localUsername = rawUsername.includes('@') ? rawUsername.split('@')[0]! : rawUsername;
       let user =
         (await this.userRepository.findByUsername(localUsername)) ??
         (await this.userRepository.findByUsername(rawUsername));
 
-      // Si no existe en PostgreSQL → crear automáticamente con rol 'viewer'
       if (!user) {
         logger.info('User authenticated in Firebase but not found in PostgreSQL. Creating automatically.', {
           username: result.user.username
@@ -86,13 +82,10 @@ export class AuthService {
         });
       }
 
-      // After the if(!user) block above, user is guaranteed non-null
-      // TypeScript needs an explicit guard because of async ops inside the if
       if (!user) {
         return { success: false, error: 'User could not be resolved.' };
       }
 
-      // Verificar si la cuenta está bloqueada
       if (user.isLocked) {
         await this.auditLogRepository.log({
           userId: user.id,
@@ -108,18 +101,15 @@ export class AuthService {
         return { success: false, error: 'Account is locked. Contact administrator.' };
       }
 
-      // Resetear intentos fallidos y actualizar último login
       await this.userRepository.resetFailedAttempts(user.id);
       await this.userRepository.updateLastLogin(user.id);
 
-      // Generar JWT
       const token = this.tokenService.generateToken({
         id: user.id,
         username: user.username,
         role: user.role
       });
 
-      // Registrar login exitoso
       await this.auditLogRepository.log({
         userId: user.id,
         action: 'login_success',
@@ -138,7 +128,7 @@ export class AuthService {
         token,
         user: {
           id: user.id,
-          username: user.username, 
+          username: user.username,
           role: user.role
         }
       };

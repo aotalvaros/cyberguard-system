@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <!-- Estadísticas -->
+  
   @if (alerts.length > 0) {
     <div class="stats-bar">
       <div class="stat">
@@ -40,7 +40,7 @@
     </div>
   }
 
-  <!-- Filtros -->
+  
   @if (alerts.length > 0) {
     <div class="filters-bar">
       <input
@@ -94,7 +94,7 @@
     }
   </div>
 
-  <!-- Paginación -->
+  
   @if (totalPages > 1) {
     <div class="pagination">
       <button (click)="prevPage()" [disabled]="currentPage === 1" class="btn-page">← Anterior</button>

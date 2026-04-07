@@ -14,7 +14,6 @@ export interface UpdateUserOutput {
   readonly user: UserRecord;
 }
 
-
 export class UpdateUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,

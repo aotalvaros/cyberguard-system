@@ -9,7 +9,6 @@ import { SelfModificationForbiddenError } from '../../../domain/exceptions/SelfM
 
 const router = Router();
 
-// Middleware: solo admins pueden acceder a estas rutas
 function requireAdmin(req: AuthRequest, res: Response, next: () => void): void {
   if (req.user?.role !== 'admin') {
     res.status(403).json({ error: 'Forbidden: admin role required' });
@@ -17,7 +16,6 @@ function requireAdmin(req: AuthRequest, res: Response, next: () => void): void {
   }
   next();
 }
-
 
 router.post(
   '/users',
@@ -49,7 +47,6 @@ router.post(
   }
 );
 
-
 router.get(
   '/users',
   authMiddleware,
@@ -67,7 +64,6 @@ router.get(
     }
   }
 );
-
 
 router.get(
   '/users/:id',
@@ -91,7 +87,6 @@ router.get(
     }
   }
 );
-
 
 router.put(
   '/users/:id',

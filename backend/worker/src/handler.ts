@@ -34,13 +34,13 @@ export const handleMessage = async (rawData: unknown, routingKey: string): Promi
         logger.warn('Input contained dangerous characters');
       }
     }
-    
+
     const payload = buildPayload(rawData, routingKey);
-    
+
     if (!isValidPayload(payload)) {
       throw new Error('Invalid payload structure');
     }
-    
+
     return payload;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

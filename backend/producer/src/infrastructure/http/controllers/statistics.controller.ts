@@ -5,15 +5,6 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 
 export const statisticsRouter = Router();
 
-/**
- * GET /api/statistics
- * Returns aggregated threat statistics.
- * Protected by authMiddleware — requires valid Bearer JWT.
- *
- * Response 200: { success: true, data: ThreatStatistics }
- * Response 401: JWT invalid/missing (from authMiddleware)
- * Response 500: { success: false, error: "Failed to retrieve statistics" }
- */
 statisticsRouter.get(
   '/',
   authMiddleware,

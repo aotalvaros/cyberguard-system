@@ -1,10 +1,3 @@
-/**
- * Port: UserRepository
- *
- * Define el contrato para la persistencia de usuarios.
- * El dominio depende de esta interfaz; la infraestructura la implementa.
- */
-
 export interface UserRecord {
   readonly id: string;
   readonly username: string;
@@ -19,10 +12,6 @@ export interface UserRecord {
   readonly updatedAt: Date;
 }
 
-/**
- * Datos permitidos para actualización de perfil.
- * ISP §3.4: excluye role, isLocked, failedAttempts — no modificables desde este flujo.
- */
 export interface ProfileUpdateData {
   readonly username?: string;
   readonly email?: string;
@@ -34,7 +23,7 @@ export interface UserRepository {
   findByUsername(username: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
   findAll(): Promise<UserRecord[]>;
-  findAllActive(): Promise<UserRecord[]>;                  
+  findAllActive(): Promise<UserRecord[]>;
   save(user: UserRecord): Promise<UserRecord>;
   update(id: string, data: Partial<UserRecord>): Promise<UserRecord>;
   updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord>;

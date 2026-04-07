@@ -15,7 +15,7 @@ import { ThreatRequest } from '../../../core/domain/models/threat-request.model'
   template: `
     <div class="report-container">
       <h2>Report Security Threat</h2>
-      
+
       <form [formGroup]="threatForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label>Threat Type *</label>
@@ -107,8 +107,6 @@ export class ReportThreatComponent {
 
     const threat: ThreatRequest = this.threatForm.value;
 
-    // HUMAN CHECK:
-    // Aplicamos Strategy Pattern con Factory para validación específica por tipo
     const validator = this.validationFactory.createValidator(threat.type);
     const validation = validator.validate(threat);
 

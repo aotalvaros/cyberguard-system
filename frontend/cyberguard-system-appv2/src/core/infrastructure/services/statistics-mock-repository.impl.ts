@@ -3,7 +3,6 @@ import { of, Observable } from 'rxjs';
 import { StatisticsRepository } from '../../domain/ports/statistics.repository';
 import { ThreatStatistics } from '../../domain/models/threat-statistics.model';
 
-/** Development stub — replace with StatisticsRepositoryImpl once backend delivers GET /api/statistics */
 const MOCK_STATS: ThreatStatistics = {
   totalThreats: 15,
   byType: { malware: 6, ddos: 5, phishing: 4 },

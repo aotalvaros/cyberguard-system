@@ -14,13 +14,6 @@ export interface GetAdminProfileInput {
   readonly username: string;
 }
 
-/**
- * Use Case: GetAdminProfileUseCase
- *
- * Retorna los datos de perfil del administrador excluye campos sensibles.
- * SRP §3.1: única responsabilidad — consulta de perfil.
- * DIP §3.5: depende del port UserRepository, no de PostgresUserRepository.
- */
 export class GetAdminProfileUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
@@ -33,12 +26,11 @@ export class GetAdminProfileUseCase {
       throw new ProfileNotFoundException(username);
     }
 
-    // HUMAN CHECK: campos sensibles (isLocked, failedAttempts, lastLogin) excluidos explícitamente
     return {
       username:  user.username,
       email:     user.email,
       role:      user.role,
-      phone:     null, // phone column not in current schema
+      phone:     null,
       createdAt: user.createdAt.toISOString(),
     };
   }

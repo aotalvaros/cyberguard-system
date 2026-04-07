@@ -9,20 +9,6 @@ import { DeleteThreatResult } from '../models/delete-threat-result.model';
 import { ThreatSeverity } from '../models/threat-severity.enum';
 import { ThreatType } from '../models/threat-type.enum';
 
-/**
- * HUMAN CHECK: Domain Service - capa de dominio pura
- * 
- * Este servicio SOLO contiene lógica de negocio relacionada con amenazas.
- * NO importa nada de infraestructura (HTTP, localStorage, etc.)
- * 
- * Principios aplicados:
- * - SRP: Solo maneja operaciones de amenazas
- * - DIP: Depende de abstracción (ThreatRepository), no de implementación
- * - ISP: El puerto ThreatRepository tiene métodos cohesivos
- * 
- * La validación de severidad y tipo usa enums del dominio,
- * evitando strings mágicos en la lógica de negocio.
- */
 @Injectable({
   providedIn: 'root'
 })

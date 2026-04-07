@@ -26,7 +26,6 @@ const TEMPLATES: Record<string, NotifTemplate> = {
   },
 };
 
-// HUMAN CHECK: Non-null assertion safe — 'other' key always exists in TEMPLATES
 export const selectTemplate = (type: string): NotifTemplate =>
   TEMPLATES[type.toLowerCase()] ?? TEMPLATES['other']!;
 

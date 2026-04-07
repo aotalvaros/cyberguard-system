@@ -5,13 +5,6 @@ import {
 } from '../../domain/ports/ThreatClassificationStrategy';
 import { ThreatType } from '../../domain/entities/Threat';
 
-/**
- * Servicio de dominio que orquesta las estrategias de clasificación de amenazas.
- * 
- * Utiliza el patrón Strategy para delegar la lógica de análisis al strategy
- * correspondiente según el tipo de amenaza, permitiendo extensibilidad sin
- * modificar código existente (Open/Closed Principle).
- */
 export class ThreatClassifier {
   private readonly strategies: ReadonlyMap<ThreatType, ThreatClassificationStrategy>;
 
@@ -23,10 +16,6 @@ export class ThreatClassifier {
     this.strategies = strategyMap;
   }
 
-  /**
-   * Clasifica una amenaza usando la estrategia registrada para su tipo.
-   * Si no hay estrategia registrada, retorna un análisis por defecto.
-   */
   classify(context: ThreatContext): ThreatAnalysisResult {
     const strategy = this.strategies.get(context.type);
 
@@ -37,16 +26,10 @@ export class ThreatClassifier {
     return strategy.analyze(context);
   }
 
-  /**
-   * Verifica si hay una estrategia registrada para el tipo de amenaza.
-   */
   hasStrategy(type: ThreatType): boolean {
     return this.strategies.has(type);
   }
 
-  /**
-   * Retorna los tipos de amenaza soportados.
-   */
   getSupportedTypes(): readonly ThreatType[] {
     return [...this.strategies.keys()];
   }

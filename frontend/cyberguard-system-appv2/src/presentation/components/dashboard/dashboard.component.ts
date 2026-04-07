@@ -12,8 +12,6 @@ import { AlertsComponent } from '../alerts/alerts.component';
 import { StatisticsWidgetComponent } from './statistics-widget/statistics-widget.component';
 import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
 
-// HUMAN CHECK:
-// Dashboard refactorizado para usar Use Cases en lugar de servicios directos
 @Component({
   selector: 'app-dashboard',
   standalone: true,

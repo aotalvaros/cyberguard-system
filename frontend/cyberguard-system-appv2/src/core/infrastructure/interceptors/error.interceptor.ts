@@ -6,9 +6,6 @@ import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
 import { AppErrorType, createAppError } from '../handlers/global-error.handler';
 import { STORAGE_KEYS } from '@environments/constants';
 
-/**
- * Mapea códigos HTTP a tipos de error de aplicación
- */
 const mapHttpErrorToAppError = (error: HttpErrorResponse): ReturnType<typeof createAppError> => {
   const errorBody = error.error;
   const defaultMessage = errorBody?.message || errorBody?.error || error.message;
@@ -75,14 +72,6 @@ const mapHttpErrorToAppError = (error: HttpErrorResponse): ReturnType<typeof cre
   }
 };
 
-/**
- * Interceptor funcional que maneja errores HTTP de forma centralizada.
- * 
- * Características:
- * - Transforma HttpErrorResponse a AppError estandarizado
- * - Maneja automáticamente errores 401 (limpia sesión y redirige)
- * - Propaga el error para que los componentes puedan manejarlo también
- */
 export const errorInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
@@ -94,7 +83,6 @@ export const errorInterceptor: HttpInterceptorFn = (
     catchError((error: HttpErrorResponse) => {
       const appError = mapHttpErrorToAppError(error);
 
-      // Log del error para debugging
       console.error('[ErrorInterceptor]', {
         url: req.url,
         method: req.method,
@@ -103,14 +91,12 @@ export const errorInterceptor: HttpInterceptorFn = (
         message: appError.message
       });
 
-      // Manejo especial para errores de autenticación
       if (error.status === 401) {
         storage.remove(STORAGE_KEYS.TOKEN);
         storage.remove(STORAGE_KEYS.USER);
         router.navigate(['/autenticacion']);
       }
 
-      // Propagar el error como AppError para que los componentes puedan manejarlo
       return throwError(() => appError);
     })
   );

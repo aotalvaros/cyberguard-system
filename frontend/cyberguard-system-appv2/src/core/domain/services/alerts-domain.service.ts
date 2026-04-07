@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AlertMessage } from '../models/alert-message.model';
 
-// HUMAN CHECK:
-// Domain Service con lógica de negocio pura para alertas
 @Injectable({
   providedIn: 'root'
 })
 export class AlertsDomainService {
-  
+
   filterAlerts(
     alerts: AlertMessage[],
     searchTerm: string,

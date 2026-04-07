@@ -13,7 +13,7 @@ const getMessageId = (payload: unknown): string | null => {
   if (data?.['threatId'] && typeof data['threatId'] === 'string') return data['threatId'];
   if (record['routingKey'] && record['receivedAt']) return `${String(record['routingKey'])}::${String(record['receivedAt'])}`;
   if (record['routing'] && record['timestamp']) return `${String(record['routing'])}::${String(record['timestamp'])}`;
-  
+
   try {
     const str = JSON.stringify(payload);
     let hash = 0;
@@ -78,7 +78,7 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
   if (!redisClient?.isOpen) return;
   try {
     const items = await redisClient.lRange(HISTORY_KEY, 0, -1);
-    
+
     let found = false;
     const remaining: string[] = [];
     for (const item of items) {
@@ -93,9 +93,9 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
         remaining.push(item);
       }
     }
-    
+
     if (found) {
-      // del primero, luego rPush de los items restantes (sin el eliminado)
+
       const pipeline = redisClient.multi();
       pipeline.del(HISTORY_KEY);
       for (const item of remaining) {
@@ -115,10 +115,6 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
 export const closeRedis = async (): Promise<void> => {
   if (redisClient?.isOpen) await redisClient.quit();
 };
-
-// ────────────────────────────────────────────────────────
-// External Notifications (EP-03)
-// ────────────────────────────────────────────────────────
 
 export interface NotifPreferences {
   emailEnabled: boolean;
@@ -148,7 +144,7 @@ export const saveNotifLog = async (
   try {
     const key = `notif:log:${eventId}`;
     await redisClient.set(key, JSON.stringify({ eventId, results, savedAt: new Date().toISOString() }));
-    await redisClient.expire(key, 604800); // 7 días
+    await redisClient.expire(key, 604800);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     logger.error('Failed to save notif log', { error: message });

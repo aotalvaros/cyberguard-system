@@ -592,9 +592,45 @@ Los emojis introducen dependencias de codificación (UTF-8 BOM, variantes de sis
 
 ---
 
+## §16. Código Sin Comentarios
+
+### 16.1 Principio
+El código fuente de producción NO debe contener comentarios de ningún tipo. El código debe ser autoexplicativo mediante nombres descriptivos de variables, funciones, clases y parámetros.
+
+### 16.2 Alcance
+Aplica a todos los archivos de producción:
+- `.ts`, `.js`, `.html` en `backend/` y `frontend/`
+- Excluye archivos de test (`*.spec.ts`, `__tests__/`)
+- Excluye archivos de configuración de herramientas (`.eslintrc`, `jest.config.js`, etc.)
+
+### 16.3 Tipos de comentarios prohibidos
+
+| Tipo | Ejemplo prohibido |
+|------|------------------|
+| Comentario de línea | `// Obtener instancia del repositorio` |
+| Comentario HUMAN CHECK | `// HUMAN CHECK: verificar esto` |
+| Bloque JSDoc | `/** @param username El usuario */` |
+| Bloque multilínea | `/* lógica de negocio */` |
+| Comentario HTML | `<!-- sección de filtros -->` |
+| Anotación TODO/FIXME | `// TODO: refactorizar` |
+
+### 16.4 Cómo expresar la intención sin comentarios
+
+| En vez de comentar... | Hacer esto |
+|----------------------|------------|
+| `// valida email` antes de un if | Extraer en función `isValidEmail()` |
+| `// repositorio de usuarios` sobre una variable | Nombrar la variable `userRepository` |
+| `// solo admin puede acceder` | Encapsular en `adminGuard` o `requireAdminRole()` |
+| `// HUMAN CHECK: campo sensible` | Documentar en la spec o en el README del módulo |
+
+### 16.5 Justificación
+Los comentarios se desactualizan con el código y crean ruido. En un proyecto con specs técnicas aprobadas en `.github/specs/`, con nombres descriptivos y arquitectura hexagonal bien definida, el código debe leerse como prosa sin necesidad de anotaciones adicionales.
+
+---
+
 Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de creación. Se actualiza cuando:
 - Se adopta un nuevo patrón o tecnología.
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §14 Integración Aditiva en Merges, §15 Sin Emojis
+**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §14 Integración Aditiva en Merges, §15 Sin Emojis, §16 Código Sin Comentarios

@@ -22,15 +22,13 @@ async function main() {
     await saveToRedis(payload);
     broadcast(payload);
 
-    // Fire-and-forget: dispatch external notifications after broadcast
-    // Does NOT block the RabbitMQ ACK cycle
     const record = payload as Record<string, unknown>;
     const eventId = typeof record['eventId'] === 'string' ? record['eventId'] : 'unknown';
     const threatData = (record['data'] ?? {}) as Record<string, unknown>;
 
     void (async () => {
       try {
-        // MVP: hardcoded 'admin' — future: extract from enriched payload
+
         const prefs = await getNotifPreferences('admin');
         if (!prefs) return;
 

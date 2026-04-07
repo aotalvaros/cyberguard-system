@@ -1,10 +1,3 @@
-/**
- * Port: AuditLogRepository
- * 
- * Define el contrato para registrar eventos de auditoría.
- * El dominio depende de esta interfaz; la infraestructura la implementa.
- */
-
 export interface AuditLogEntry {
   readonly userId: string | undefined;
   readonly action: string;

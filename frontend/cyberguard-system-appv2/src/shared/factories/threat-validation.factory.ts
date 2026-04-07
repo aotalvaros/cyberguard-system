@@ -9,8 +9,6 @@ import {
   DefaultValidationStrategy
 } from '../strategies/threat-validation.strategy';
 
-// HUMAN CHECK:
-// Factory Pattern para crear estrategias de validación según tipo de amenaza
 @Injectable({
   providedIn: 'root'
 })

@@ -4,34 +4,13 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractContro
 import { AdminProfileFacade } from '../../../core/application/facades/admin-profile.facade';
 import { AdminProfile, ProfileUpdateData } from '../../../core/domain/models/admin-profile.model';
 
-/**
- * Validator personalizado E.164 para número telefónico (R-FE-09)
- * Patrón: '+' seguido de 7-15 dígitos (sin espacios ni guiones)
- */
 function phoneE164Validator(control: AbstractControl): ValidationErrors | null {
-  if (!control.value) return null; // opcional
+  if (!control.value) return null;
   return /^\+[1-9]\d{6,14}$/.test(control.value)
     ? null
     : { phoneE164: true };
 }
 
-/**
- * ProfileComponent — Vista de gestión de perfil personal (EP-01)
- *
- * Satisface: HU-01 (consulta/edición) + HU-02 (teléfono)
- *
- * Requisitos cubiertos:
- *   R-FE-01: sección "Perfil Personal"
- *   R-FE-02: pre-carga con datos actuales via AdminProfileFacade
- *   R-FE-03: campo role deshabilitado (solo lectura)
- *   R-FE-04: skeleton spinner durante carga
- *   R-FE-05: errores inline por campo
- *   R-FE-06: botón "Guardar" deshabilitado si sin cambios o inválido
- *   R-FE-07: snackbar "Perfil actualizado correctamente" tras 200 OK
- *   R-FE-08: snackbar de error ante 4xx/5xx (vía error$ de facade)
- *   R-FE-09: campo phone acepta E.164
- *   R-FE-10: formulario se actualiza sin recargar página
- */
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -200,11 +179,10 @@ export class ProfileComponent implements OnInit {
   successMessage = signal('');
   errorMessage   = signal('');
 
-  /** Original form values — para detectar cambios (R-FE-06) */
   private originalValues: Partial<AdminProfile> = {};
 
   ngOnInit(): void {
-    // Construir form vacío para que el template lo encuentre
+
     this.profileForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       email:    ['', [Validators.required, Validators.email]],
@@ -212,13 +190,11 @@ export class ProfileComponent implements OnInit {
       role:     [{ value: '', disabled: true }],
     });
 
-    // Suscribir a loading$ de la facade
     this.facade.loading$.subscribe(isLoading => {
-      // Solo afecta el spinner de carga inicial (no el spinner de guardado)
+
       if (!this.saving()) this.loading.set(isLoading);
     });
 
-    // Suscribir a profile$ de la facade
     this.facade.profile$.subscribe(profile => {
       if (profile) {
         this.currentProfile.set(profile);
@@ -226,12 +202,10 @@ export class ProfileComponent implements OnInit {
       }
     });
 
-    // Suscribir a error$ de la facade
     this.facade.error$.subscribe(err => {
       if (err) this.errorMessage.set(err);
     });
 
-    // Cargar perfil
     this.facade.loadProfile();
   }
 
@@ -240,7 +214,6 @@ export class ProfileComponent implements OnInit {
 
     const formValue = this.profileForm.getRawValue() as { username: string; email: string; phone: string | null; role: string };
 
-    // Build as mutable intermediate — ProfileUpdateData uses readonly so we can't assign after construction
     const updates: { username?: string; email?: string; phone?: string | null } = {};
     if (formValue.username !== this.originalValues['username']) updates.username = formValue.username;
     if (formValue.email    !== this.originalValues['email'])    updates.email    = formValue.email;
@@ -253,7 +226,6 @@ export class ProfileComponent implements OnInit {
 
     this.facade.updateProfile(data);
 
-    // Escuchar el resultado via profile$ (R-FE-10 — sin reload)
     const sub = this.facade.profile$.subscribe(updated => {
       if (updated && updated !== this.currentProfile()) {
         this.saving.set(false);
@@ -263,7 +235,6 @@ export class ProfileComponent implements OnInit {
       }
     });
 
-    // Timeout de seguridad en caso de error
     this.facade.error$.subscribe(err => {
       if (err) {
         this.saving.set(false);
@@ -272,7 +243,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  /** Detecta si hay cambios respecto al perfil cargado (R-FE-06) */
   hasChanges(): boolean {
     if (!this.profileForm) return false;
     const v = this.profileForm.getRawValue() as Record<string, unknown>;

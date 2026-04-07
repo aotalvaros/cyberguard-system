@@ -16,9 +16,6 @@ pool.on('error', (err: Error) => {
   logger.error('Unexpected PostgreSQL pool error', { error: err.message });
 });
 
-/**
- * Ejecuta una consulta SQL parametrizada
- */
 export async function query<T = Record<string, unknown>>(text: string, params?: unknown[]): Promise<T[]> {
   const start = Date.now();
   const result: QueryResult = await pool.query(text, params);
@@ -33,16 +30,10 @@ export async function query<T = Record<string, unknown>>(text: string, params?: 
   return result.rows as T[];
 }
 
-/**
- * Obtener el pool directamente (para transacciones)
- */
 export function getPool(): Pool {
   return pool;
 }
 
-/**
- * Cerrar el pool de conexiones
- */
 export async function closePool(): Promise<void> {
   await pool.end();
   logger.info('PostgreSQL pool closed');

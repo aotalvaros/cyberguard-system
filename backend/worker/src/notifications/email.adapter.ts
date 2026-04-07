@@ -62,7 +62,6 @@ export class EmailAdapter implements INotificationService {
       }
     }
 
-    // Unreachable but satisfies TS
     return { canal: 'email', status: 'error', attempts: this.maxRetries, error: 'Max retries reached' };
   }
 }

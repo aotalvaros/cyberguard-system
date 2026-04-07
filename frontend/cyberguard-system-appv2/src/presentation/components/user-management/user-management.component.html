@@ -18,7 +18,7 @@
       <div class="alert alert-error">{{ error }}</div>
     }
 
-    <!-- Toolbar -->
+    
     <div class="toolbar">
       <h2>Usuarios ({{ total }})</h2>
       <button (click)="toggleCreateForm()" class="btn-primary">
@@ -26,7 +26,7 @@
       </button>
     </div>
 
-    <!-- Create user form -->
+    
     @if (showCreateForm) {
       <div class="form-card">
         <h3>Crear Usuario</h3>
@@ -79,7 +79,7 @@
       </div>
     }
 
-    <!-- Users table -->
+    
     @if (loading) {
       <div class="loading">Cargando usuarios...</div>
     } @else {
@@ -103,7 +103,7 @@
                 <td>{{ user.email }}</td>
                 <td>{{ user.fullName ?? '—' }}</td>
 
-                <!-- Inline edit form for role/fullName -->
+                
                 @if (editingUserId === user.id) {
                   <td colspan="2">
                     <form [formGroup]="editForm" (ngSubmit)="onUpdateUser(user.id)" class="inline-form">
