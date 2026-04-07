@@ -1,5 +1,5 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
@@ -20,6 +20,7 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
+
 
 class InMemoryWebSocketRepository extends WebSocketRepository {
   private stream = new BehaviorSubject<AlertMessage[]>([]);

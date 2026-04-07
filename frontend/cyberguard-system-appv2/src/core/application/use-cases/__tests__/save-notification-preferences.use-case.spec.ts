@@ -6,20 +6,23 @@ import {
 } from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
 
+import { SaveNotificationPreferencesUseCase } from '../save-notification-preferences.use-case';
+import { NotificationPreferencesRepository } from '../../../domain/ports/notification-preferences.repository';
+
 beforeAll(() => {
   TestBed.initTestEnvironment(
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting(),
   );
 });
-import { SaveNotificationPreferencesUseCase } from '../save-notification-preferences.use-case';
-import { NotificationPreferencesRepository } from '../../../domain/ports/notification-preferences.repository';
+
 
 describe('SaveNotificationPreferencesUseCase', () => {
   let useCase: SaveNotificationPreferencesUseCase;
   let mockRepo: { get: ReturnType<typeof vi.fn>; save: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepo = {
       get: vi.fn(),
       save: vi.fn().mockReturnValue(of(undefined)),

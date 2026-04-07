@@ -18,6 +18,7 @@ beforeAll(() => {
   );
 });
 
+
 describe('NotificationPreferencesComponent', () => {
   let fixture: ComponentFixture<NotificationPreferencesComponent>;
   let component: NotificationPreferencesComponent;

@@ -350,6 +350,37 @@ refactor(REFACTOR): [descripción de mejora]
 
 ---
 
+## 11. Regla de Completitud: Ningún Cambio se Marca como Terminado sin Tests Verdes
+
+### 11.1 Definición de "Terminado"
+Un task, step, feature o PR **NUNCA** puede marcarse como completado (`✅`, `[x]`, estado `done`) hasta que:
+
+1. **Todos los tests del proyecto pasen sin errores** — sin excepción.
+2. Las suites de verificación relevantes se hayan ejecutado explícitamente **después** del último cambio de código.
+3. No se haya introducido ninguna regresión respecto al baseline anterior.
+
+### 11.2 Comandos de Verificación Obligatorios
+
+| Capa | Comando | Resultado esperado |
+|------|---------|-------------------|
+| Frontend | `npx vitest run` (en `frontend/cyberguard-system-appv2/`) | `X passed (N)` — cero failures |
+| Backend producer | `npm test` (en `backend/producer/`) | `X passed` — cero failures |
+| Worker | `npm test` (en `backend/worker/`) | `X passed` — cero failures |
+
+### 11.3 Anti-pattern Prohibido
+> **NEVER** marcar un task como `✅` o `completed` si el comando de verificación muestra `X failed` o si no fue ejecutado tras el último cambio.
+
+### 11.4 Protocolo ante Regresión
+Si un cambio introduce una regresión (tests que antes pasaban ahora fallan):
+1. El cambio **no puede mergearse** hasta resolver la regresión.
+2. Se debe crear una rama `fix/*` para corregir los tests rotos.
+3. Solo tras confirmar suite GREEN se puede marcar la tarea como terminada y proceder con el merge.
+
+### 11.5 Justificación
+Esta regla nació tras el incidente de EP-03 (external-notifications) donde la adición de `NotificationPreferencesComponent` a `DashboardComponent` rompió los tests del dashboard y decenas de otros archivos quedaron en rojo por falta de `TestBed.initTestEnvironment` / `resetTestingModule`. El costo de corrección fue significativamente mayor que el de haber verificado antes de marcar como terminado.
+
+---
+
 ## Vigencia
 
 Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de creación. Se actualiza cuando:
@@ -357,4 +388,4 @@ Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de 
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 06 de abril de 2026
+**Última actualización:** 07 de abril de 2026

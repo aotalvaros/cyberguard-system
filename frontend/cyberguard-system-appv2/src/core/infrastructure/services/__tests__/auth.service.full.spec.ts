@@ -1,7 +1,11 @@
 // Tipo de prueba: Integración
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { AuthService } from '../auth.service';
 import { LoginUseCase } from '../../../application/use-cases/login.use-case';
 import { LogoutUseCase } from '../../../application/use-cases/logout.use-case';
@@ -10,6 +14,14 @@ import { AuthRepository } from '../../../domain/ports/auth.repository';
 import { WebSocketService } from '../websocket.service';
 import { of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -29,6 +41,7 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockLoginUseCase = {
       execute: vi.fn().mockReturnValue(of({ token: 'test-token', user: { username: 'test', role: 'user' }}))
     };

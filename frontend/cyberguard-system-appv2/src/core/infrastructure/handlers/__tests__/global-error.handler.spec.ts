@@ -1,4 +1,5 @@
 // Tipo de prueba: Unitario
+import '@angular/compiler';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { 
   AppErrorType, 

@@ -1,5 +1,5 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, beforeAll, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
@@ -15,6 +15,7 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
+
 
 describe('WebSocketService', () => {
   let service: WebSocketService;

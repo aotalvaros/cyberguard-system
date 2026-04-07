@@ -5,6 +5,9 @@ import {
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
+import { GetNotificationPreferencesUseCase } from '../get-notification-preferences.use-case';
+import { NotificationPreferencesRepository } from '../../../domain/ports/notification-preferences.repository';
+import { DEFAULT_PREFERENCES } from '../../../domain/models/notification-preferences.model';
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -12,15 +15,13 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-import { GetNotificationPreferencesUseCase } from '../get-notification-preferences.use-case';
-import { NotificationPreferencesRepository } from '../../../domain/ports/notification-preferences.repository';
-import { DEFAULT_PREFERENCES } from '../../../domain/models/notification-preferences.model';
 
 describe('GetNotificationPreferencesUseCase', () => {
   let useCase: GetNotificationPreferencesUseCase;
   let mockRepo: { get: ReturnType<typeof vi.fn>; save: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepo = {
       get: vi.fn().mockReturnValue(of({ ...DEFAULT_PREFERENCES, emailEnabled: true })),
       save: vi.fn(),

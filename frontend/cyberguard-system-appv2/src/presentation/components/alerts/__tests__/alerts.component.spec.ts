@@ -21,6 +21,7 @@ beforeAll(() => {
   );
 });
 
+
 const mockAlerts: AlertMessage[] = [
   { eventId: 'evt-1', data: { threatId: 't-1', type: 'malware', severity: 'high', sourceIp: '192.168.1.1', description: 'Malware detected' }, timestamp: Date.now() },
   { eventId: 'evt-2', data: { threatId: 't-2', type: 'ddos', severity: 'critical', sourceIp: '10.0.0.1', description: 'DDoS attack' }, timestamp: Date.now() },

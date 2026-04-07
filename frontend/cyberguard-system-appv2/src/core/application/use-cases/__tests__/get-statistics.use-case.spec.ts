@@ -1,10 +1,22 @@
 // Tipo de prueba: Unitario
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { of, throwError, firstValueFrom } from 'rxjs';
 import { GetStatisticsUseCase } from '../get-statistics.use-case';
 import { StatisticsRepository } from '../../../domain/ports/statistics.repository';
 import { type ThreatStatistics } from '../../../domain/models/threat-statistics.model';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 const mockStats: ThreatStatistics = {
   totalThreats: 42,
@@ -19,6 +31,7 @@ describe('GetStatisticsUseCase', () => {
   let mockRepository: { getStatistics: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepository = { getStatistics: vi.fn() };
 
     TestBed.configureTestingModule({
