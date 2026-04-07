@@ -61,7 +61,7 @@ export class ServiceFactory {
   private static listUsersUseCase: ListUsersUseCase | null = null;
 
   /**
-   * ✅ Obtener instancia del repositorio de amenazas
+   * Obtener instancia del repositorio de amenazas
    * Implementa ThreatRepository (port)
    */
   static getThreatRepository(): ThreatRepository {
@@ -72,7 +72,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del servicio de amenazas
+   * Obtener instancia del servicio de amenazas
    * Inyecta: EventPublisher (port), ThreatRepository (port)
    */
   static getThreatService(): ThreatService {
@@ -84,7 +84,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de listar amenazas
+   * Obtener instancia del use case de listar amenazas
    * Inyecta: ThreatRepository (port)
    */
   static getListThreatsUseCase(): ListThreatsUseCase {
@@ -95,7 +95,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de eliminar amenaza
+   * Obtener instancia del use case de eliminar amenaza
    * Inyecta: ThreatRepository (port)
    */
   static getDeleteThreatUseCase(): DeleteThreatUseCase {
@@ -106,7 +106,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del repositorio de usuarios
+   * Obtener instancia del repositorio de usuarios
    * Implementa UserRepository (port)
    */
   static getUserRepository(): UserRepository {
@@ -117,7 +117,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del repositorio de auditoría
+   * Obtener instancia del repositorio de auditoría
    * Implementa AuditLogRepository (port)
    */
   static getAuditLogRepository(): AuditLogRepository {
@@ -128,7 +128,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del repositorio de incidentes
+   * Obtener instancia del repositorio de incidentes
    * Implementa IncidentRepository (port)
    */
   static getIncidentRepository(): IncidentRepository {
@@ -139,7 +139,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de crear usuario (HU-008.1)
+   * Obtener instancia del use case de crear usuario (HU-008.1)
    */
   static getCreateUserUseCase(): CreateUserUseCase {
     if (!this.createUserUseCase) {
@@ -152,7 +152,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de actualizar usuario (HU-008.2)
+   * Obtener instancia del use case de actualizar usuario (HU-008.2)
    */
   static getUpdateUserUseCase(): UpdateUserUseCase {
     if (!this.updateUserUseCase) {
@@ -165,7 +165,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de toggle status (HU-008.3)
+   * Obtener instancia del use case de toggle status (HU-008.3)
    */
   static getToggleUserStatusUseCase(): ToggleUserStatusUseCase {
     if (!this.toggleUserStatusUseCase) {
@@ -179,7 +179,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de listar usuarios (HU-008)
+   * Obtener instancia del use case de listar usuarios (HU-008)
    */
   static getListUsersUseCase(): ListUsersUseCase {
     if (!this.listUsersUseCase) {
@@ -189,7 +189,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de crear incidente (HU-001)
+   * Obtener instancia del use case de crear incidente (HU-001)
    */
   static getCreateIncidentUseCase(): CreateIncidentUseCase {
     if (!this.createIncidentUseCase) {
@@ -203,7 +203,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de listar incidentes (HU-001)
+   * Obtener instancia del use case de listar incidentes (HU-001)
    */
   static getListIncidentsUseCase(): ListIncidentsUseCase {
     if (!this.listIncidentsUseCase) {
@@ -213,7 +213,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del servicio de autenticación
+   * Obtener instancia del servicio de autenticación
    * Inyecta: AuthProvider (port), TokenService (port)
    */
   static getAuthService(): AuthService {
@@ -236,7 +236,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de estadísticas de amenazas
+   * Obtener instancia del use case de estadísticas de amenazas
    * Inyecta: ThreatStatisticsRepository (port)
    * No se cachea — use case sin estado, creación ligera.
    */
@@ -246,7 +246,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del repositorio de preferencias de notificación
+   * Obtener instancia del repositorio de preferencias de notificación
    * Implementa NotificationPreferencesRepository (port) con Redis
    */
   static getNotifPrefsRepository(): NotificationPreferencesRepository {
@@ -257,7 +257,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de obtener preferencias de notificación
+   * Obtener instancia del use case de obtener preferencias de notificación
    * Inyecta: NotificationPreferencesRepository (port)
    */
   static getGetNotifPrefsUseCase(): GetNotificationPreferencesUseCase {
@@ -268,7 +268,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de guardar preferencias de notificación
+   * Obtener instancia del use case de guardar preferencias de notificación
    * Inyecta: NotificationPreferencesRepository (port)
    */
   static getSaveNotifPrefsUseCase(): SaveNotificationPreferencesUseCase {
@@ -279,7 +279,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de consulta de perfil
+   * Obtener instancia del use case de consulta de perfil
    * Inyecta: UserRepository (port)
    */
   static getGetAdminProfileUseCase(): GetAdminProfileUseCase {
@@ -290,7 +290,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del use case de actualización de perfil
+   * Obtener instancia del use case de actualización de perfil
    * Inyecta: UserRepository (port), AuditLogRepository (port)
    */
   static getUpdateAdminProfileUseCase(): UpdateAdminProfileUseCase {
@@ -304,7 +304,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Resetear todas las instancias (solo para testing)
+   * Resetear todas las instancias (solo para testing)
    */
   static resetForTesting(): void {
     this.threatRepository = null;
@@ -330,7 +330,7 @@ export class ServiceFactory {
   }
 
   /**
-   * ✅ Obtener instancia del clasificador de amenazas
+   * Obtener instancia del clasificador de amenazas
    * Strategy Pattern: Registra todas las estrategias de clasificación
    */
   static getThreatClassifier(): ThreatClassifier {

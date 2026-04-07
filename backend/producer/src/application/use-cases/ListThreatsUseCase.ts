@@ -21,10 +21,10 @@ export class ListThreatsUseCase {
     try {
       logger.info('Executing ListThreatsUseCase');
 
-      // ✅ Delegar al repositorio (que optimiza el retrieval)
+      // Delegar al repositorio (que optimiza el retrieval)
       const threats = await this.threatRepository.findAll();
 
-      // ✅ Convertir entidades a DTOs (desacopla representación interna)
+      // Convertir entidades a DTOs (desacopla representación interna)
       const threatDtos = threats.map(threat => ({
         threatId: threat.threatId,
         type: threat.type,

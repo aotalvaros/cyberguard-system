@@ -33,7 +33,7 @@ export class GetAdminProfileUseCase {
       throw new ProfileNotFoundException(username);
     }
 
-    // ⚠️ HUMAN CHECK: campos sensibles (isLocked, failedAttempts, lastLogin) excluidos explícitamente
+    // HUMAN CHECK: campos sensibles (isLocked, failedAttempts, lastLogin) excluidos explícitamente
     return {
       username:  user.username,
       email:     user.email,

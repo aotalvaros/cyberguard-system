@@ -38,7 +38,7 @@ function phoneE164Validator(control: AbstractControl): ValidationErrors | null {
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="profile-container">
-      <h2>👤 Perfil Personal</h2>
+      <h2>Perfil Personal</h2>
 
       <!-- Skeleton / Loading state (R-FE-04) -->
       @if (loading()) {
@@ -139,13 +139,13 @@ function phoneE164Validator(control: AbstractControl): ValidationErrors | null {
           <!-- Mensajes de éxito / error (R-FE-07 / R-FE-08) -->
           @if (successMessage()) {
             <div class="toast success" role="alert">
-              ✅ {{ successMessage() }}
+              {{ successMessage() }}
               <button type="button" class="toast-close" (click)="clearSuccess()">✕</button>
             </div>
           }
           @if (errorMessage()) {
             <div class="toast error" role="alert">
-              ⚠️ {{ errorMessage() }}
+              {{ errorMessage() }}
               <button type="button" class="toast-close" (click)="clearError()">✕</button>
             </div>
           }

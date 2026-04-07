@@ -26,7 +26,7 @@ export class UpdateAdminProfileUseCase {
   ) {}
 
   async execute({ username, data }: UpdateAdminProfileInput): Promise<AdminProfileResult> {
-    // ⚠️ HUMAN CHECK: role excluido a nivel de tipo, pero se verifica en runtime
+    // HUMAN CHECK: role excluido a nivel de tipo, pero se verifica en runtime
     // para proteger contra casts maliciosos desde el controller
     if ('role' in (data as Record<string, unknown>)) {
       throw new RoleModificationNotAllowedException();
@@ -56,7 +56,7 @@ export class UpdateAdminProfileUseCase {
       details: { changes: Object.keys(data) },
     });
 
-    // ⚠️ HUMAN CHECK: campos sensibles excluidos de la respuesta (§6.1 #6)
+    // HUMAN CHECK: campos sensibles excluidos de la respuesta (§6.1 #6)
     return {
       username:  updated.username,
       email:     updated.email,

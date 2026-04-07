@@ -1,7 +1,7 @@
 <div class="page-container">
   <header class="page-header">
     <div class="header-content">
-      <h1>👥 Gestión de Usuarios</h1>
+      <h1>Gestión de Usuarios</h1>
       <div class="user-info">
         <span>{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
         <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
@@ -131,12 +131,12 @@
                 <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
                 <td class="actions-cell">
                   @if (editingUserId !== user.id && user.username !== currentUser?.username) {
-                    <button class="btn-sm btn-edit" (click)="startEdit(user)">✏️ Editar</button>
+                    <button class="btn-sm btn-edit" (click)="startEdit(user)">Editar</button>
                     <button class="btn-sm"
                             [class.btn-deactivate]="user.isActive"
                             [class.btn-activate]="!user.isActive"
                             (click)="onToggleStatus(user)">
-                      {{ user.isActive ? '🔒 Desactivar' : '🔓 Activar' }}
+                      {{ user.isActive ? 'Desactivar' : 'Activar' }}
                     </button>
                   }
                   @if (user.username === currentUser?.username) {

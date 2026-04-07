@@ -6,7 +6,7 @@ import { AdminProfile, ProfileUpdateData } from '../../domain/models/admin-profi
 import { environment } from '@environments/environment';
 
 /**
- * ⚠️ HUMAN CHECK: Token inyectado automáticamente via `authInterceptor` —
+ * HUMAN CHECK: Token inyectado automáticamente via `authInterceptor` —
  * no se manipula el header `Authorization` directamente en este adaptador.
  * Ref: §6.1 #5 — credenciales nunca hardcodeadas.
  *

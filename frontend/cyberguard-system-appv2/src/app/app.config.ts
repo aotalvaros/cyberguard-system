@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
     // Use real repository now that backend endpoint exists
     { provide: StatisticsRepository, useClass: StatisticsRepositoryImpl },
     { provide: NotificationPreferencesRepository, useClass: NotificationPreferencesRepositoryImpl },
-    // ⚠️ HUMAN CHECK: Usar AdminProfileHttpAdapter en producción.
+    // HUMAN CHECK: Usar AdminProfileHttpAdapter en producción.
     // Para tests de integración, reemplazar con un mock.
     { provide: AdminProfileRepository, useClass: AdminProfileHttpAdapter },
     // IRMS — HU-008 + HU-001

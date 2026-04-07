@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { AdminProfile, ProfileUpdateData } from '../models/admin-profile.model';
 
 /**
- * ⚠️ HUMAN CHECK: Puerto de salida (Hexagonal Architecture)
+ * HUMAN CHECK: Puerto de salida (Hexagonal Architecture)
  *
  * Define el CONTRATO que AdminProfileHttpAdapter debe cumplir.
  * El dominio NO conoce si la implementación usa HTTP, mock o localStorage.

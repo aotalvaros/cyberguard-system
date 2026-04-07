@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { finalize, timeout } from 'rxjs';
 import { LoginUseCase } from '../../../core/application/use-cases/login.use-case';
 
-// ⚠️ HUMAN CHECK:
+// HUMAN CHECK:
 // Autenticación refactorizada para usar LoginUseCase
 @Component({
   selector: 'app-autenticacion',

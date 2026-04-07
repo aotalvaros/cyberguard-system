@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AlertMessage } from '../models/alert-message.model';
 
-// ⚠️ HUMAN CHECK:
+// HUMAN CHECK:
 // Domain Service con lógica de negocio pura para alertas
 @Injectable({
   providedIn: 'root'

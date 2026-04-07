@@ -10,7 +10,7 @@ import { ThreatSeverity } from '../models/threat-severity.enum';
 import { ThreatType } from '../models/threat-type.enum';
 
 /**
- * ⚠️ HUMAN CHECK: Domain Service - capa de dominio pura
+ * HUMAN CHECK: Domain Service - capa de dominio pura
  * 
  * Este servicio SOLO contiene lógica de negocio relacionada con amenazas.
  * NO importa nada de infraestructura (HTTP, localStorage, etc.)

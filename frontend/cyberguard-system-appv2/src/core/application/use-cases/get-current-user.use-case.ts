@@ -4,7 +4,7 @@ import { User } from '../../domain/models/user.model';
 import { ROLES } from '../../../environments/constants';
 
 /**
- * ⚠️ HUMAN CHECK: Use Case Pattern aplicado
+ * HUMAN CHECK: Use Case Pattern aplicado
  * 
  * Este Use Case encapsula la lógica de obtener el usuario actual.
  * Sigue el principio SRP: solo tiene una razón para cambiar.

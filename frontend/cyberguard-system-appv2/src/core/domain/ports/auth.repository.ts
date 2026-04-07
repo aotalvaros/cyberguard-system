@@ -4,7 +4,7 @@ import { AuthResponse } from '../models/auth-response.model';
 import { User } from '../models/user.model';
 
 /**
- * ⚠️ HUMAN CHECK: Puerto de salida (Hexagonal Architecture)
+ * HUMAN CHECK: Puerto de salida (Hexagonal Architecture)
  * 
  * Este es un PUERTO, no una implementación. Define el CONTRATO que
  * cualquier adaptador de autenticación debe cumplir.

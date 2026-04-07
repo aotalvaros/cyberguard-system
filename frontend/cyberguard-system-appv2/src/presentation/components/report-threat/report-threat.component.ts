@@ -14,7 +14,7 @@ import { ThreatRequest } from '../../../core/domain/models/threat-request.model'
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="report-container">
-      <h2>🚨 Report Security Threat</h2>
+      <h2>Report Security Threat</h2>
       
       <form [formGroup]="threatForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
@@ -53,13 +53,13 @@ import { ThreatRequest } from '../../../core/domain/models/threat-request.model'
         @if (validationErrors().length > 0) {
           <div class="validation-errors">
             @for (error of validationErrors(); track error) {
-              <p>⚠️ {{ error }}</p>
+              <p>{{ error }}</p>
             }
           </div>
         }
 
         @if (successMessage()) {
-          <div class="success-message">✅ {{ successMessage() }}</div>
+          <div class="success-message">{{ successMessage() }}</div>
         }
 
         <button type="submit" [disabled]="threatForm.invalid || loading()">
@@ -107,7 +107,7 @@ export class ReportThreatComponent {
 
     const threat: ThreatRequest = this.threatForm.value;
 
-    // ⚠️ HUMAN CHECK:
+    // HUMAN CHECK:
     // Aplicamos Strategy Pattern con Factory para validación específica por tipo
     const validator = this.validationFactory.createValidator(threat.type);
     const validation = validator.validate(threat);

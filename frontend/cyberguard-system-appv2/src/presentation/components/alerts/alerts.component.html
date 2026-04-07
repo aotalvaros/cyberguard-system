@@ -1,12 +1,12 @@
 <div class="alerts-container">
   <div class="alerts-header">
-    <h3>🔔 Alertas en Tiempo Real</h3>
+    <h3>Alertas en Tiempo Real</h3>
     <div class="alerts-actions">
       <span class="connection-status" [class]="'status-' + connectionStatus.toLowerCase()">
         {{ statusLabel[connectionStatus] }}
       </span>
       @if (alerts.length > 0) {
-        <button (click)="exportToJSON()" class="btn-export">⬇️ Exportar</button>
+        <button (click)="exportToJSON()" class="btn-export">Exportar</button>
         @if (isAdmin) {
           <button (click)="clearAll()" class="btn-clear">Limpiar Todo</button>
         }

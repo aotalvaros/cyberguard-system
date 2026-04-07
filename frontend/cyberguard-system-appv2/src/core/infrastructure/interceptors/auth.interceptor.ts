@@ -5,7 +5,7 @@ import { environment } from '@environments/environment';
 import { STORAGE_KEYS } from '@environments/constants';
 
 /**
- * ⚠️ HUMAN CHECK: Interceptor de autenticación
+ * HUMAN CHECK: Interceptor de autenticación
  * 
  * Patrón: Chain of Responsibility (implícito en interceptores de Angular)
  * Cada request pasa por aquí antes de salir al servidor.

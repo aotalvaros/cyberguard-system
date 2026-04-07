@@ -11,7 +11,7 @@ interface LoginAttempt {
 
 const loginAttempts = new Map<string, LoginAttempt>();
 
-// ✅ SOLUCIÓN: Usar ServiceFactory para obtener ThreatService con dependencias inyectadas
+// SOLUCIÓN: Usar ServiceFactory para obtener ThreatService con dependencias inyectadas
 let threatService: ThreatService;
 
 function getThreatService(): ThreatService {

@@ -3,7 +3,7 @@ import { logger } from './logger';
 
 dotenv.config();
 
-// ⚠️ HUMAN CHECK:
+// HUMAN CHECK:
 // Validamos las variables de entorno críticas al inicio.
 // La IA no incluía esta validación obligatoria.
 const requiredEnvVars = [

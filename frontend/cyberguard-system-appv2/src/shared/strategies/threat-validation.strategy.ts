@@ -2,7 +2,7 @@ import { ThreatRequest } from '../../core/domain/models/threat-request.model';
 import { ThreatSeverity } from '../../core/domain/models/threat-severity.enum';
 
 /**
- * ⚠️ HUMAN CHECK: Strategy Pattern para validación de amenazas
+ * HUMAN CHECK: Strategy Pattern para validación de amenazas
  * 
  * ¿Por qué Strategy Pattern?
  * Cada tipo de amenaza tiene reglas de validación diferentes:

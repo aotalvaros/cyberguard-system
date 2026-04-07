@@ -3,7 +3,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '../../core/infrastructure/services/auth.service';
 
 /**
- * ⚠️ HUMAN CHECK: Guard funcional para rutas de administrador
+ * HUMAN CHECK: Guard funcional para rutas de administrador
  * 
  * Implementación: Usamos CanActivateFn (funcional) en lugar de clase
  * porque Angular 15+ lo recomienda y es más ligero.

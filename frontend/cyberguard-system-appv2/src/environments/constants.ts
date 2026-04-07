@@ -1,5 +1,5 @@
 /**
- * ⚠️ HUMAN CHECK: Archivo de constantes centralizado
+ * HUMAN CHECK: Archivo de constantes centralizado
  * 
  * Decisión técnica: Centralizamos todos los strings "mágicos" en este archivo
  * para evitar typos y facilitar cambios futuros. Usamos 'as const' para obtener

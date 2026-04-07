@@ -561,9 +561,40 @@ Esta regla nació tras el merge de `develop` (PR #54 — IRMS: user management +
 
 ---
 
+---
+
+## §15. Estilo de Documentación y Código — Sin Emojis
+
+### 15.1 Principio
+Todo artefacto generado por agentes de IA o desarrolladores — documentación, código fuente, comentarios, specs, commits y mensajes de log — DEBE estar libre de caracteres emoji.
+
+### 15.2 Alcance
+- Archivos `.md` (specs, requirements, README, constitución, docs)
+- Archivos de código fuente (`.ts`, `.html`, `.css`, `.js`, `.json`)
+- Comentarios de código (`// ...`, `/** ... */`, `<!-- ... -->`)
+- Mensajes de commit
+- Strings visibles al usuario en templates
+- Asuntos y cuerpos de notificaciones externas (email, WhatsApp)
+
+### 15.3 Anti-patterns prohibidos
+
+| Prohibido | Alternativa aceptada |
+|-----------|---------------------|
+| `// ⚠️ HUMAN CHECK:` | `// HUMAN CHECK:` |
+| `// ✅ Obtener instancia` | `// Obtener instancia` |
+| `<h1>CyberGuard Dashboard</h1>` con emoji | `<h1>CyberGuard Dashboard</h1>` |
+| `subject: '🚨 CyberGuard: Malware'` | `subject: '[MALWARE] CyberGuard: Malware'` |
+| `{ icon: '🛡️' }` en navItems | `{ icon: 'D' }` (inicial o abreviatura) |
+| `✅ {{ successMessage() }}` en template | `{{ successMessage() }}` |
+
+### 15.4 Justificación
+Los emojis introducen dependencias de codificación (UTF-8 BOM, variantes de sistema operativo), dificultan el grep y la búsqueda en logs, y generan inconsistencias en terminales con codificación limitada. La documentación técnica debe ser clara, portable y procesable por herramientas de CI/CD sin conversiones especiales.
+
+---
+
 Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de creación. Se actualiza cuando:
 - Se adopta un nuevo patrón o tecnología.
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §14 Integración Aditiva en Merges, §9.4 puntos 5-6
+**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §14 Integración Aditiva en Merges, §15 Sin Emojis

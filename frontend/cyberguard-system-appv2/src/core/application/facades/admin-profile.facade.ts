@@ -16,7 +16,7 @@ import { AdminProfile, ProfileUpdateData } from '../../domain/models/admin-profi
  *   - loading$:  true durante operaciones async
  *   - error$:    mensaje de error (null si no hay error)
  *
- * ⚠️ HUMAN CHECK: Los errores HTTP normalizados vienen del errorInterceptor →
+ * HUMAN CHECK: Los errores HTTP normalizados vienen del errorInterceptor →
  * aquí solo capturamos para no romper la cadena. Mensajes orientados
  * al usuario (per §4.4 constitución).
  */

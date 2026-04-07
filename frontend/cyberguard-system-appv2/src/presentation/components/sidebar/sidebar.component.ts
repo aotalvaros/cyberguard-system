@@ -32,11 +32,11 @@ export class SidebarComponent implements OnInit {
   isAdmin = computed(() => this.currentUser()?.role === ROLES.ADMIN);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard',        icon: '🛡️', route: '/dashboard',     adminOnly: false },
-    { label: 'Reportar Amenaza', icon: '🚨', route: '/report-threat',  adminOnly: false },
-    { label: 'Incidentes',       icon: '📋', route: '/incidents',      adminOnly: false },
-    { label: 'Gestión Usuarios', icon: '👥', route: '/users',          adminOnly: true  },
-    { label: 'Perfil Personal',  icon: '👤', route: '/profile',        adminOnly: false },
+    { label: 'Dashboard',        icon: 'D', route: '/dashboard',     adminOnly: false },
+    { label: 'Reportar Amenaza', icon: 'R', route: '/report-threat',  adminOnly: false },
+    { label: 'Incidentes',       icon: 'I', route: '/incidents',      adminOnly: false },
+    { label: 'Gestión Usuarios', icon: 'U', route: '/users',          adminOnly: true  },
+    { label: 'Perfil Personal',  icon: 'P', route: '/profile',        adminOnly: false },
   ];
 
   visibleItems = computed(() =>

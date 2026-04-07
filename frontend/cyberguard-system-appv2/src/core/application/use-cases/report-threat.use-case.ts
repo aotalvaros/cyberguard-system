@@ -4,7 +4,7 @@ import { ThreatRequest } from '../../domain/models/threat-request.model';
 import { ThreatResponse } from '../../domain/models/threat-response.model';
 import { ThreatDomainService } from '../../domain/services/threat-domain.service';
 
-// ⚠️ HUMAN CHECK:
+// HUMAN CHECK:
 // Use case orquesta la lógica de aplicación usando el servicio de dominio
 @Injectable({ providedIn: 'root' })
 export class ReportThreatUseCase {

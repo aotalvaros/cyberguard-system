@@ -1,7 +1,7 @@
 /**
  * AdminProfile — Modelo de dominio para perfil del administrador
  *
- * ⚠️ HUMAN CHECK: Excluir explícitamente campos sensibles (isLocked,
+ * HUMAN CHECK: Excluir explícitamente campos sensibles (isLocked,
  * failedAttempts, passwordHash, firebaseUid) en el mapper del adaptador HTTP.
  *
  * Ref: §3.4 ISP — este modelo solo expone campos visibles al administrador.

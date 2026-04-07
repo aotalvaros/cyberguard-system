@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<ConnectionStatus, string> = {
 };
 
 /**
- * ⚠️ HUMAN CHECK: Componente de alertas con validación de rol
+ * HUMAN CHECK: Componente de alertas con validación de rol
  * 
  * Arquitectura aplicada:
  * - Lógica de negocio delegada a AlertsDomainService (SRP)

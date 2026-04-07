@@ -5,7 +5,7 @@ import { AlertMessage } from '../../domain/models/alert-message.model';
 import { WS_COMMANDS } from '@environments/constants';
 
 /**
- * ⚠️ HUMAN CHECK: Facade Pattern aplicado
+ * HUMAN CHECK: Facade Pattern aplicado
  * 
  * Este servicio actúa como FACHADA simplificando la interacción con WebSockets.
  * Los componentes NO necesitan saber cómo funciona el protocolo WS internamente.

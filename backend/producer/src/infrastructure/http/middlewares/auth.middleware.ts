@@ -27,7 +27,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   }
 
   try {
-    // ⚠️ HUMAN CHECK:
+    // HUMAN CHECK:
     // La IA no manejaba correctamente tokens expirados vs inválidos.
     // Se agrego manejo específico de errores de JWT.
     const decoded = jwt.verify(token, config.jwtSecret) as { id: string; username: string; role: string };
