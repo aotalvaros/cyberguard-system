@@ -1,55 +1,67 @@
 # 🛡️ CyberGuard System
 
-Sistema distribuido de alertas de ciberseguridad en tiempo real con arquitectura de microservicios y comunicación asíncrona.
+Sistema distribuido de ciberseguridad con detección de amenazas en tiempo real y gestión de respuesta a incidentes (IRMS). Construido con arquitectura hexagonal, comunicación asíncrona via RabbitMQ y ciclo completo de calidad automatizada.
 
-## 👥 Equipo
-
-| Rol | Responsabilidades |
-|-----|-------------------|
-| **Cloud Architect & Backend Developer** | Infraestructura, Backend API, RabbitMQ, Workers, Despliegue |
-| **Frontend Developer & QA Engineer** | Angular UI, Validación de seguridad, Testing, Code Review |
 
 ---
 
 ## 🏗️ Arquitectura
 
-**Patrón**: Monorepo con Event-Driven Architecture
+**Patrón**: Monorepo con Hexagonal Architecture + Event-Driven Architecture
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API (Producer)
-├── worker/            # Node.js Consumer
-├── docs/              # Documentación técnica
-└── docker-compose.yml # RabbitMQ
+├── frontend/
+│   └── cyberguard-system-appv2/   # Angular 21 (app activa)
+├── backend/
+│   ├── producer/                  # Node.js API (Express + TypeScript)
+│   └── worker/                    # Node.js Consumer (WebSocket)
+├── docs/                          # Documentación técnica
+├── .github/specs/                 # Specs ASDD aprobadas (IRMS)
+└── docker-compose.yml             # 6 servicios orquestados
 ```
 
 ### Flujo de Datos
 ```
-[Frontend] → [Backend API] → [RabbitMQ] → [Worker] → [Notificaciones]
+[Frontend] → [Backend API] → [RabbitMQ] → [Worker] → [WebSocket → Notificaciones]
+                   ↓
+             [PostgreSQL]
 ```
 
----
 
 ## 🚀 Stack Tecnológico
 
 ### Frontend
-- **Framework**: Angular 17+
+- **Framework**: Angular 21 (Standalone Components)
+- **Arquitectura**: Hexagonal (core/domain, core/application, core/infrastructure, presentation)
 - **UI Library**: Angular Material
-- **State Management**: RxJS
-- **HTTP Client**: Angular HttpClient
+- **State Management**: RxJS Observables
+- **Testing**: Vitest (~52 specs)
 
-### Backend
+### Backend (Producer)
 - **Runtime**: Node.js 20+
+- **Lenguaje**: TypeScript
 - **Framework**: Express.js
-- **Validación**: Joi
-- **Persistencia** : Redis
-- **Autenticación**: JWT (usuario en variables de entorno)
-- **Cliente RabbitMQ**: amqplib
+- **Arquitectura**: Hexagonal (domain/ports, application/use-cases, infrastructure)
+- **Validación**: Joi schemas
+- **Base de Datos**: PostgreSQL 15 (persistencia principal)
+- **Caché / Estado Worker**: Redis 7
+- **Autenticación**: Firebase Auth + JWT
+- **Mensajería**: amqplib (RabbitMQ)
+- **Testing**: Jest 30 — **506 tests, 21 suites**
 
-### Broker
-- **Message Broker**: RabbitMQ 3.12+
+### Broker & Mensajería
+- **Message Broker**: RabbitMQ 3.12
 - **Management UI**: Puerto 15672
+- **Patrón**: Producer (backend) → Queue → Consumer (worker)
+
+### Base de Datos
+- **Principal**: PostgreSQL 15 — schema `public` (usuarios, amenazas) + schema `irms` (incidentes, audit log)
+- **Caché**: Redis 7 — estado del worker y WebSocket
+
+### Infraestructura
+- **Contenedores**: Docker Compose — 6 servicios
+- **Frontend serving**: Nginx (producción)
 
 ---
 
@@ -137,7 +149,7 @@ npm start
 
 #### 5. Configurar y levantar Frontend
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm install
 npm start
 ```
@@ -153,17 +165,32 @@ npm start
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API Producer
-├── worker/            # Node.js Consumer
-├── docs/              # Documentación
+├── frontend/
+│   └── cyberguard-system-appv2/        # Angular 21 (app activa)
+│       └── src/
+│           ├── core/domain/            # Entidades, ports, servicios
+│           ├── core/application/       # Use cases
+│           ├── core/infrastructure/    # Repos, interceptors, mappers
+│           └── presentation/          # Componentes, guards
+├── backend/
+│   ├── producer/                       # Express API (TypeScript)
+│   │   └── src/
+│   │       ├── domain/                 # Entidades, ports, value objects
+│   │       ├── application/            # Use cases
+│   │       └── infrastructure/        # Repos, controllers, providers
+│   └── worker/                        # WebSocket consumer
+├── docs/
+│   ├── PRESENTACION_SUSTENTACION.md   # Guía de sustentación examen final
+│   ├── EVIDENCIA_PRUEBAS.md           # Evidencia de cobertura y QA
 │   ├── SECURITY_GUIDELINES.md
-│   ├── QA_EVIDENCE.md
-│   └── images/
-├── docker-compose.yml # RabbitMQ
-├── AI_WORKFLOW.md     # Estrategia de trabajo con IA
-├── README.md
-└── package.json
+│   └── QA_EVIDENCE.md
+├── .github/
+│   └── specs/
+│       ├── user-management.spec.md    # SPEC-001 APPROVED (HU-008)
+│       └── create-incident.spec.md   # SPEC-002 APPROVED (HU-001)
+├── docker-compose.yml
+├── AI_WORKFLOW.md
+└── README.md
 ```
 
 ---
@@ -203,54 +230,6 @@ refactor(scope): descripción
 
 ---
 
-## 🧪 Testing
-
-### Backend (Producer)
-```bash
-cd backend/producer
-npm test                    # 506 tests, 21 suites
-npm test -- --coverage      # Reporte HTML en coverage/index.html
-```
-
-### Evidencia TDD — Semana 2
-La feature `GET /api/statistics` fue implementada con **ciclo TDD Red→Green→Refactor**:
-
-```bash
-# Verificar el commit RED (tests fallan, implementación no existe):
-git show 660ddcb --stat
-
-# Verificar el commit GREEN (tests pasan):
-git show 99fb71d --stat
-
-# Ejecutar solo los tests del use case nuevo:
-cd backend/producer
-npx jest GetThreatStatisticsUseCase --no-coverage
-```
-
-| Fase | Commit | Descripción |
-|------|--------|-------------|
-| 🔴 RED | `660ddcb` | Tests escritos antes de la implementación |
-| 🟢 GREEN | `99fb71d` | Implementación mínima para pasar los tests |
-| 🔵 REFACTOR | `ad5d1d1` | Tests de infraestructura y controller |
-9
-Ver estrategia completa en [TESTING_STRATEGY_BACKEND.md](backend/producer/TESTING_STRATEGY_BACKEND.md)
-
-
-### Frontend (Angular + Vitest)
-```bash
-cd frontend/cyberguard-system
-npm test                 # Ejecutar tests con Vitest
-npm run test:demo        # Demo tests (detección de bugs)
-```
-
-### QA Evidencias
-- **Auditoría QA Final**: [FEEDBACK_TEAM-4-QA.md](FEEDBACK_TEAM-4-QA.md) - Evaluación AI-First (23.5/25)
-- Registro histórico: [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
-- Criterios de aceptacion, seguridad y estres documentados por QA
-- Capturas y adjuntos en [docs/images](docs/images)
-
----
-
 ## 📊 Scripts Disponibles
 
 **Raíz del proyecto (Docker Compose):**
@@ -278,9 +257,9 @@ npm start        # Iniciar worker
 
 **Frontend:**
 ```bash
-cd frontend/cyberguard-system
-npm start        # Servidor de desarrollo
-npm test         # Ejecutar tests
+cd frontend/cyberguard-system-appv2
+npm start        # Servidor de desarrollo (puerto 4200)
+npm test         # Ejecutar tests con Vitest
 npm run build    # Build de producción
 ```
 
@@ -321,97 +300,6 @@ Evidencia completa en [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
 
 ---
 
-## ⚠️ Lo que la IA hizo mal (Anti-Pattern Log)
-
-### 1. Credenciales Hardcodeadas
-**Lo que sugirió la IA:**
-```javascript
-const connection = await amqp.connect('amqp://guest:guest@localhost:5672');
-```
-
-**Por qué lo rechazamos:**
-Expone credenciales en el código fuente. Violación de seguridad crítica.
-
-**Solución implementada:**
-```javascript
-// ⚠️ HUMAN CHECK:
-// La IA quería hardcodear las credenciales de RabbitMQ.
-// Implementamos variables de entorno y validación al inicio.
-const connection = await amqp.connect(process.env.RABBITMQ_URL);
-if (!process.env.RABBITMQ_URL) {
-  throw new Error('RABBITMQ_URL no configurada');
-}
-```
-
-### 2. Reintentos Infinitos sin Backoff
-**Lo que sugirió la IA:**
-```javascript
-async function processMessage(msg) {
-  try {
-    await handler(msg);
-  } catch (error) {
-    await processMessage(msg); // Retry inmediato infinito
-  }
-}
-```
-
-**Por qué lo rechazamos:**
-Puede saturar el sistema con reintentos inmediatos. No considera fallos permanentes.
-
-**Solución implementada:**
-```javascript
-// ⚠️ HUMAN CHECK:
-// La IA implementó reintentos infinitos sin backoff exponencial.
-// Agregamos límite de reintentos y dead letter queue para mensajes fallidos.
-async function processMessage(msg, retryCount = 0) {
-  const MAX_RETRIES = 3;
-  try {
-    await handler(msg);
-    channel.ack(msg);
-  } catch (error) {
-    if (retryCount < MAX_RETRIES) {
-      const delay = Math.pow(2, retryCount) * 1000; // Backoff exponencial
-      setTimeout(() => processMessage(msg, retryCount + 1), delay);
-    } else {
-      channel.nack(msg, false, false); // Enviar a DLQ
-    }
-  }
-}
-```
-
----
-
-## 🐞 Bugs Simulados y Soluciones (QA)
-
-### Bug 1: Respuesta 500 expone stack trace
-**Impacto:** Filtra detalles internos al cliente.
-
-**Solucion:** Middleware de errores retorna mensaje generico y loguea de forma segura.
-
-### Bug 2: CORS abierto con '*'
-**Impacto:** Riesgo de consumo desde origenes no confiables.
-
-**Solucion:** `ALLOWED_ORIGINS` en variables de entorno y lista explicita.
-
-### Bug 3: JWT sin expiracion
-**Impacto:** Sesiones indefinidas si el token se filtra.
-
-**Solucion:** Expiracion corta + refresh token.
-
-
----
-
-## 📝 Comentarios Centinela (Human Checks)
-
-Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
-1. Configuración de conexión a RabbitMQ
-2. Lógica de reintentos en workers
-3. Validación y sanitización de inputs
-4. Manejo de errores críticos
-5. Generación de tokens JWT
-
----
-
 ## 🤝 Contribución
 
 1. Leer [AI_WORKFLOW.md](./AI_WORKFLOW.md)
@@ -439,4 +327,4 @@ Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
 
 ---
 
-**Última actualización**: 11 de febrero de 2026
+**Última actualización**: 7 de abril de 2026
