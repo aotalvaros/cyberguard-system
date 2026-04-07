@@ -65,6 +65,7 @@ services:
       PORT: 3000
       NODE_ENV: production
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       ALLOWED_ORIGINS: http://localhost:4200,http://localhost
       FIREBASE_API_KEY: ${FIREBASE_API_KEY}
@@ -79,6 +80,8 @@ services:
       - "3000:3000"
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       postgres:
         condition: service_healthy
