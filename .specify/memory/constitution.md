@@ -302,15 +302,59 @@ refactor(REFACTOR): [descripción de mejora]
 
 ### 9.3 Branches
 
-| Branch | Propósito |
-|--------|-----------|
-| `main` | Producción |
-| `develop` | Desarrollo |
-| `feature/*` | Nuevas funcionalidades |
-| `fix/*` | Correcciones |
-| `hotfix/*` | Fixes urgentes en producción |
+| Branch | Propósito | Ejemplo |
+|--------|-----------|---------|
+| `main` | Producción | — |
+| `develop` | Integración general | — |
+| `feature/<epic-id>/<feature-id>` | Rama padre de una feature Spec Kit | `feature/ep-01/admin-profile` |
+| `feature/<epic-id>/<feature-id>/<task-id>` | Sub-rama por tarea del `tasks.md` | `feature/ep-01/admin-profile/task-01` |
+| `fix/<feature-id>/<descripcion>` | Corrección dentro de una feature | `fix/admin-profile/email-validation` |
+| `hotfix/<descripcion>` | Fix urgente en producción | `hotfix/jwt-expiration` |
 
-### 9.4 Regla de Merge
+### 9.4 Sub-ramas por Feature (Spec Kit)
+
+Cada feature del backlog genera una **rama padre** y opcionalmente **sub-ramas por tarea**:
+
+```
+develop
+└── feature/ep-01/admin-profile              ← rama padre de la feature
+    ├── feature/ep-01/admin-profile/task-01  ← migración SQL
+    ├── feature/ep-01/admin-profile/task-02  ← domain port
+    ├── feature/ep-01/admin-profile/task-03  ← use case (RED)
+    ├── feature/ep-01/admin-profile/task-04  ← use case (GREEN)
+    └── ...
+```
+
+**Reglas:**
+- La rama padre `feature/<epic-id>/<feature-id>` se crea desde `develop` al iniciar `/speckit.plan`.
+- Cada sub-rama se crea desde la rama padre al iniciar una tarea del `tasks.md`.
+- Las sub-ramas hacen merge a la **rama padre**, NUNCA directamente a `develop`.
+- La rama padre hace merge a `develop` al completar **todos** los tasks (DoD cumplido).
+- Naming: todo en kebab-case, sin espacios, sin mayúsculas.
+- Tareas agrupables (ej. RED+GREEN del mismo use case) PUEDEN compartir una sub-rama.
+
+### 9.5 Flujo Completo por Feature
+
+```
+1. git checkout develop
+2. git checkout -b feature/ep-01/admin-profile          ← rama padre
+
+   Por cada tarea (o grupo de tareas):
+   3. git checkout -b feature/ep-01/admin-profile/task-01
+   4. [código + tests]
+   5. git commit -m "test(RED): ..."
+   6. git commit -m "feat(GREEN): ..."
+   7. git checkout feature/ep-01/admin-profile
+   8. git merge --no-ff feature/ep-01/admin-profile/task-01
+   9. git branch -d feature/ep-01/admin-profile/task-01
+
+   Al completar todos los tasks:
+   10. git checkout develop
+   11. git merge --no-ff feature/ep-01/admin-profile     (via PR)
+   12. git branch -d feature/ep-01/admin-profile
+```
+
+### 9.6 Regla de Merge
 - Todo merge a `develop` requiere:
   1. PR con descripción detallada.
   2. Tests pasando (CI green).

@@ -5,6 +5,8 @@ import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUse
 import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
 import { GetNotificationPreferencesUseCase } from '../../application/use-cases/GetNotificationPreferencesUseCase';
 import { SaveNotificationPreferencesUseCase } from '../../application/use-cases/SaveNotificationPreferencesUseCase';
+import { GetAdminProfileUseCase } from '../../application/use-cases/GetAdminProfileUseCase';
+import { UpdateAdminProfileUseCase } from '../../application/use-cases/UpdateAdminProfileUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
 import { RedisNotificationPreferencesRepository } from '../persistence/RedisNotificationPreferencesRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
@@ -39,6 +41,8 @@ export class ServiceFactory {
   private static notifPrefsRepository: NotificationPreferencesRepository | null = null;
   private static getNotifPrefsUseCase: GetNotificationPreferencesUseCase | null = null;
   private static saveNotifPrefsUseCase: SaveNotificationPreferencesUseCase | null = null;
+  private static getAdminProfileUseCase: GetAdminProfileUseCase | null = null;
+  private static updateAdminProfileUseCase: UpdateAdminProfileUseCase | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -174,6 +178,31 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del use case de consulta de perfil
+   * Inyecta: UserRepository (port)
+   */
+  static getGetAdminProfileUseCase(): GetAdminProfileUseCase {
+    if (!this.getAdminProfileUseCase) {
+      this.getAdminProfileUseCase = new GetAdminProfileUseCase(this.getUserRepository());
+    }
+    return this.getAdminProfileUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de actualización de perfil
+   * Inyecta: UserRepository (port), AuditLogRepository (port)
+   */
+  static getUpdateAdminProfileUseCase(): UpdateAdminProfileUseCase {
+    if (!this.updateAdminProfileUseCase) {
+      this.updateAdminProfileUseCase = new UpdateAdminProfileUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository()
+      );
+    }
+    return this.updateAdminProfileUseCase;
+  }
+
+  /**
    * ✅ Resetear todas las instancias (solo para testing)
    */
   static resetForTesting(): void {
@@ -188,6 +217,8 @@ export class ServiceFactory {
     this.notifPrefsRepository = null;
     this.getNotifPrefsUseCase = null;
     this.saveNotifPrefsUseCase = null;
+    this.getAdminProfileUseCase = null;
+    this.updateAdminProfileUseCase = null;
   }
 
   /**
