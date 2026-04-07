@@ -360,8 +360,7 @@ develop
   2. Tests pasando (CI green).
   3. Cobertura ≥ 90%.
   4. Code review aprobado.
-  5. Checklist de seguridad validado por QA.
-
+  5. Checklist de seguridad validado por QA.  6. Documentación afectada actualizada en el mismo PR (§12).
 ---
 
 ## 10. Reglas para Artefactos Spec Kit
@@ -391,6 +390,35 @@ develop
 ### 10.4 Constitution Updates
 - Cambios a esta constitución requieren justificación documentada.
 - Se actualiza cuando se adopta un nuevo patrón, tecnología o se modifica un threshold de calidad.
+
+---
+
+## 12. Documentos como Artefactos Vivos
+
+### 12.1 Principio
+Toda la documentación del proyecto es un **artefacto vivo**: refleja el estado real y actual del sistema, no un estado histórico o aspiracional. Un documento desactualizado es técnicamente deuda.
+
+### 12.2 Regla de Actualización Obligatoria
+Cada vez que se realice un cambio en el código, la arquitectura o los procesos, **los documentos afectados DEBEN actualizarse en el mismo PR / commit que introduce el cambio**. Actualizar documentación después del hecho no es aceptable.
+
+### 12.3 Documentos que SIEMPRE deben mantenerse sincronizados
+
+| Documento | Se actualiza cuando... |
+|---|---|
+| `.specify/memory/constitution.md` | Se adopta un nuevo patrón, regla o threshold |
+| `.specify/specs/<feature>/tasks.md` | Se completan o modifican tareas |
+| `.specify/specs/<feature>/spec.md` | Cambia el alcance, requisitos o contratos de la feature |
+| `.specify/specs/<feature>/plan.md` | Cambia la estrategia de implementación |
+| `README.md` | Cambia la estructura del proyecto, pasos de instalación o uso |
+| `docs/project/PROJECT_CONTEXT.md` | Cambia el contexto arquitectural o de negocio |
+| `AI_WORKFLOW.md` | Cambia el proceso de trabajo con IA |
+
+### 12.4 Anti-pattern Prohibido
+> **NEVER** entregar un PR con código nuevo sin actualizar la documentación relevante. El reviewer puede (y debe) rechazar PRs donde el código diverge de la documentación.
+
+### 12.5 Verificación
+En el checklist de PR (§9.4) se añade un punto obligatorio:
+- `[ ]` Los documentos afectados por este cambio han sido actualizados en este mismo PR.
 
 ---
 
@@ -432,4 +460,4 @@ Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de 
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 07 de abril de 2026
+**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Documentos Vivos, §9.4 punto 6
