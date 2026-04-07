@@ -18,13 +18,6 @@ interface SeverityCountRow {
   readonly count: string;
 }
 
-/**
- * Infrastructure Adapter: PostgresThreatStatisticsRepository
- *
- * Implements the ThreatStatisticsRepository port using PostgreSQL aggregate queries.
- * All 5 queries are executed in parallel via Promise.all to minimise response latency.
- * No mutations — fully read-only adapter.
- */
 export class PostgresThreatStatisticsRepository
   implements ThreatStatisticsRepository
 {

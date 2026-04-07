@@ -2,9 +2,6 @@ import WebSocket, { Server } from 'ws';
 import { startWebSocket, broadcast, closeWebSocket } from '../../websocket';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 
-
-
-// Mock logger
 jest.mock('../../logger', () => ({
   logger: {
     info: jest.fn(),
@@ -13,7 +10,6 @@ jest.mock('../../logger', () => ({
   },
 }));
 
-// Mock redis functions
 jest.mock('../../redis', () => ({
   getHistoryFromRedis: jest.fn().mockResolvedValue([] as never),
   clearHistoryFromRedis: jest.fn().mockResolvedValue(undefined as never),
@@ -23,20 +19,19 @@ jest.mock('../../redis', () => ({
 import { clearHistoryFromRedis, removeHistoryItemById } from '../../redis';
 import { logger } from '../../logger';
 
-
 describe('WebSocket Module', () => {
   let server: Server;
   const TEST_PORT = 9876;
 
   afterEach(async () => {
     await closeWebSocket();
-    // Small delay to ensure port is released
+    
     await new Promise(resolve => setTimeout(resolve, 100));
   });
 
-  // ==========================================================================
-  // startWebSocket
-  // ==========================================================================
+  
+  
+  
 
   describe('startWebSocket', () => {
     it('should accept client connections', (done) => {
@@ -74,7 +69,7 @@ describe('WebSocket Module', () => {
           client.close();
         });
         client.on('close', () => {
-          // Small delay for close handler
+          
           setTimeout(() => {
             expect(logger.info).toHaveBeenCalledWith('WebSocket client disconnected');
             done?.()
@@ -84,9 +79,9 @@ describe('WebSocket Module', () => {
     });
   });
 
-  // ==========================================================================
-  // Client Messages
-  // ==========================================================================
+  
+  
+  
 
   describe('client messages', () => {
     it('should handle clear-all message', (done) => {
@@ -169,9 +164,9 @@ describe('WebSocket Module', () => {
     });
   });
 
-  // ==========================================================================
-  // broadcast
-  // ==========================================================================
+  
+  
+  
 
   describe('broadcast', () => {
     it('should send payload to all connected clients', (done) => {
@@ -181,7 +176,7 @@ describe('WebSocket Module', () => {
       server.on('listening', () => {
         const client = new WebSocket(`ws://localhost:${TEST_PORT}`);
         client.on('open', () => {
-          // Small delay to ensure connection is registered
+          
           setTimeout(() => {
             broadcast(payload);
           }, 50);
@@ -198,7 +193,7 @@ describe('WebSocket Module', () => {
     });
 
     it('should not throw when no server is running', () => {
-      // closeWebSocket was called in afterEach, so wss should be null
+      
       expect(() => broadcast({ test: true })).not.toThrow();
     });
 
@@ -226,7 +221,7 @@ describe('WebSocket Module', () => {
         client1.on('message', handleMessage);
         client2.on('message', handleMessage);
 
-        // Wait for both clients to connect
+        
         let connected = 0;
         const onOpen = () => {
           connected++;
@@ -240,9 +235,9 @@ describe('WebSocket Module', () => {
     });
   });
 
-  // ==========================================================================
-  // closeWebSocket
-  // ==========================================================================
+  
+  
+  
 
   describe('closeWebSocket', () => {
     it('should close the server without error', async () => {

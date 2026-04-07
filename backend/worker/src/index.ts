@@ -13,7 +13,7 @@ async function main() {
     const payload = await handleMessage(data, routingKey);
     await saveToRedis(payload);
     broadcast(payload);
-    // after successful broadcast, ack is handled in rabbitmq implementation via onMessage success
+    
   });
 }
 

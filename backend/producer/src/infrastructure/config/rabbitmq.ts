@@ -32,10 +32,8 @@ export class RabbitMQConnection {
       this.connection = conn;
       this.channel = ch;
 
-      // Configurar exchange principal
       await this.channel.assertExchange(EXCHANGE, 'topic', { durable: true });
 
-      // Configurar Dead Letter Exchange
       await this.channel.assertExchange(DLX_EXCHANGE, 'direct', { durable: true });
       await this.channel.assertQueue('failed.messages', { durable: true });
       await this.channel.bindQueue('failed.messages', DLX_EXCHANGE, '');
@@ -123,13 +121,11 @@ export class RabbitMQConnection {
     }
   }
 
-  /** @internal Para testing únicamente */
   static resetInstance(): void {
     RabbitMQConnection.instance = undefined as unknown as RabbitMQConnection;
   }
 }
 
-// Funciones de conveniencia para compatibilidad
 const rabbit = RabbitMQConnection.getInstance();
 
 export async function connectRabbitMQ(): Promise<void> {

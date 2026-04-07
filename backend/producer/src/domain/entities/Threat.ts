@@ -26,8 +26,6 @@ export class Threat {
     public readonly metadata?: Record<string, unknown>,
     public readonly timestamp?: string
   ) {}
-
-
   static create(props: ThreatProps): Threat {
     return new Threat(
       props.threatId || uuidv4(),
@@ -40,18 +38,12 @@ export class Threat {
       props.timestamp || new Date().toISOString()
     );
   }
-
-
   isHighSeverity(): boolean {
     return this.severity === 'high' || this.severity === 'critical';
   }
-
-
   isCritical(): boolean {
     return this.severity === 'critical';
   }
-
-
   toPlainObject() {
     return {
       threatId: this.threatId,

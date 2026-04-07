@@ -14,7 +14,6 @@ import { statisticsRouter } from './infrastructure/http/controllers/statistics.c
 
 const app = express();
 
-// Middlewares de seguridad
 app.use(helmet());
 app.use(cors({
   origin: config.allowedOrigins,
@@ -31,7 +30,7 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 30,                  
+  max: 100,                  
   message: 'Too many login attempts from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -42,22 +41,18 @@ app.use('/api/', globalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 
-// Health check
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/threats', threatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/statistics', statisticsRouter);
 
-// Error handler
 app.use(errorHandler);
 
-// Iniciar servidor
 async function startServer() {
   try {
     await connectRabbitMQ();
@@ -73,7 +68,6 @@ async function startServer() {
   }
 }
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, closing server...');
   await closeRabbitMQ();
