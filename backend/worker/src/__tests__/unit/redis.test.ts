@@ -8,8 +8,6 @@ import {
 } from '../../redis';
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
-
-// Mock logger
 jest.mock('../../logger', () => ({
   logger: {
     info: jest.fn(),
@@ -18,7 +16,6 @@ jest.mock('../../logger', () => ({
   },
 }));
 
-// Mock redis client
 const mockLPush = jest.fn();
 const mockLTrim = jest.fn();
 const mockLRange = jest.fn()
@@ -78,9 +75,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // connectRedis
-  // ==========================================================================
+  
+  
+  
 
   describe('connectRedis', () => {
     it('should connect to redis successfully', async () => {
@@ -125,9 +122,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // saveToRedis
-  // ==========================================================================
+  
+  
+  
 
   describe('saveToRedis', () => {
     beforeEach(async () => {
@@ -182,9 +179,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // getHistoryFromRedis
-  // ==========================================================================
+  
+  
+  
 
   describe('getHistoryFromRedis', () => {
     beforeEach(async () => {
@@ -242,9 +239,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // clearHistoryFromRedis
-  // ==========================================================================
+  
+  
+  
 
   describe('clearHistoryFromRedis', () => {
     beforeEach(async () => {
@@ -284,9 +281,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // removeHistoryItemById
-  // ==========================================================================
+  
+  
+  
 
   describe('removeHistoryItemById', () => {
     beforeEach(async () => {
@@ -352,9 +349,9 @@ describe('Redis Module', () => {
     });
   });
 
-  // ==========================================================================
-  // closeRedis
-  // ==========================================================================
+  
+  
+  
 
   describe('closeRedis', () => {
     it('should quit redis client when open', async () => {
