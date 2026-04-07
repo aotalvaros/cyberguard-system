@@ -36,6 +36,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Reportar Amenaza', icon: '🚨', route: '/report-threat',  adminOnly: false },
     { label: 'Incidentes',       icon: '📋', route: '/incidents',      adminOnly: false },
     { label: 'Gestión Usuarios', icon: '👥', route: '/users',          adminOnly: true  },
+    { label: 'Perfil Personal',  icon: '👤', route: '/profile',        adminOnly: false },
   ];
 
   visibleItems = computed(() =>

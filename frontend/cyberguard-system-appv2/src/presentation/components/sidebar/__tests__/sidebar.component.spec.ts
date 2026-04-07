@@ -53,8 +53,8 @@ describe('SidebarComponent', () => {
       component = fixture.componentInstance;
     });
 
-    it('should show all 4 nav items for admin', () => {
-      expect(component.visibleItems()).toHaveLength(4);
+    it('should show all 5 nav items for admin', () => {
+      expect(component.visibleItems()).toHaveLength(5);
     });
 
     it('should include Gestión Usuarios for admin', () => {
@@ -80,7 +80,7 @@ describe('SidebarComponent', () => {
       const fixture   = await buildFixture({ username: 'user', role });
       const component = fixture.componentInstance;
 
-      expect(component.visibleItems()).toHaveLength(3);
+      expect(component.visibleItems()).toHaveLength(4);
       const labels = component.visibleItems().map(i => i.label);
       expect(labels).not.toContain('Gestión Usuarios');
     });
