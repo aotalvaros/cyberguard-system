@@ -1,13 +1,11 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, afterEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { WebSocketService } from '../websocket.service';
 import { WebSocketRepository } from '../../../domain/ports/websocket.repository';
 import { of, BehaviorSubject } from 'rxjs';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -15,7 +13,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('WebSocketService', () => {
   let service: WebSocketService;

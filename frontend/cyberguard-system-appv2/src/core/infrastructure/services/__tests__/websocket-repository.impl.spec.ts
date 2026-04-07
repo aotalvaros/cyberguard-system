@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { firstValueFrom } from 'rxjs';
 import {
   WebSocketRepositoryImpl,
@@ -14,14 +11,6 @@ import {
 } from '../websocket-repository.impl';
 import { WS_COMMANDS, STORAGE_KEYS } from '@environments/constants';
 import { AlertMessage } from '../../../domain/models/alert-message.model';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 /**
  * Mock WebSocket for testing all WebSocket lifecycle events.
@@ -121,6 +110,14 @@ class TestableWebSocketRepository extends WebSocketRepositoryImpl {
     this.loadFromStorage();
   }
 }
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('WebSocketRepositoryImpl', () => {
   let repository: TestableWebSocketRepository;

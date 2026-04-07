@@ -63,7 +63,8 @@ export class AuthService {
           username: result.user.username,
           email: result.user.username,
           role: result.user.role,
-          phone: null,
+          fullName: null,
+          isActive: true,
           isLocked: false,
           failedAttempts: 0,
           lastLogin: new Date(),
@@ -113,6 +114,7 @@ export class AuthService {
 
       // Generar JWT
       const token = this.tokenService.generateToken({
+        id: user.id,
         username: user.username,
         role: user.role
       });
@@ -136,7 +138,7 @@ export class AuthService {
         token,
         user: {
           id: user.id,
-          username: rawUsername,  // Devuelve el username exacto que escribió el usuario
+          username: user.username, 
           role: user.role
         }
       };

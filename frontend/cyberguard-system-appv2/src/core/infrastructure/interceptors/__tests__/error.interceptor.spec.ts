@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { HttpClient, provideHttpClient, withInterceptors, HttpErrorResponse } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
@@ -13,13 +10,13 @@ import { LocalStorageAdapter } from '../../adapters/local-storage.adapter';
 import { AppErrorType } from '../../handlers/global-error.handler';
 import { firstValueFrom } from 'rxjs';
 
+
 beforeAll(() => {
   TestBed.initTestEnvironment(
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('ErrorInterceptor', () => {
   let httpClient: HttpClient;

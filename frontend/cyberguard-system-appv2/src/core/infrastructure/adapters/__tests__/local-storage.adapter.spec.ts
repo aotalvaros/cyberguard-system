@@ -1,11 +1,9 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { LocalStorageAdapter } from '../local-storage.adapter';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -13,7 +11,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('LocalStorageAdapter', () => {
   let adapter: LocalStorageAdapter;

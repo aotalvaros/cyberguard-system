@@ -11,6 +11,7 @@ import authRoutes from './infrastructure/http/controllers/auth.controller';
 import threatRoutes from './infrastructure/http/controllers/threat.controller';
 import adminRoutes from './infrastructure/http/controllers/admin.controller';
 import profileRoutes from './infrastructure/http/controllers/profile.controller';
+import incidentRoutes from './infrastructure/http/controllers/incident.controller';
 import { statisticsRouter } from './infrastructure/http/controllers/statistics.controller';
 import { profileNotificationsRouter } from './infrastructure/http/controllers/profile-notifications.controller';
 
@@ -23,13 +24,24 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  message: 'Too many requests from this IP'
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 300,                 
+  message: 'Too many requests from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use('/api/', limiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 30,                  
+  message: 'Too many login attempts from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/auth', authLimiter);
+app.use('/api/', globalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -43,6 +55,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/threats', threatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/profile', profileRoutes);
+app.use('/api/incidents', incidentRoutes);
 app.use('/api/statistics', statisticsRouter);
 app.use('/api/profile/notification-preferences', profileNotificationsRouter);
 

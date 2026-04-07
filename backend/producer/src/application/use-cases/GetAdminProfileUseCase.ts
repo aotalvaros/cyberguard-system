@@ -38,7 +38,7 @@ export class GetAdminProfileUseCase {
       username:  user.username,
       email:     user.email,
       role:      user.role,
-      phone:     user.phone,
+      phone:     null, // phone column not in current schema
       createdAt: user.createdAt.toISOString(),
     };
   }

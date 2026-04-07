@@ -18,6 +18,10 @@ import { NotificationPreferencesRepository } from '../core/domain/ports/notifica
 import { NotificationPreferencesRepositoryImpl } from '../core/infrastructure/services/notification-preferences-repository.impl';
 import { AdminProfileRepository } from '../core/domain/ports/admin-profile.repository';
 import { AdminProfileHttpAdapter } from '../core/infrastructure/adapters/admin-profile-http.adapter';
+import { UserAdminRepository } from '../core/domain/ports/user-admin.repository';
+import { UserAdminRepositoryImpl } from '../core/infrastructure/services/user-admin-repository.impl';
+import { IncidentRepository } from '../core/domain/ports/incident.repository';
+import { IncidentRepositoryImpl } from '../core/infrastructure/services/incident-repository.impl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,5 +41,8 @@ export const appConfig: ApplicationConfig = {
     // ⚠️ HUMAN CHECK: Usar AdminProfileHttpAdapter en producción.
     // Para tests de integración, reemplazar con un mock.
     { provide: AdminProfileRepository, useClass: AdminProfileHttpAdapter },
+    // IRMS — HU-008 + HU-001
+    { provide: UserAdminRepository, useClass: UserAdminRepositoryImpl },
+    { provide: IncidentRepository,   useClass: IncidentRepositoryImpl },
   ]
 };

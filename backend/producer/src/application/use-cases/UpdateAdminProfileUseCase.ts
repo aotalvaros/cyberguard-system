@@ -61,7 +61,7 @@ export class UpdateAdminProfileUseCase {
       username:  updated.username,
       email:     updated.email,
       role:      updated.role,
-      phone:     updated.phone,
+      phone:     null, // phone column not in current schema
       createdAt: updated.createdAt.toISOString(),
     };
   }

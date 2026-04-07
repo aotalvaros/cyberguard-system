@@ -1,14 +1,12 @@
 // Tipo de prueba: Unitario
 import { describe, it, expect, beforeEach, vi, afterEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { AlertsDomainService } from '../alerts-domain.service';
 import { AlertMessage } from '../../models/alert-message.model';
 import { ThreatType } from '../../models/threat-type.enum';
 import { ThreatSeverity } from '../../models/threat-severity.enum';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -16,7 +14,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('AlertsDomainService', () => {
   let service: AlertsDomainService;

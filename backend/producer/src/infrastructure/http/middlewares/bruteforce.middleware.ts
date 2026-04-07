@@ -44,12 +44,16 @@ export function bruteForceDetection(req: Request, res: Response, next: NextFunct
     return;
   }
 
-  // Solo interceptar respuestas 401 del login
+
   const originalJson = res.json.bind(res);
   
   res.json = function(body: unknown) {
-    if (res.statusCode === 401 && req.path === '/login') {
-      trackFailedAttempt(ip, req.body?.username);
+    if (req.path === '/login') {
+      if (res.statusCode === 401) {
+        trackFailedAttempt(ip, req.body?.username);
+      } else if (res.statusCode === 200) {
+        loginAttempts.delete(ip);
+      }
     }
     return originalJson(body);
   };

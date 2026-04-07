@@ -1,24 +1,13 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, NEVER, throwError } from 'rxjs';
 import { StatisticsWidgetComponent } from './statistics-widget.component';
 import { GetStatisticsUseCase } from '../../../../core/application/use-cases/get-statistics.use-case';
 import { type ThreatStatistics, EMPTY_STATISTICS } from '../../../../core/domain/models/threat-statistics.model';
 import { firstValueFrom } from 'rxjs';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 const mockStats: ThreatStatistics = {
   totalThreats: 42,
@@ -49,6 +38,14 @@ async function setupFixture(stats: ThreatStatistics | 'never' | 'error'): Promis
   fixture.detectChanges();
   return fixture;
 }
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('StatisticsWidgetComponent', () => {
   beforeEach(() => {

@@ -8,7 +8,8 @@ interface UserRow {
   readonly username: string;
   readonly email: string;
   readonly role: string;
-  readonly phone: string | null;
+  readonly full_name: string | null;
+  readonly is_active: boolean;
   readonly is_locked: boolean;
   readonly failed_attempts: number;
   readonly last_login: string | null;
@@ -18,16 +19,17 @@ interface UserRow {
 
 function rowToUser(row: UserRow): UserRecord {
   return {
-    id: row.id,
-    username: row.username,
-    email: row.email,
-    role: row.role,
-    phone: row.phone ?? null,
-    isLocked: row.is_locked,
+    id:             row.id,
+    username:       row.username,
+    email:          row.email,
+    role:           row.role,
+    fullName:       row.full_name,
+    isActive:       row.is_active,
+    isLocked:       row.is_locked,
     failedAttempts: row.failed_attempts,
-    lastLogin: row.last_login ? new Date(row.last_login) : null,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    lastLogin:      row.last_login ? new Date(row.last_login) : null,
+    createdAt:      new Date(row.created_at),
+    updatedAt:      new Date(row.updated_at),
   };
 }
 
@@ -59,7 +61,6 @@ export class PostgresUserRepository implements UserRepository {
 
   async findByEmail(email: string): Promise<UserRecord | null> {
     try {
-      // ⚠️ HUMAN CHECK: query parametrizada — sin concatenación de strings (§6.1 #3)
       const rows = await query<UserRow>('SELECT * FROM users WHERE email = $1', [email]);
       const row = rows[0];
       return row ? rowToUser(row) : null;
@@ -72,12 +73,10 @@ export class PostgresUserRepository implements UserRepository {
 
   async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
     try {
-      // ⚠️ HUMAN CHECK: solo username, email y phone — role/isLocked/failedAttempts excluidos (ISP §3.4)
       const rows = await query<UserRow>(
         `UPDATE users SET
            username   = COALESCE($2, username),
            email      = COALESCE($3, email),
-           phone      = COALESCE($4, phone),
            updated_at = NOW()
          WHERE id = $1
          RETURNING *`,
@@ -85,7 +84,6 @@ export class PostgresUserRepository implements UserRepository {
           id,
           data.username ?? null,
           data.email    ?? null,
-          data.phone    ?? null,
         ]
       );
       const row = rows[0];
@@ -101,17 +99,30 @@ export class PostgresUserRepository implements UserRepository {
     }
   }
 
+  async findAllActive(): Promise<UserRecord[]> {
+    try {
+      const rows = await query<UserRow>('SELECT * FROM users WHERE is_active = true ORDER BY created_at DESC', []);
+      return rows.map(rowToUser);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to list active users', { error: message });
+      throw error;
+    }
+  }
+
   async save(user: UserRecord): Promise<UserRecord> {
     try {
       const rows = await query<UserRow>(
-        `INSERT INTO users (id, username, email, role, is_locked, failed_attempts, last_login, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO users (id, username, email, role, full_name, is_active, is_locked, failed_attempts, last_login, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [
           user.id,
           user.username,
           user.email,
           user.role,
+          user.fullName,
+          user.isActive,
           user.isLocked,
           user.failedAttempts,
           user.lastLogin,
@@ -136,19 +147,23 @@ export class PostgresUserRepository implements UserRepository {
     try {
       const rows = await query<UserRow>(
         `UPDATE users SET
-          role = COALESCE($2, role),
-          is_locked = COALESCE($3, is_locked),
-          failed_attempts = COALESCE($4, failed_attempts),
-          last_login = COALESCE($5, last_login),
-          updated_at = NOW()
+          role            = COALESCE($2, role),
+          full_name       = COALESCE($3, full_name),
+          is_active       = COALESCE($4, is_active),
+          is_locked       = COALESCE($5, is_locked),
+          failed_attempts = COALESCE($6, failed_attempts),
+          last_login      = COALESCE($7, last_login),
+          updated_at      = NOW()
          WHERE id = $1
          RETURNING *`,
         [
           id,
-          data.role ?? null,
-          data.isLocked ?? null,
+          data.role           ?? null,
+          data.fullName       ?? null,
+          data.isActive       ?? null,
+          data.isLocked       ?? null,
           data.failedAttempts ?? null,
-          data.lastLogin ?? null
+          data.lastLogin      ?? null
         ]
       );
       const row = rows[0];

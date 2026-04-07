@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach, afterAll } from '@jest/globals';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 
@@ -173,20 +173,73 @@ describe('Brute Force Detection Middleware', () => {
     });
   });
 
-  // ==========================================================================
-  // DETECCIÓN DE UMBRAL
-  // ==========================================================================
+
+  describe('Reset on Successful Login', () => {
+    it('should reset attempt counter after a successful login', async () => {
+      for (let i = 0; i < 4; i++) {
+        await request(app)
+          .post('/login')
+          .send({ username: 'admin', password: 'wrong' });
+      }
+
+      expect(getBruteForceState().get(TEST_IP)?.count).toBe(4);
+
+      const successResponse = await request(app)
+        .post('/login')
+        .send({ username: 'admin', password: 'correct' });
+      expect(successResponse.status).toBe(200);
+
+      expect(getBruteForceState().has(TEST_IP)).toBe(false);
+    });
+
+    it('should not trigger block after success + single failure when counter was reset', async () => {
+      for (let i = 0; i < 4; i++) {
+        await request(app)
+          .post('/login')
+          .send({ username: 'admin', password: 'wrong' });
+      }
+
+      await request(app)
+        .post('/login')
+        .send({ username: 'admin', password: 'correct' });
+
+      const singleFailResponse = await request(app)
+        .post('/login')
+        .send({ username: 'admin', password: 'wrong' });
+
+      expect(singleFailResponse.status).toBe(401); 
+      expect(mockReportThreat).not.toHaveBeenCalled();
+    });
+
+    it('should count fresh failures from zero after a successful login resets state', async () => {
+      for (let i = 0; i < 4; i++) {
+        await request(app)
+          .post('/login')
+          .send({ username: 'admin', password: 'wrong' });
+      }
+      await request(app)
+        .post('/login')
+        .send({ username: 'admin', password: 'correct' });
+
+      for (let i = 0; i < 4; i++) {
+        await request(app)
+          .post('/login')
+          .send({ username: 'admin', password: 'wrong' });
+      }
+
+      expect(mockReportThreat).not.toHaveBeenCalled();
+      expect(getBruteForceState().get(TEST_IP)?.count).toBe(4);
+    });
+  });
 
   describe('Threshold Detection (5 attempts)', () => {
     it('should report threat after exactly 5 failed attempts', async () => {
-      // Hacer exactamente 5 intentos fallidos
       for (let i = 0; i < 5; i++) {
         await request(app)
           .post('/login')
           .send({ username: 'admin', password: 'wrong' });
       }
       
-      // Debería reportar amenaza
       expect(mockReportThreat).toHaveBeenCalledTimes(1);
       expect(mockReportThreat).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -583,16 +636,20 @@ describe('Brute Force Detection Middleware', () => {
       expect(mockReportThreat).toHaveBeenCalled();
     });
 
-    it('should handle mixed success and failure requests', async () => {
+    it('should handle mixed success and failure requests — success resets counter', async () => {
+      // Patrón: éxito-fallo-éxito-fallo-... (10 peticiones alternadas)
+      // Cada login exitoso resetea el contador de intentos fallidos de la IP.
+      // Por eso, los fallos nunca se acumulan más allá de 1 consecutivo
+      // y el umbral de 5 nunca se alcanza.
       for (let i = 0; i < 10; i++) {
         const password = i % 2 === 0 ? 'correct' : 'wrong';
         await request(app)
           .post('/login')
           .send({ username: 'admin', password });
       }
-      
-      // Solo contar los fallidos (5 en total)
-      expect(mockReportThreat).toHaveBeenCalled();
+
+      // El reset-on-success impide la acumulación: 0 ataques detectados
+      expect(mockReportThreat).not.toHaveBeenCalled();
     });
   });
 

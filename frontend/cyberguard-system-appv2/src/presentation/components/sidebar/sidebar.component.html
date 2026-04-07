@@ -1,0 +1,42 @@
+<nav class="sidebar" [class.sidebar--collapsed]="collapsed()">
+
+  <!-- Toggle button -->
+  <button
+    class="sidebar__toggle"
+    (click)="toggleCollapse()"
+    [attr.aria-label]="collapsed() ? 'Expandir menú' : 'Colapsar menú'"
+    [attr.aria-expanded]="!collapsed()"
+    title="{{ collapsed() ? 'Expandir' : 'Colapsar' }}"
+  >
+    <span class="toggle-icon">{{ collapsed() ? '»' : '«' }}</span>
+  </button>
+
+  <!-- Brand -->
+  <div class="sidebar__brand">
+    <span class="brand-icon">🛡️</span>
+    @if (!collapsed()) {
+      <span class="brand-text">CyberGuard</span>
+    }
+  </div>
+
+  <!-- Navigation items -->
+  <ul class="sidebar__nav" role="navigation" aria-label="Menú principal">
+    @for (item of visibleItems(); track item.route) {
+      <li class="sidebar__item">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__link--active"
+          class="sidebar__link"
+          [title]="item.label"
+          [attr.aria-label]="item.label"
+        >
+          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          @if (!collapsed()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+
+</nav>

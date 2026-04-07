@@ -110,7 +110,7 @@ const makeSeverityGroupResult = (entries: Record<string, number>) => ({
 
 /** Genera un JWT firmado con el secreto de test (jsonwebtoken real). */
 function signToken(
-  payload: Record<string, unknown> = { username: 'admin', role: 'admin' },
+  payload: Record<string, unknown> = { id: 'admin-uid-1', username: 'admin', role: 'admin' },
   secret = TEST_JWT_SECRET
 ): string {
   return jwt.sign(payload, secret, { expiresIn: '1h' });

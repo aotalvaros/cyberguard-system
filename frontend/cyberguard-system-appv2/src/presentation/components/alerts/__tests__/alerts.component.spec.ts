@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, BehaviorSubject } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
 import { WebSocketService } from '../../../../core/infrastructure/services/websocket.service';
@@ -14,19 +11,19 @@ import { DeleteThreatUseCase } from '../../../../core/application/use-cases/dele
 import { AlertMessage } from '../../../../core/domain/models/alert-message.model';
 import { ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
 
+const mockAlerts: AlertMessage[] = [
+  { eventId: 'evt-1', data: { threatId: 't-1', type: 'malware', severity: 'high', sourceIp: '192.168.1.1', description: 'Malware detected' }, timestamp: Date.now() },
+  { eventId: 'evt-2', data: { threatId: 't-2', type: 'ddos', severity: 'critical', sourceIp: '10.0.0.1', description: 'DDoS attack' }, timestamp: Date.now() },
+  { eventId: 'evt-3', data: { threatId: '', type: 'phishing', severity: 'low', sourceIp: '172.16.0.1', description: 'Phishing attempt' }, timestamp: Date.now() },
+];
+
+
 beforeAll(() => {
   TestBed.initTestEnvironment(
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting(),
   );
 });
-
-
-const mockAlerts: AlertMessage[] = [
-  { eventId: 'evt-1', data: { threatId: 't-1', type: 'malware', severity: 'high', sourceIp: '192.168.1.1', description: 'Malware detected' }, timestamp: Date.now() },
-  { eventId: 'evt-2', data: { threatId: 't-2', type: 'ddos', severity: 'critical', sourceIp: '10.0.0.1', description: 'DDoS attack' }, timestamp: Date.now() },
-  { eventId: 'evt-3', data: { threatId: '', type: 'phishing', severity: 'low', sourceIp: '172.16.0.1', description: 'Phishing attempt' }, timestamp: Date.now() },
-];
 
 describe('AlertsComponent', () => {
   let fixture: ComponentFixture<AlertsComponent>;

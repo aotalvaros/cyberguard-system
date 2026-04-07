@@ -1,13 +1,11 @@
 // Tipo de prueba: Unitario
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { LoginUseCase } from '../login.use-case';
 import { AuthRepository } from '../../../domain/ports/auth.repository';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -15,7 +13,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;

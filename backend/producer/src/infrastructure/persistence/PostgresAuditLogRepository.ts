@@ -10,7 +10,7 @@ export class PostgresAuditLogRepository implements AuditLogRepository {
         `INSERT INTO audit_logs (user_id, action, status, ip_address, user_agent, details, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
         [
-          entry.userId ?? null,
+          entry.userId || null,
           entry.action,
           entry.status,
           entry.ipAddress ?? null,

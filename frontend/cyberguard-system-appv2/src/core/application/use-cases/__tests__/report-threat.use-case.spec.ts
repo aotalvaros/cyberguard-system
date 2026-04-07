@@ -1,15 +1,13 @@
 // Tipo de prueba: Unitario
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { ReportThreatUseCase } from '../report-threat.use-case';
 import { ThreatRepository } from '../../../domain/ports/threat.repository';
 import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -17,7 +15,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('ReportThreatUseCase', () => {
   let useCase: ReportThreatUseCase;

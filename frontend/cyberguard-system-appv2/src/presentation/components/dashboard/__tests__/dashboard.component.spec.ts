@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { DashboardComponent } from '../dashboard.component';
@@ -21,14 +18,6 @@ import { ThreatType } from '../../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../../core/domain/models/threat-severity.enum';
 import { NotificationPreferencesRepository } from '../../../../core/domain/ports/notification-preferences.repository';
 
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
-
 const mockStats: ThreatStatistics = {
   totalThreats: 10,
   byType: { malware: 5 },
@@ -36,6 +25,14 @@ const mockStats: ThreatStatistics = {
   last24Hours: 3,
   criticalActive: 2,
 };
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('DashboardComponent', () => {
   let fixture: ComponentFixture<DashboardComponent>;

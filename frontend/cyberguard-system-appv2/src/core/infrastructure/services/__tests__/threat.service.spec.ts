@@ -1,15 +1,13 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { ThreatService } from '../threat.service';
 import { ReportThreatUseCase } from '../../../application/use-cases/report-threat.use-case';
 import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
+
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -17,7 +15,6 @@ beforeAll(() => {
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('ThreatService', () => {
   let service: ThreatService;

@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
 import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
@@ -13,14 +10,6 @@ import { ThreatRepository } from '../../../../core/domain/ports/threat.repositor
 import { AlertMessage } from '../../../../core/domain/models/alert-message.model';
 import { WebSocketCommand } from '../../../../core/domain/models/websocket-command.model';
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 class InMemoryWebSocketRepository extends WebSocketRepository {
   private stream = new BehaviorSubject<AlertMessage[]>([]);
@@ -63,6 +52,14 @@ class InMemoryThreatRepository {
     return of({ success: true, threatId: id, message: 'ok' });
   }
 }
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('AlertsComponent integration', () => {
   let fixture: ComponentFixture<AlertsComponent>;

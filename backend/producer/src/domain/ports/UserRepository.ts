@@ -10,7 +10,8 @@ export interface UserRecord {
   readonly username: string;
   readonly email: string;
   readonly role: string;
-  readonly phone: string | null;
+  readonly fullName: string | null;
+  readonly isActive: boolean;
   readonly isLocked: boolean;
   readonly failedAttempts: number;
   readonly lastLogin: Date | null;
@@ -33,6 +34,7 @@ export interface UserRepository {
   findByUsername(username: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
   findAll(): Promise<UserRecord[]>;
+  findAllActive(): Promise<UserRecord[]>;                  
   save(user: UserRecord): Promise<UserRecord>;
   update(id: string, data: Partial<UserRecord>): Promise<UserRecord>;
   updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord>;

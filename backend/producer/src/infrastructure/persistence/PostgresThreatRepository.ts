@@ -19,7 +19,7 @@ export class PostgresThreatRepository implements ThreatRepository {
 
   async save(threat: Threat): Promise<string> {
     try {
-      const result = await query<ThreatRow>(
+      await query<ThreatRow>(
         `INSERT INTO threats (event_id, type, severity, source_ip, target_ip, description, payload, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id`,
@@ -31,12 +31,9 @@ export class PostgresThreatRepository implements ThreatRepository {
           threat.targetIp ?? null,
           threat.description,
           threat.metadata ? JSON.stringify(threat.metadata) : null,
-          threat.timestamp ?? /* istanbul ignore next */ new Date().toISOString()
+          threat.timestamp ?? new Date().toISOString()
         ]
       );
-
-      const row = result[0] as ThreatRow | undefined;
-      const id = row?.id ?? threat.threatId;
 
       logger.info('Threat saved to PostgreSQL', {
         threatId: threat.threatId,
@@ -44,7 +41,7 @@ export class PostgresThreatRepository implements ThreatRepository {
         severity: threat.severity
       });
 
-      return id;
+      return threat.threatId;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('Failed to save threat to PostgreSQL', {

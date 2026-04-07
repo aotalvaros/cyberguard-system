@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -12,14 +9,6 @@ import { StatisticsRepositoryImpl } from '../statistics-repository.impl';
 import { StatisticsRepository } from '../../../domain/ports/statistics.repository';
 import { type ThreatStatistics } from '../../../domain/models/threat-statistics.model';
 import { environment } from '@environments/environment';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 const EXPECTED_URL = `${environment.apiUrl}/api/statistics`;
 
@@ -30,6 +19,14 @@ const mockStats: ThreatStatistics = {
   last24Hours: 8,
   criticalActive: 5,
 };
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('StatisticsRepositoryImpl', () => {
   let repo: StatisticsRepositoryImpl;

@@ -15,12 +15,13 @@ import { ThreatService } from '../../../../application/services/threat.service';
 import { ListThreatsUseCase } from '../../../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../../../application/use-cases/DeleteThreatUseCase';
 import { ThreatClassifier } from '../../../../domain/services/ThreatClassifier';
+import { CreateIncidentUseCase } from '../../../../application/use-cases/CreateIncidentUseCase';
+import { ListIncidentsUseCase } from '../../../../application/use-cases/ListIncidentsUseCase';
 
 
 describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
   
   beforeEach(() => {
-    // Reset singleton instances  between tests
     // @ts-ignore - accessing private property for testing
     ServiceFactory.threatService = null;
     // @ts-ignore - accessing private property for testing
@@ -268,23 +269,130 @@ describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
       });
     });
 
+    describe('getIncidentRepository()', () => {
+      it('should create and return a repository instance', () => {
+        const repo = ServiceFactory.getIncidentRepository();
+        expect(repo).toBeDefined();
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const repo1 = ServiceFactory.getIncidentRepository();
+        const repo2 = ServiceFactory.getIncidentRepository();
+        expect(repo1).toBe(repo2);
+      });
+    });
+
+    describe('getCreateUserUseCase()', () => {
+      it('should create and return a use case instance', () => {
+        const uc = ServiceFactory.getCreateUserUseCase();
+        expect(uc).toBeDefined();
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getCreateUserUseCase();
+        const uc2 = ServiceFactory.getCreateUserUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getUpdateUserUseCase()', () => {
+      it('should create and return a use case instance', () => {
+        const uc = ServiceFactory.getUpdateUserUseCase();
+        expect(uc).toBeDefined();
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getUpdateUserUseCase();
+        const uc2 = ServiceFactory.getUpdateUserUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getToggleUserStatusUseCase()', () => {
+      it('should create and return a use case instance', () => {
+        const uc = ServiceFactory.getToggleUserStatusUseCase();
+        expect(uc).toBeDefined();
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getToggleUserStatusUseCase();
+        const uc2 = ServiceFactory.getToggleUserStatusUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getListUsersUseCase()', () => {
+      it('should create and return a use case instance', () => {
+        const uc = ServiceFactory.getListUsersUseCase();
+        expect(uc).toBeDefined();
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getListUsersUseCase();
+        const uc2 = ServiceFactory.getListUsersUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getCreateIncidentUseCase()', () => {
+      it('should create and return a CreateIncidentUseCase instance', () => {
+        const uc = ServiceFactory.getCreateIncidentUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(CreateIncidentUseCase);
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getCreateIncidentUseCase();
+        const uc2 = ServiceFactory.getCreateIncidentUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getListIncidentsUseCase()', () => {
+      it('should create and return a ListIncidentsUseCase instance', () => {
+        const uc = ServiceFactory.getListIncidentsUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(ListIncidentsUseCase);
+      });
+
+      it('should return the same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getListIncidentsUseCase();
+        const uc2 = ServiceFactory.getListIncidentsUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
     describe('resetForTesting()', () => {
       it('should reset all cached instances so next call creates new ones', () => {
-        const threat1    = ServiceFactory.getThreatRepository();
-        const list1      = ServiceFactory.getListThreatsUseCase();
-        const del1       = ServiceFactory.getDeleteThreatUseCase();
-        const user1      = ServiceFactory.getUserRepository();
-        const audit1     = ServiceFactory.getAuditLogRepository();
-        const classify1  = ServiceFactory.getThreatClassifier();
+        const threat1      = ServiceFactory.getThreatRepository();
+        const list1        = ServiceFactory.getListThreatsUseCase();
+        const del1         = ServiceFactory.getDeleteThreatUseCase();
+        const user1        = ServiceFactory.getUserRepository();
+        const audit1       = ServiceFactory.getAuditLogRepository();
+        const classify1    = ServiceFactory.getThreatClassifier();
+        const incident1    = ServiceFactory.getIncidentRepository();
+        const createUser1  = ServiceFactory.getCreateUserUseCase();
+        const updateUser1  = ServiceFactory.getUpdateUserUseCase();
+        const toggleUser1  = ServiceFactory.getToggleUserStatusUseCase();
+        const listUsers1   = ServiceFactory.getListUsersUseCase();
+        const createInc1   = ServiceFactory.getCreateIncidentUseCase();
+        const listInc1     = ServiceFactory.getListIncidentsUseCase();
 
         ServiceFactory.resetForTesting();
 
-        const threat2    = ServiceFactory.getThreatRepository();
-        const list2      = ServiceFactory.getListThreatsUseCase();
-        const del2       = ServiceFactory.getDeleteThreatUseCase();
-        const user2      = ServiceFactory.getUserRepository();
-        const audit2     = ServiceFactory.getAuditLogRepository();
-        const classify2  = ServiceFactory.getThreatClassifier();
+        const threat2      = ServiceFactory.getThreatRepository();
+        const list2        = ServiceFactory.getListThreatsUseCase();
+        const del2         = ServiceFactory.getDeleteThreatUseCase();
+        const user2        = ServiceFactory.getUserRepository();
+        const audit2       = ServiceFactory.getAuditLogRepository();
+        const classify2    = ServiceFactory.getThreatClassifier();
+        const incident2    = ServiceFactory.getIncidentRepository();
+        const createUser2  = ServiceFactory.getCreateUserUseCase();
+        const updateUser2  = ServiceFactory.getUpdateUserUseCase();
+        const toggleUser2  = ServiceFactory.getToggleUserStatusUseCase();
+        const listUsers2   = ServiceFactory.getListUsersUseCase();
+        const createInc2   = ServiceFactory.getCreateIncidentUseCase();
+        const listInc2     = ServiceFactory.getListIncidentsUseCase();
 
         expect(threat1).not.toBe(threat2);
         expect(list1).not.toBe(list2);
@@ -292,6 +400,13 @@ describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
         expect(user1).not.toBe(user2);
         expect(audit1).not.toBe(audit2);
         expect(classify1).not.toBe(classify2);
+        expect(incident1).not.toBe(incident2);
+        expect(createUser1).not.toBe(createUser2);
+        expect(updateUser1).not.toBe(updateUser2);
+        expect(toggleUser1).not.toBe(toggleUser2);
+        expect(listUsers1).not.toBe(listUsers2);
+        expect(createInc1).not.toBe(createInc2);
+        expect(listInc1).not.toBe(listInc2);
       });
     });
   });

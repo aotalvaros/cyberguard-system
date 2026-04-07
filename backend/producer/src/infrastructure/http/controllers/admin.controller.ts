@@ -1,17 +1,13 @@
 import { Router, Response } from 'express';
-import Joi from 'joi';
 import { authMiddleware, AuthRequest } from '../middlewares/auth.middleware';
 import { ServiceFactory } from '../../factories/ServiceFactory';
 import { logger } from '../../config/logger';
+import { createUserSchema, updateUserSchema, toggleStatusSchema } from '../validators/user.schema';
+import { UserAlreadyExistsError } from '../../../domain/exceptions/UserAlreadyExistsError';
+import { UserNotFoundError } from '../../../domain/exceptions/UserNotFoundError';
+import { SelfModificationForbiddenError } from '../../../domain/exceptions/SelfModificationForbiddenError';
 
 const router = Router();
-
-const VALID_ROLES = ['admin', 'analyst', 'viewer'] as const;
-type ValidRole = typeof VALID_ROLES[number];
-
-const updateRoleSchema = Joi.object({
-  role: Joi.string().valid(...VALID_ROLES).required()
-});
 
 // Middleware: solo admins pueden acceder a estas rutas
 function requireAdmin(req: AuthRequest, res: Response, next: () => void): void {
@@ -22,97 +18,163 @@ function requireAdmin(req: AuthRequest, res: Response, next: () => void): void {
   next();
 }
 
-/**
- * PATCH /api/admin/users/:username/role
- * Cambia el rol de un usuario en PostgreSQL.
- * Requiere JWT con role='admin'.
- */
-router.patch(
-  '/users/:username/role',
+
+router.post(
+  '/users',
   authMiddleware,
   requireAdmin,
   async (req: AuthRequest, res: Response): Promise<void> => {
-    const { username } = req.params;
-
-    const { error, value } = updateRoleSchema.validate(req.body);
+    const { error, value } = createUserSchema.validate(req.body, { abortEarly: false });
     if (error) {
-      res.status(400).json({ error: error.details[0]?.message ?? /* istanbul ignore next */ 'Invalid role' });
+      res.status(400).json({ error: error.details[0]?.message ?? 'Invalid input' });
       return;
     }
 
-    const newRole = (value as { role: ValidRole }).role;
-
     try {
-      const userRepository = ServiceFactory.getUserRepository();
+      const useCase = ServiceFactory.getCreateUserUseCase();
+      const result  = await useCase.execute(value, req.user?.id ?? '');
 
-      const existingUser = await userRepository.findByUsername(username ?? '');
-      if (!existingUser) {
-        res.status(404).json({ error: `User '${username}' not found` });
-        return;
-      }
+      logger.info('User created via admin', { userId: result.user.id, role: result.user.role, createdBy: req.user?.id });
 
-      // No permitir que un admin se quite el rol a sí mismo
-      if (req.user?.username === username && newRole !== 'admin') {
-        res.status(400).json({ error: 'Cannot downgrade your own admin role' });
-        return;
-      }
-
-      const updated = await userRepository.update(existingUser.id, {
-        role: newRole,
-        updatedAt: new Date()
-      });
-
-      logger.info('User role updated', {
-        username,
-        oldRole: existingUser.role,
-        newRole,
-        changedBy: req.user?.username
-      });
-
-      res.status(200).json({
-        success: true,
-        user: {
-          username: updated.username,
-          role: updated.role,
-          updatedAt: updated.updatedAt
-        }
-      });
+      res.status(201).json({ success: true, user: result.user });
     } catch (err: unknown) {
+      if (err instanceof UserAlreadyExistsError) {
+        res.status(409).json({ error: err.message });
+        return;
+      }
       const message = err instanceof Error ? err.message : String(err);
-      logger.error('Failed to update user role', { username, error: message });
-      res.status(500).json({ error: 'Failed to update role' });
+      logger.error('Failed to create user', { error: message });
+      res.status(500).json({ error: 'Failed to create user' });
     }
   }
 );
 
-/**
- * GET /api/admin/users
- * Lista todos los usuarios (sin datos sensibles).
- * Requiere JWT con role='admin'.
- */
+
 router.get(
   '/users',
   authMiddleware,
   requireAdmin,
   async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userRepository = ServiceFactory.getUserRepository();
-      const users = await userRepository.findAll();
+      const useCase = ServiceFactory.getListUsersUseCase();
+      const result  = await useCase.execute();
 
-      res.status(200).json({
-        users: users.map(u => ({
-          username: u.username,
-          role: u.role,
-          isLocked: u.isLocked,
-          lastLogin: u.lastLogin,
-          createdAt: u.createdAt
-        })),
-        total: users.length
-      });
+      res.status(200).json(result);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error('Failed to list users', { error: message });
       res.status(500).json({ error: 'Failed to retrieve users' });
+    }
+  }
+);
+
+
+router.get(
+  '/users/:id',
+  authMiddleware,
+  requireAdmin,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userRepository = ServiceFactory.getUserRepository();
+      const user = await userRepository.findById(req.params.id ?? '');
+
+      if (!user) {
+        res.status(404).json({ error: `User '${req.params.id}' not found` });
+        return;
+      }
+
+      res.status(200).json({ user });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error('Failed to get user', { userId: req.params.id, error: message });
+      res.status(500).json({ error: 'Failed to retrieve user' });
+    }
+  }
+);
+
+
+router.put(
+  '/users/:id',
+  authMiddleware,
+  requireAdmin,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    const { error, value } = updateUserSchema.validate(req.body, { abortEarly: false });
+    if (error) {
+      res.status(400).json({ error: error.details[0]?.message ?? 'Invalid input' });
+      return;
+    }
+
+    try {
+      const useCase = ServiceFactory.getUpdateUserUseCase();
+      const result  = await useCase.execute({
+        id:          req.params.id ?? '',
+        fullName:    value.fullName,
+        role:        value.role,
+        requestedBy: req.user?.id ?? '',
+      });
+
+      logger.info('User updated via admin', { userId: req.params.id, updatedBy: req.user?.id });
+
+      res.status(200).json({ success: true, user: result.user });
+    } catch (err: unknown) {
+      if (err instanceof UserNotFoundError) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
+      if (err instanceof SelfModificationForbiddenError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error('Failed to update user', { userId: req.params.id, error: message });
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  }
+);
+
+router.patch(
+  '/users/:id/status',
+  authMiddleware,
+  requireAdmin,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    const { error, value } = toggleStatusSchema.validate(req.body);
+    if (error) {
+      res.status(400).json({ error: error.details[0]?.message ?? 'Invalid input' });
+      return;
+    }
+
+    try {
+      const useCase = ServiceFactory.getToggleUserStatusUseCase();
+      const result  = await useCase.execute({
+        id:          req.params.id ?? '',
+        isActive:    value.isActive,
+        requestedBy: req.user?.id ?? '',
+      });
+
+      const action = value.isActive ? 'reactivated' : 'deactivated';
+      logger.info(`User ${action} via admin`, {
+        userId:      req.params.id,
+        changedBy:   req.user?.id,
+        reassigned:  result.reassignedIncidents,
+      });
+
+      res.status(200).json({
+        success: true,
+        user:    result.user,
+        reassignedIncidents: result.reassignedIncidents,
+      });
+    } catch (err: unknown) {
+      if (err instanceof UserNotFoundError) {
+        res.status(404).json({ error: err.message });
+        return;
+      }
+      if (err instanceof SelfModificationForbiddenError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error('Failed to toggle user status', { userId: req.params.id, error: message });
+      res.status(500).json({ error: 'Failed to toggle user status' });
     }
   }
 );

@@ -2,10 +2,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { AuthService } from '../auth.service';
 import { LoginUseCase } from '../../../application/use-cases/login.use-case';
 import { LogoutUseCase } from '../../../application/use-cases/logout.use-case';
@@ -15,13 +12,13 @@ import { WebSocketService } from '../websocket.service';
 import { of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
+
 beforeAll(() => {
   TestBed.initTestEnvironment(
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting(),
   );
 });
-
 
 describe('AuthService', () => {
   let service: AuthService;

@@ -1,10 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 
@@ -29,14 +26,6 @@ import { WebSocketCommand } from '../../../../core/domain/models/websocket-comma
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
 import { Router } from '@angular/router';
 import { NotificationPreferencesRepository } from '../../../../core/domain/ports/notification-preferences.repository';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 class InMemoryThreatRepository extends ThreatRepository {
   reportedThreats: ThreatRequest[] = [];
@@ -174,6 +163,14 @@ class InMemoryWebSocketRepository extends WebSocketRepository {
 class RouterStub {
   navigate = vi.fn();
 }
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('DashboardComponent Integration', () => {
   let fixture: ComponentFixture<DashboardComponent>;

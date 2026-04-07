@@ -1,21 +1,10 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { StatisticsRepository } from '../statistics.repository';
 import { EMPTY_STATISTICS, type ThreatStatistics } from '../../models/threat-statistics.model';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
-
 
 // Concrete stub to verify abstract class contract
 class StubStatisticsRepository extends StatisticsRepository {
@@ -27,6 +16,14 @@ class StubStatisticsRepository extends StatisticsRepository {
     return of(EMPTY_STATISTICS);
   }
 }
+
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
 
 describe('StatisticsRepository', () => {
   beforeEach(() => {

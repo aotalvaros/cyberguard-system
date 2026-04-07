@@ -25,8 +25,7 @@ const shouldRetry = (error: HttpErrorResponse): boolean => {
     return false;
   }
 
-  // Reintentar errores de red (status 0) o errores de servidor (5xx)
-  return error.status === 0 || error.status >= 500;
+  return error.status === 0;
 };
 
 /**
@@ -38,13 +37,13 @@ const calculateDelay = (retryCount: number): number => {
 
 /**
  * Interceptor funcional que reintenta automáticamente las peticiones
- * que fallan por errores de red o del servidor.
- * 
+ * que fallan por errores de red.
+ *
  * Características:
  * - Backoff exponencial (1s, 2s, 4s)
  * - Máximo 3 reintentos
- * - NO reintenta errores 4xx (excepto timeout)
- * - Solo reintenta errores de red (status 0) y servidor (5xx)
+ * - Solo reintenta errores de red (status 0)
+ * - NO reintenta errores 4xx ni 5xx
  */
 export const retryInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,

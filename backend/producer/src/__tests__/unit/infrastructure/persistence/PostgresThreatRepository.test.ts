@@ -57,15 +57,15 @@ describe('PostgresThreatRepository', () => {
 
   // ── save ─────────────────────────────────────────────────────────────────
   describe('save()', () => {
-    it('should return the db-generated id from the INSERT RETURNING row', async () => {
+    it('should return the threat event_id (UUID) after successful INSERT', async () => {
       mockQuery.mockResolvedValueOnce([{ id: 'db-id-1' }]);
 
       const result = await repository.save(baseThreat);
 
-      expect(result).toBe('db-id-1');
+      expect(result).toBe(baseThreat.threatId);
     });
 
-    it('should fall back to threatId when no row is returned', async () => {
+    it('should return threatId even when no row is returned', async () => {
       mockQuery.mockResolvedValueOnce([]);
 
       const result = await repository.save(baseThreat);
