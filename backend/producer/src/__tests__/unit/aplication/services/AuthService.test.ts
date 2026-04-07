@@ -63,6 +63,7 @@ describe('AuthService', () => {
       findAllActive: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
+      updateProfile: jest.fn(),
       delete: jest.fn(),
       resetFailedAttempts: jest.fn(),
       updateLastLogin: jest.fn(),

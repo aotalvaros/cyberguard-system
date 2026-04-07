@@ -112,7 +112,7 @@ function buildApp(): Express {
 
 // ─── Helper: genera un JWT válido para los tests ──────────────────────────────
 function makeValidJwt(username = 'admin', role = 'admin'): string {
-  return jwt.sign({ username, role }, TEST_JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ id: 'user-uuid-test', username, role }, TEST_JWT_SECRET, { expiresIn: '1h' });
 }
 
 // ─── Fixture de perfil ────────────────────────────────────────────────────────

@@ -21,7 +21,8 @@ const makeUserRecord = (overrides: Partial<UserRecord> = {}): UserRecord => ({
   username: 'admin',
   email: 'admin@cyberguard.com',
   role: 'admin',
-  phone: null,
+  fullName: null,
+  isActive: true,
   isLocked: false,
   failedAttempts: 0,
   lastLogin: new Date('2026-04-01T10:00:00Z'),
@@ -41,6 +42,7 @@ describe('UpdateAdminProfileUseCase', () => {
       findByUsername: jest.fn(),
       findByEmail: jest.fn(),
       findAll: jest.fn(),
+      findAllActive: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
       updateProfile: jest.fn(),
@@ -75,11 +77,11 @@ describe('UpdateAdminProfileUseCase', () => {
   it('should register audit log entry on successful update', async () => {
     mockUserRepository.findByUsername.mockResolvedValueOnce(makeUserRecord());
     mockUserRepository.findByEmail.mockResolvedValueOnce(null);
-    mockUserRepository.updateProfile.mockResolvedValueOnce(makeUserRecord({ phone: '+573001234567' }));
+    mockUserRepository.updateProfile.mockResolvedValueOnce(makeUserRecord({ username: 'admin-updated' }));
 
     await useCase.execute({
       username: 'admin',
-      data: { phone: '+573001234567' },
+      data: { username: 'admin-updated' },
     });
 
     expect(mockAuditLogRepository.log).toHaveBeenCalledTimes(1);

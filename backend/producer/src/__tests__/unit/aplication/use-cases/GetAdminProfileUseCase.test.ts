@@ -16,7 +16,8 @@ const makeUserRecord = (overrides: Partial<UserRecord> = {}): UserRecord => ({
   username: 'admin',
   email: 'admin@cyberguard.com',
   role: 'admin',
-  phone: null,
+  fullName: null,
+  isActive: true,
   isLocked: false,
   failedAttempts: 0,
   lastLogin: new Date('2026-04-01T10:00:00Z'),
@@ -35,6 +36,7 @@ describe('GetAdminProfileUseCase', () => {
       findByUsername: jest.fn(),
       findByEmail: jest.fn(),
       findAll: jest.fn(),
+      findAllActive: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
       updateProfile: jest.fn(),
@@ -57,7 +59,7 @@ describe('GetAdminProfileUseCase', () => {
   });
 
   it('should return AdminProfileResult with expected fields when user exists', async () => {
-    const record = makeUserRecord({ phone: '+573001234567' });
+    const record = makeUserRecord({ fullName: 'Admin User' });
     mockUserRepository.findByUsername.mockResolvedValueOnce(record);
 
     const result = await useCase.execute({ username: 'admin' });
@@ -66,7 +68,7 @@ describe('GetAdminProfileUseCase', () => {
       username: 'admin',
       email: 'admin@cyberguard.com',
       role: 'admin',
-      phone: '+573001234567',
+      phone: null,
     });
     expect(result.createdAt).toBeDefined();
   });

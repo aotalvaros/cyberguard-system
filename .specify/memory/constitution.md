@@ -497,9 +497,73 @@ Todos estos errores son silenciosos en desarrollo pero rompen el build de produc
 
 ---
 
+---
+
+## 14. Regla de Integración Aditiva en Merges
+
+### 14.1 Principio
+Al hacer merge de `develop` hacia una rama de integración (ej. `epic/*`), o de cualquier rama con trabajo de otro desarrollador, la resolución de conflictos DEBE ser **aditiva**: toda funcionalidad de ambas ramas coexiste en el resultado. Nunca se elige entre una u otra — se integran.
+
+> Lema: **"resolve conflicts by keeping both, not by choosing one".**
+
+### 14.2 Checklist de Resolución de Conflictos Obligatorio
+
+Antes de marcar un merge como terminado, verificar que en el resultado final estén presentes **todas** las contribuciones de ambas ramas:
+
+| Artefacto | Qué verificar |
+|---|---|
+| `ServiceFactory.ts` | Todos los use cases e instancias de ambas ramas están registrados |
+| `app.config.ts` (frontend) | Todos los providers de ambas ramas están declarados |
+| `app.routes.ts` (frontend) | Todas las rutas de ambas ramas están definidas |
+| `server.ts` (backend) | Todos los `app.use(...)` de ambas ramas están presentes |
+| Imports en archivos conflictuados | Ningún import necesario fue eliminado al resolver |
+| Tests nuevos del compañero | Sus specs corren y pasan sin modificar su lógica de negocio |
+
+### 14.3 Anti-patterns Prohibidos
+
+| Anti-pattern | Descripción |
+|---|---|
+| **Clobber merge** | Elegir la versión de un branch entero descartando la del otro (`git checkout --theirs` o `--ours` en bloques grandes) |
+| **Silent drop** | Resolver un conflicto eliminando las líneas de uno de los branches sin análisis (ej. borrar imports, providers o rutas del compañero) |
+| **Lazy accept** | Aceptar automáticamente todos los cambios "incoming" o "current" sin leer qué se pierde |
+| **Test blindness** | No ejecutar la suite completa tras el merge para verificar que ambas partes funcionan |
+
+### 14.4 Protocolo de Resolución Paso a Paso
+
+```
+1. git merge --no-ff <rama> — nunca --strategy=ours
+2. Para CADA archivo en conflicto:
+   a. Leer ambos bloques (<<<<< HEAD y >>>>>>> branch)
+   b. Identificar qué agrega cada bloque
+   c. Construir el resultado que contiene AMBOS aportes
+   d. Verificar que no se perdió ningún import, provider, ruta o use case
+3. Ejecutar suite completa tras la resolución:
+   - frontend: npx vitest run (≥ X passed, 0 failed)
+   - backend producer: npm test (≥ X passed, 0 failed)
+   - worker: npm test (≥ X passed, 0 failed)
+4. Ejecutar docker-compose up --build -d (todos los servicios Up/healthy)
+5. Solo entonces: git commit del merge
+```
+
+### 14.5 Verificación Post-Merge
+
+Después de resolver el merge, confirmar explícitamente:
+
+- [ ] Todos los use cases de EP-01, EP-02, EP-03 siguen funcionando.
+- [ ] Todos los use cases y componentes del compañero siguen funcionando.
+- [ ] No hay imports eliminados ni providers faltantes.
+- [ ] Suite de tests 100% verde en las 3 capas.
+- [ ] Docker: 6/6 servicios healthy.
+
+### 14.6 Justificación
+
+Esta regla nació tras el merge de `develop` (PR #54 — IRMS: user management + incidents + sidebar) hacia `epic/sprint-01/features` (EP-01 admin profile + EP-02/EP-03 notifications). Los 10 conflictos en `ServiceFactory.ts`, `app.config.ts`, `app.routes.ts`, `server.ts`, `UserRepository.ts` y otros requerían integración cuidadosa de ambos conjuntos de funcionalidades. La resolución incorrecta hubiera dejado features enteras de alguno de los desarrolladores silenciosamente eliminadas.
+
+---
+
 Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de creación. Se actualiza cuando:
 - Se adopta un nuevo patrón o tecnología.
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §9.4 puntos 5-6
+**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §14 Integración Aditiva en Merges, §9.4 puntos 5-6
