@@ -58,11 +58,12 @@ export class AuthService {
           username: result.user.username
         });
 
-        const newUser = {
+        const newUser: import('../../domain/ports/UserRepository').UserRecord = {
           id: uuidv4(),
           username: result.user.username,
           email: result.user.username,
-          role: result.user.role, 
+          role: result.user.role,
+          phone: null,
           isLocked: false,
           failedAttempts: 0,
           lastLogin: new Date(),
@@ -84,8 +85,14 @@ export class AuthService {
         });
       }
 
+      // After the if(!user) block above, user is guaranteed non-null
+      // TypeScript needs an explicit guard because of async ops inside the if
+      if (!user) {
+        return { success: false, error: 'User could not be resolved.' };
+      }
+
       // Verificar si la cuenta está bloqueada
-      if (user?.isLocked) {
+      if (user.isLocked) {
         await this.auditLogRepository.log({
           userId: user.id,
           action: 'login_blocked',
@@ -101,8 +108,8 @@ export class AuthService {
       }
 
       // Resetear intentos fallidos y actualizar último login
-      await this.userRepository.resetFailedAttempts(user?.id);
-      await this.userRepository.updateLastLogin(user?.id);
+      await this.userRepository.resetFailedAttempts(user.id);
+      await this.userRepository.updateLastLogin(user.id);
 
       // Generar JWT
       const token = this.tokenService.generateToken({

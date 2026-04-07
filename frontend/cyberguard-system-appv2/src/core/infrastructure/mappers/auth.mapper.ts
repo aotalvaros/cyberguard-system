@@ -9,6 +9,7 @@ import { LoginRequestDto, LoginResponseDto, UserDto } from '../dto/auth.dto';
 import { LoginCredentials } from '../../domain/models/login-credentials.model';
 import { AuthResponse } from '../../domain/models/auth-response.model';
 import { User } from '../../domain/models/user.model';
+import { UserRole } from '../../../environments/constants';
 
 /**
  * Convierte credenciales de dominio a DTO de petición
@@ -23,7 +24,7 @@ export const toLoginRequestDto = (credentials: LoginCredentials): LoginRequestDt
  */
 export const toUser = (dto: UserDto): User => ({
   username: dto.username,
-  role: dto.role
+  role: dto.role as UserRole
 });
 
 /**

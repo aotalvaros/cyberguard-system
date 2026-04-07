@@ -240,10 +240,12 @@ export class ProfileComponent implements OnInit {
 
     const formValue = this.profileForm.getRawValue() as { username: string; email: string; phone: string | null; role: string };
 
-    const data: ProfileUpdateData = {};
-    if (formValue.username !== this.originalValues['username']) data.username = formValue.username;
-    if (formValue.email    !== this.originalValues['email'])    data.email    = formValue.email;
-    if (formValue.phone    !== this.originalValues['phone'])    data.phone    = formValue.phone || null;
+    // Build as mutable intermediate — ProfileUpdateData uses readonly so we can't assign after construction
+    const updates: { username?: string; email?: string; phone?: string | null } = {};
+    if (formValue.username !== this.originalValues['username']) updates.username = formValue.username;
+    if (formValue.email    !== this.originalValues['email'])    updates.email    = formValue.email;
+    if (formValue.phone    !== this.originalValues['phone'])    updates.phone    = formValue.phone || null;
+    const data: ProfileUpdateData = updates;
 
     this.saving.set(true);
     this.successMessage.set('');

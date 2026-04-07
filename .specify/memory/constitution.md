@@ -360,7 +360,9 @@ develop
   2. Tests pasando (CI green).
   3. Cobertura ≥ 90%.
   4. Code review aprobado.
-  5. Checklist de seguridad validado por QA.  6. Documentación afectada actualizada en el mismo PR (§12).
+  5. Checklist de seguridad validado por QA.
+  6. Documentación afectada actualizada en el mismo PR (§12).
+  7. `docker-compose up --build -d` exitoso — todos los contenedores `Up`/`healthy` (§13).
 ---
 
 ## 10. Reglas para Artefactos Spec Kit
@@ -438,6 +440,7 @@ Un task, step, feature o PR **NUNCA** puede marcarse como completado (`✅`, `[x
 | Frontend | `npx vitest run` (en `frontend/cyberguard-system-appv2/`) | `X passed (N)` — cero failures |
 | Backend producer | `npm test` (en `backend/producer/`) | `X passed` — cero failures |
 | Worker | `npm test` (en `backend/worker/`) | `X passed` — cero failures |
+| Despliegue completo | `docker-compose up --build -d` (en raíz) | todos los servicios `Up`/`healthy` (§13) |
 
 ### 11.3 Anti-pattern Prohibido
 > **NEVER** marcar un task como `✅` o `completed` si el comando de verificación muestra `X failed` o si no fue ejecutado tras el último cambio.
@@ -453,11 +456,50 @@ Esta regla nació tras el incidente de EP-03 (external-notifications) donde la a
 
 ---
 
-## Vigencia
+## 13. Regla de Verificación de Despliegue Docker
+
+### 13.1 Principio
+Todo cambio de código que modifique contratos de tipos, interfaces de dominio, o la estructura del modelo debe verificarse con un build de Docker completo antes de marcarse como terminado. El sistema DEBE poder desplegarse en cualquier momento.
+
+### 13.2 Regla
+Todo PR / merge que toque cualquiera de estos artefactos DEBE pasar exitosamente `docker-compose up --build -d` antes de mergearse:
+
+| Artefacto modificado | Riesgo de rotura Docker |
+|---|---|
+| Interfaces de dominio / ports (`UserRecord`, `ProfileUpdateData`, etc.) | Alto — el compilador de Docker usa `strict: true` |
+| Modelos de dominio del frontend (`User`, entidades) | Alto — Angular compiler en build de producción |
+| Mappers (`auth.mapper.ts`, etc.) | Alto — type mismatches aparecen solo en build prod |
+| `ServiceFactory.ts` | Medio — imports nuevos pueden fallar |
+| `app.config.ts` | Medio — providers nuevos pueden romper DI |
+
+### 13.3 Comando de Verificación Obligatorio
+```bash
+# Desde la raíz del repositorio
+docker-compose up --build -d && docker-compose ps
+# Resultado esperado: todos los servicios en estado "Up" o "healthy"
+```
+
+### 13.4 Anti-pattern Prohibido
+> **NEVER** marcar una feature como completada basándose solo en `tsc --noEmit` local o en los tests de vitest/jest. El compilador de Angular en modo producción (`ng build --configuration production`) es más estricto que el compilador de desarrollo.
+
+### 13.5 Protocolo ante Fallo de Build Docker
+1. El contenedor que falla indica qué servicio tiene errores de compilación.
+2. Corregir en la misma rama — nunca mergear código que no compila en Docker.
+3. Verificar con `docker-compose build <servicio>` antes del `up` completo.
+
+### 13.6 Justificación
+Esta regla nació tras el incidente del merge EP-01+EP-03 en `epic/sprint-01/features` donde:
+- `AuthService.ts` no incluía `phone: null` requerido por `UserRecord` (EP-01 añadió el campo)
+- `profile.component.ts` asignaba propiedades `readonly` de `ProfileUpdateData` una a una
+- `auth.mapper.ts` devolvía `role: string` donde el modelo exigía `UserRole`
+  
+Todos estos errores son silenciosos en desarrollo pero rompen el build de producción.
+
+---
 
 Esta constitución es **normativa** y aplica a todo artefacto desde su fecha de creación. Se actualiza cuando:
 - Se adopta un nuevo patrón o tecnología.
 - Se modifica un threshold de calidad.
 - Se descubre un anti-pattern recurrente.
 
-**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Documentos Vivos, §9.4 punto 6
+**Última actualización:** 07 de abril de 2026 — §11 Completitud, §12 Docs Vivos, §13 Docker Deploy, §9.4 puntos 5-6
