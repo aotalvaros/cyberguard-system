@@ -8,6 +8,14 @@ import { AlertsDomainService } from '../../../core/domain/services/alerts-domain
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 import { DeleteThreatUseCase } from '../../../core/application/use-cases/delete-threat.use-case';
 import { SEVERITY_LIST } from '@environments/constants';
+import { ConnectionStatus } from '../../../core/domain/ports/websocket.repository';
+
+const STATUS_LABELS: Record<ConnectionStatus, string> = {
+  CONNECTED:    '● Conectado',
+  DISCONNECTED: '○ Desconectado',
+  CONNECTING:   '◌ Reconectando...',
+  ERROR:        '✕ Sin conexión',
+};
 
 /**
  * ⚠️ HUMAN CHECK: Componente de alertas con validación de rol
@@ -42,7 +50,8 @@ export class AlertsComponent implements OnInit, OnDestroy {
 
   alerts: AlertMessage[] = [];
   filteredAlerts: AlertMessage[] = [];
-  connected = false;
+  connectionStatus: ConnectionStatus = 'DISCONNECTED';
+  readonly statusLabel = STATUS_LABELS;
 
   searchTerm = '';
   filterType = '';
@@ -58,7 +67,10 @@ export class AlertsComponent implements OnInit, OnDestroy {
       this.applyFilters();
       this.cdr.detectChanges();
     });
-    this.connected = this.wsService.isConnected();
+    this.wsService.getConnectionStatus$().subscribe(status => {
+      this.connectionStatus = status;
+      this.cdr.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {

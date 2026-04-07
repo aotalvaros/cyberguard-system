@@ -3,7 +3,10 @@ import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
 import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
+import { GetNotificationPreferencesUseCase } from '../../application/use-cases/GetNotificationPreferencesUseCase';
+import { SaveNotificationPreferencesUseCase } from '../../application/use-cases/SaveNotificationPreferencesUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
+import { RedisNotificationPreferencesRepository } from '../persistence/RedisNotificationPreferencesRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
 import { JWTTokenService } from '../providers/JWTTokenService';
@@ -13,6 +16,7 @@ import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepos
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { UserRepository } from '../../domain/ports/UserRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
+import { NotificationPreferencesRepository } from '../../domain/ports/NotificationPreferencesRepository';
 import { ThreatClassifier } from '../../domain/services/ThreatClassifier';
 import {
   MalwareClassificationStrategy,
@@ -32,6 +36,9 @@ export class ServiceFactory {
   private static userRepository: UserRepository | null = null;
   private static auditLogRepository: AuditLogRepository | null = null;
   private static threatClassifier: ThreatClassifier | null = null;
+  private static notifPrefsRepository: NotificationPreferencesRepository | null = null;
+  private static getNotifPrefsUseCase: GetNotificationPreferencesUseCase | null = null;
+  private static saveNotifPrefsUseCase: SaveNotificationPreferencesUseCase | null = null;
 
   /**
    * ✅ Obtener instancia del repositorio de amenazas
@@ -134,6 +141,39 @@ export class ServiceFactory {
   }
 
   /**
+   * ✅ Obtener instancia del repositorio de preferencias de notificación
+   * Implementa NotificationPreferencesRepository (port) con Redis
+   */
+  static getNotifPrefsRepository(): NotificationPreferencesRepository {
+    if (!this.notifPrefsRepository) {
+      this.notifPrefsRepository = new RedisNotificationPreferencesRepository();
+    }
+    return this.notifPrefsRepository;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de obtener preferencias de notificación
+   * Inyecta: NotificationPreferencesRepository (port)
+   */
+  static getGetNotifPrefsUseCase(): GetNotificationPreferencesUseCase {
+    if (!this.getNotifPrefsUseCase) {
+      this.getNotifPrefsUseCase = new GetNotificationPreferencesUseCase(this.getNotifPrefsRepository());
+    }
+    return this.getNotifPrefsUseCase;
+  }
+
+  /**
+   * ✅ Obtener instancia del use case de guardar preferencias de notificación
+   * Inyecta: NotificationPreferencesRepository (port)
+   */
+  static getSaveNotifPrefsUseCase(): SaveNotificationPreferencesUseCase {
+    if (!this.saveNotifPrefsUseCase) {
+      this.saveNotifPrefsUseCase = new SaveNotificationPreferencesUseCase(this.getNotifPrefsRepository());
+    }
+    return this.saveNotifPrefsUseCase;
+  }
+
+  /**
    * ✅ Resetear todas las instancias (solo para testing)
    */
   static resetForTesting(): void {
@@ -145,6 +185,9 @@ export class ServiceFactory {
     this.userRepository = null;
     this.auditLogRepository = null;
     this.threatClassifier = null;
+    this.notifPrefsRepository = null;
+    this.getNotifPrefsUseCase = null;
+    this.saveNotifPrefsUseCase = null;
   }
 
   /**

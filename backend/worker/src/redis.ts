@@ -115,3 +115,42 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
 export const closeRedis = async (): Promise<void> => {
   if (redisClient?.isOpen) await redisClient.quit();
 };
+
+// ────────────────────────────────────────────────────────
+// External Notifications (EP-03)
+// ────────────────────────────────────────────────────────
+
+export interface NotifPreferences {
+  emailEnabled: boolean;
+  whatsappEnabled: boolean;
+  email: string;
+  phone: string;
+}
+
+export const getNotifPreferences = async (username: string): Promise<NotifPreferences | null> => {
+  if (!redisClient?.isOpen) return null;
+  try {
+    const raw = await redisClient.get(`notif:prefs:${username}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as NotifPreferences;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Failed to get notif preferences', { error: message });
+    return null;
+  }
+};
+
+export const saveNotifLog = async (
+  eventId: string,
+  results: Array<{ canal: string; status: string; attempts: number; error?: string }>,
+): Promise<void> => {
+  if (!redisClient?.isOpen) return;
+  try {
+    const key = `notif:log:${eventId}`;
+    await redisClient.set(key, JSON.stringify({ eventId, results, savedAt: new Date().toISOString() }));
+    await redisClient.expire(key, 604800); // 7 días
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Failed to save notif log', { error: message });
+  }
+};

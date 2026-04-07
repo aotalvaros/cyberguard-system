@@ -1,6 +1,10 @@
 // Tipo de prueba: Unitario
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { ThreatDomainService } from '../threat-domain.service';
 import { ThreatRepository } from '../../ports/threat.repository';
@@ -8,6 +12,14 @@ import { ThreatRequest } from '../../models/threat-request.model';
 import { ThreatItem } from '../../models/threat-item.model';
 import { ThreatType } from '../../models/threat-type.enum';
 import { ThreatSeverity } from '../../models/threat-severity.enum';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 describe('ThreatDomainService', () => {
   let service: ThreatDomainService;
@@ -34,6 +46,7 @@ describe('ThreatDomainService', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepository = {
       reportThreat: vi.fn(),
       getThreats: vi.fn(),

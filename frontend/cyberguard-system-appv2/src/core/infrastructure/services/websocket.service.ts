@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { WebSocketRepository } from '../../domain/ports/websocket.repository';
+import { WebSocketRepository, ConnectionStatus } from '../../domain/ports/websocket.repository';
 import { AlertMessage } from '../../domain/models/alert-message.model';
 import { WS_COMMANDS } from '@environments/constants';
 
@@ -43,5 +43,9 @@ export class WebSocketService {
 
   isConnected(): boolean {
     return this.wsRepository.isConnected();
+  }
+
+  getConnectionStatus$(): Observable<ConnectionStatus> {
+    return this.wsRepository.getConnectionStatus$();
   }
 }

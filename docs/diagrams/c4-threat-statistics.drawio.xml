@@ -1,0 +1,227 @@
+<mxfile host="app.diagrams.net" modified="2026-03-27T00:00:00.000Z" agent="GitHub Copilot" version="24.7.17">
+  <diagram id="c4-clean-v3" name="C4 - Notificacion Omnicanal (Limpio)">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TITULO                                    -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="title" value="CyberGuard System — Diagrama C4: Notificacion Omnicanal" style="text;html=1;fontStyle=1;fontSize=16;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="1900" height="36" as="geometry"/>
+        </mxCell>
+
+        <!-- Leyenda -->
+        <mxCell id="lg_new" value="NUEVO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="68" width="110" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_exist" value="EXISTENTE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="68" width="120" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_infra" value="INFRAESTRUCTURA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="68" width="160" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_ext" value="EXTERNO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="68" width="110" height="28" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- ACTOR                                     -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="actor" value="Administrador" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="380" width="60" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- ZONA FRONTEND                             -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="fe_zone" value="FRONTEND — Angular SPA (Puerto 4200)" style="swimlane;startSize=34;rounded=1;fillColor=#f0f7ff;strokeColor=#6c8ebf;strokeWidth=2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="200" y="110" width="840" height="780" as="geometry"/>
+        </mxCell>
+
+        <!-- Subgrupo: Lo que ya existe -->
+        <mxCell id="fe_grp1" value="Modulos existentes" style="swimlane;startSize=24;rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="fe_zone">
+          <mxGeometry x="20" y="50" width="800" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_login" value="Login / Autenticacion [EXISTENTE]&#xa;Inicio de sesion con JWT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="fe_grp1">
+          <mxGeometry x="20" y="30" width="230" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_dashboard" value="Dashboard / Panel de Alertas [EXISTENTE]&#xa;Visualizacion de alertas en vivo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="fe_grp1">
+          <mxGeometry x="275" y="30" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_ws" value="WebSocket Client [EXISTENTE]&#xa;Recibe alertas en tiempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="fe_grp1">
+          <mxGeometry x="540" y="30" width="240" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Subgrupo: Lo nuevo -->
+        <mxCell id="fe_grp2" value="Modulos nuevos — HU 2.1 / 2.2 / 2.3" style="swimlane;startSize=24;rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="fe_zone">
+          <mxGeometry x="20" y="200" width="800" height="540" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_profile_page" value="Seccion Datos Personales [NUEVO]&#xa;HU 2.1 — Vista para consultar perfil" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="fe_grp2">
+          <mxGeometry x="20" y="40" width="360" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_profile_form" value="Formulario Reactivo de Contacto [NUEVO]&#xa;HU 2.2 — Edita correo y telefono" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="fe_grp2">
+          <mxGeometry x="410" y="40" width="360" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_val" value="Validacion de formulario [NUEVO]&#xa;HU 2.1/2.2 — Correo con formato valido,&#xa;telefono obligatorio y numerico" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="fe_grp2">
+          <mxGeometry x="20" y="140" width="750" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_notif" value="Panel de Notificacion en Tiempo Real [NUEVO]&#xa;HU 2.3 — Muestra alerta al instante sin recargar la pagina&#xa;Incluye: fecha, categoria y descripcion de la alerta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="fe_grp2">
+          <mxGeometry x="20" y="250" width="750" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe_historial" value="Historial de Alertas [EXISTENTE]&#xa;Persistido en localStorage (max 200 alertas)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="fe_grp2">
+          <mxGeometry x="20" y="360" width="750" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- ZONA BACKEND: PRODUCER API               -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="be_zone" value="BACKEND — Producer API (Puerto 3000)" style="swimlane;startSize=34;rounded=1;fillColor=#fffde7;strokeColor=#d6b656;strokeWidth=2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="110" width="760" height="780" as="geometry"/>
+        </mxCell>
+
+        <!-- Existente en producer -->
+        <mxCell id="be_grp1" value="Modulos existentes" style="swimlane;startSize=24;rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="be_zone">
+          <mxGeometry x="20" y="50" width="720" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_auth" value="Auth / JWT Middleware [EXISTENTE]&#xa;Valida sesion en todos los endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="be_grp1">
+          <mxGeometry x="20" y="36" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_threat" value="Threat Controller [EXISTENTE]&#xa;Recibe y registra nuevas alertas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="be_grp1">
+          <mxGeometry x="370" y="36" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_publisher" value="Rabbit Publisher [EXISTENTE]&#xa;Encola la alerta para procesamiento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="be_grp1">
+          <mxGeometry x="20" y="140" width="670" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Nuevo en producer -->
+        <mxCell id="be_grp2" value="Modulos nuevos — HU 2.1 / 2.2" style="swimlane;startSize=24;rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="be_zone">
+          <mxGeometry x="20" y="320" width="720" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_profile_ctrl" value="AdminProfileController [NUEVO]&#xa;HU 2.1/2.2 — PUT /api/admin/profile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="be_grp2">
+          <mxGeometry x="20" y="36" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_profile_uc" value="UpdateAdminContactUseCase [NUEVO]&#xa;HU 2.2 — Valida y actualiza contactos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="be_grp2">
+          <mxGeometry x="370" y="36" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="be_profile_repo" value="AdminProfileRepository [NUEVO]&#xa;HU 2.2 — Persiste correo y telefono del administrador en Redis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="be_grp2">
+          <mxGeometry x="20" y="140" width="670" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- ZONA WORKER                               -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="wk_zone" value="WORKER + NOTIFIER (Puerto 8081)" style="swimlane;startSize=34;rounded=1;fillColor=#fffde7;strokeColor=#d6b656;strokeWidth=2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="960" width="760" height="600" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_grp1" value="Modulos existentes" style="swimlane;startSize=24;rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="wk_zone">
+          <mxGeometry x="20" y="50" width="720" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_consumer" value="Rabbit Consumer [EXISTENTE]&#xa;Consume eventos de alertas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="wk_grp1">
+          <mxGeometry x="20" y="30" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_ws" value="WebSocket Broadcaster [EXISTENTE]&#xa;Notifica panel en tiempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="wk_grp1">
+          <mxGeometry x="370" y="30" width="320" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_grp2" value="Modulos nuevos — HU 2.4" style="swimlane;startSize=24;rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1;fontStyle=2;fontSize=11;" vertex="1" parent="wk_zone">
+          <mxGeometry x="20" y="200" width="720" height="360" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_orch" value="NotificationOrchestrator [NUEVO]&#xa;HU 2.4 — Coordina envio por todos los canales sin bloqueo mutuo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="wk_grp2">
+          <mxGeometry x="20" y="32" width="680" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_strategy" value="CategoryTemplateStrategy [NUEVO]&#xa;HU 2.4 / patron Strategy — Selecciona plantilla segun categoria de la alerta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="wk_grp2">
+          <mxGeometry x="20" y="130" width="680" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_email" value="EmailAdapter [NUEVO]&#xa;HU 2.4 / patron Adapter&#xa;Desacoplado del proveedor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="wk_grp2">
+          <mxGeometry x="20" y="228" width="310" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="wk_wa" value="WhatsAppAdapter [NUEVO]&#xa;HU 2.4 / patron Adapter&#xa;Desacoplado del proveedor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="wk_grp2">
+          <mxGeometry x="360" y="228" width="310" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- INFRAESTRUCTURA                           -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="infra_zone" value="INFRAESTRUCTURA" style="swimlane;startSize=28;rounded=1;fillColor=#f9fff9;strokeColor=#82b366;strokeWidth=2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1020" width="840" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="rabbit" value="RabbitMQ [EXISTENTE]&#xa;Cola de mensajes de alertas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="infra_zone">
+          <mxGeometry x="20" y="44" width="360" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="redis" value="Redis [EXISTENTE + campo telefono NUEVO]&#xa;Historial de alertas + contactos del administrador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="infra_zone">
+          <mxGeometry x="420" y="44" width="380" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- EXTERNOS                                  -->
+        <!-- ══════════════════════════════════════════ -->
+        <mxCell id="ext_zone" value="SERVICIOS EXTERNOS" style="swimlane;startSize=28;rounded=1;fillColor=#f9f5ff;strokeColor=#9673a6;strokeWidth=2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1620" width="760" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="email_api" value="Email Provider API [EXTERNO]&#xa;HU 2.4 — Envia correo con plantilla por categoria" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="ext_zone">
+          <mxGeometry x="20" y="44" width="340" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="wa_api" value="WhatsApp Provider API [EXTERNO]&#xa;HU 2.4 — Envia mensaje con plantilla estandar + variables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="ext_zone">
+          <mxGeometry x="390" y="44" width="340" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- RELACIONES (flechas delgadas y discretas) -->
+        <!-- ══════════════════════════════════════════ -->
+
+        <!-- Actor usa dashboard -->
+        <mxCell id="r1" value="usa el dashboard" style="endArrow=block;endFill=1;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;exitX=1;exitY=0.5;" edge="1" parent="1" source="actor" target="fe_dashboard">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Actor accede a datos personales -->
+        <mxCell id="r2" value="gestiona datos personales (HU 2.1)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;dashed=0;" edge="1" parent="1" source="actor" target="fe_profile_page">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- FE → BE: reporte amenaza -->
+        <mxCell id="r3" value="POST /api/threats" style="endArrow=block;endFill=1;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="fe_dashboard" target="be_threat">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- FE → BE: actualizar perfil -->
+        <mxCell id="r4" value="PUT /api/admin/profile (HU 2.1/2.2)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;" edge="1" parent="1" source="fe_profile_form" target="be_profile_ctrl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- BE → RabbitMQ -->
+        <mxCell id="r5" value="encola alerta" style="endArrow=block;endFill=1;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="be_publisher" target="rabbit">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- BE → Redis: contacto -->
+        <mxCell id="r6" value="persiste correo y telefono (HU 2.2)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;" edge="1" parent="1" source="be_profile_repo" target="redis">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- RabbitMQ → Worker -->
+        <mxCell id="r7" value="consume alerta" style="endArrow=block;endFill=1;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="rabbit" target="wk_consumer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → FE: push WS -->
+        <mxCell id="r8" value="push alerta en tiempo real (HU 2.3)" style="endArrow=block;endFill=1;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="wk_ws" target="fe_ws">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → Redis: leer contactos -->
+        <mxCell id="r9" value="consulta contactos del admin (HU 2.4)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;" edge="1" parent="1" source="wk_orch" target="redis">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker adaptadores → externos -->
+        <mxCell id="r10" value="envia email con plantilla de categoria (HU 2.4)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;" edge="1" parent="1" source="wk_email" target="email_api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="r11" value="envia whatsapp con plantilla estandar (HU 2.4)" style="endArrow=block;endFill=1;html=1;strokeColor=#d79b00;strokeWidth=1.5;" edge="1" parent="1" source="wk_wa" target="wa_api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

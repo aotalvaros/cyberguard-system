@@ -1,0 +1,210 @@
+<mxfile host="app.diagrams.net" modified="2026-03-27T00:00:00.000Z" agent="GitHub Copilot" version="24.7.17">
+  <diagram id="seq-v4-lifelines" name="Sequence - Notificacion Omnicanal">
+    <mxGraphModel dx="1800" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3000" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- PARTICIPANTES (cabecera)                          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="p1" value="Administrador" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2" value="Seccion Datos&#xa;Personales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="230" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3" value="Formulario&#xa;de Contacto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="450" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4" value="Producer API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="670" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5" value="Repositorio&#xa;de Perfil" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="890" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6" value="RabbitMQ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7" value="Worker /&#xa;Orquestador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8" value="Estrategia de&#xa;Plantilla" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9" value="Proveedor&#xa;de Email" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1770" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10" value="Proveedor&#xa;WhatsApp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1990" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p11" value="Panel de&#xa;Alertas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="2210" y="30" width="140" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- LIFELINES VERTICALES                              -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="l1" style="endArrow=none;dashed=1;strokeColor=#6c8ebf;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="100" y="100" as="sourcePoint"/><mxPoint x="100" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l2" style="endArrow=none;dashed=1;strokeColor=#d79b00;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="300" y="100" as="sourcePoint"/><mxPoint x="300" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l3" style="endArrow=none;dashed=1;strokeColor=#d79b00;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="520" y="100" as="sourcePoint"/><mxPoint x="520" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l4" style="endArrow=none;dashed=1;strokeColor=#6c8ebf;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="100" as="sourcePoint"/><mxPoint x="740" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l5" style="endArrow=none;dashed=1;strokeColor=#d79b00;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="100" as="sourcePoint"/><mxPoint x="960" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l6" style="endArrow=none;dashed=1;strokeColor=#6c8ebf;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1180" y="100" as="sourcePoint"/><mxPoint x="1180" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l7" style="endArrow=none;dashed=1;strokeColor=#d79b00;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="100" as="sourcePoint"/><mxPoint x="1400" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l8" style="endArrow=none;dashed=1;strokeColor=#d79b00;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1620" y="100" as="sourcePoint"/><mxPoint x="1620" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l9" style="endArrow=none;dashed=1;strokeColor=#9673a6;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1840" y="100" as="sourcePoint"/><mxPoint x="1840" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l10" style="endArrow=none;dashed=1;strokeColor=#9673a6;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="2060" y="100" as="sourcePoint"/><mxPoint x="2060" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l11" style="endArrow=none;dashed=1;strokeColor=#6c8ebf;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="2280" y="100" as="sourcePoint"/><mxPoint x="2280" y="1720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE HU 2.1 / 2.2                               -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="b1" value="HU 2.1 / 2.2 — Gestion de Datos Personales y Numero Telefonico" style="text;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;align=left;fontStyle=1;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="900" height="28" as="geometry"/>
+        </mxCell>
+
+        <!-- Mensajes HU 2.1/2.2 -->
+        <mxCell id="m1" value="1.0 accederDatosPersonales()" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="100" y="195" as="sourcePoint"/><mxPoint x="300" y="195" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l1_label" value="1.0" style="text;html=1;fontSize=10;" vertex="1" parent="1"><mxGeometry x="180" y="178" width="30" height="16" as="geometry"/></mxCell>
+
+        <mxCell id="m2" value="1.1 mostrarPerfil(nombre, correo, telefono)" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="300" y="240" as="sourcePoint"/><mxPoint x="100" y="240" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m3" value="1.2 editarContacto(correo, telefono)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="100" y="290" as="sourcePoint"/><mxPoint x="520" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m4" value="1.3 validarFormato(correo, telefono) : boolean" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="520" y="340" as="sourcePoint"/><mxPoint x="740" y="340" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m5" value="1.4 guardarContacto(correo, telefono)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="390" as="sourcePoint"/><mxPoint x="960" y="390" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m6" value="1.5 contactoPersistido : OK" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="435" as="sourcePoint"/><mxPoint x="740" y="435" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m7" value="1.6 confirmar(&quot;Perfil actualizado correctamente&quot;)" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="520" y="480" as="sourcePoint"/><mxPoint x="100" y="480" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Alterno HU 2.1/2.2 -->
+        <mxCell id="a1" value="[ALTERNO] formato invalido o telefono vacio: mostrarError() — no guardar" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="510" width="880" height="26" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE HU 2.3                                     -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="b2" value="HU 2.3 — Notificacion en Tiempo Real en el Sistema" style="text;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;align=left;fontStyle=1;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="565" width="900" height="28" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="m8" value="2.0 registrarAlerta(categoria, descripcion, fecha)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="100" y="620" as="sourcePoint"/><mxPoint x="740" y="620" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m9" value="2.1 publicarEvento(alerta)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="665" as="sourcePoint"/><mxPoint x="1180" y="665" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m10" value="2.2 consumirEvento(alerta)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1180" y="710" as="sourcePoint"/><mxPoint x="1400" y="710" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m11" value="2.3 emitirEnTiempoReal(alerta)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="755" as="sourcePoint"/><mxPoint x="2280" y="755" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m12" value="2.4 mostrarAlerta(fecha, categoria, descripcion)" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="2280" y="800" as="sourcePoint"/><mxPoint x="100" y="800" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- BLOQUE HU 2.4                                     -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="b3" value="HU 2.4 — Notificacion en Sistemas Externos (Email y WhatsApp)" style="text;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;align=left;fontStyle=1;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="850" width="1100" height="28" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="m13" value="3.0 consultarContactosAdmin() : {correo, telefono}" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="905" as="sourcePoint"/><mxPoint x="960" y="905" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m13r" value="{correo, telefono}" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="945" as="sourcePoint"/><mxPoint x="1400" y="945" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m14" value="3.1 seleccionarPlantilla(categoria) : contenido" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="990" as="sourcePoint"/><mxPoint x="1620" y="990" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m14r" value="contenido : plantilla" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1620" y="1030" as="sourcePoint"/><mxPoint x="1400" y="1030" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m15" value="3.2 enviarEmail(correo, contenido)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="1075" as="sourcePoint"/><mxPoint x="1840" y="1075" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m15r" value="3.3 confirmarEnvioEmail() : OK" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1840" y="1115" as="sourcePoint"/><mxPoint x="1400" y="1115" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m16" value="3.4 enviarWhatsApp(telefono, plantillaEstandar + variables)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="1160" as="sourcePoint"/><mxPoint x="2060" y="1160" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m16r" value="3.5 confirmarEnvioWhatsApp() : OK" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#666666;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="2060" y="1200" as="sourcePoint"/><mxPoint x="1400" y="1200" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="m17" value="3.6 registrarResultadoEnvio(canal, estado)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="1245" as="sourcePoint"/><mxPoint x="960" y="1245" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Alternos HU 2.4 -->
+        <mxCell id="b_alt" value="Regla critica de negocio — Tolerancia a fallos por canal (independencia entre canales)" style="text;html=1;strokeColor=#b85450;fillColor=#b85450;fontColor=#ffffff;align=left;fontStyle=1;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1295" width="1400" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="a2" value="[ALTERNO A] fallo Email: registrarError(email, motivo) — continuar con WhatsApp — alerta visible en panel" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1330" width="1400" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="a3" value="[ALTERNO B] fallo WhatsApp: registrarError(whatsapp, motivo) — continuar con Email — alerta visible en panel" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1363" width="1400" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="a4" value="[ALTERNO C] fallo ambos: registrarError(ambos, motivo) — alerta permanece en panel y en historial externo" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1396" width="1400" height="26" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

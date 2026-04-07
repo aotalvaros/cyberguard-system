@@ -14,6 +14,8 @@ import { StatisticsRepository } from '../core/domain/ports/statistics.repository
 // Backend endpoint available — use real implementation
 import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
 import { StatisticsMockRepository } from '../core/infrastructure/services/statistics-mock-repository.impl';
+import { NotificationPreferencesRepository } from '../core/domain/ports/notification-preferences.repository';
+import { NotificationPreferencesRepositoryImpl } from '../core/infrastructure/services/notification-preferences-repository.impl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,5 +31,6 @@ export const appConfig: ApplicationConfig = {
     { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
     // Use real repository now that backend endpoint exists
     { provide: StatisticsRepository, useClass: StatisticsRepositoryImpl },
+    { provide: NotificationPreferencesRepository, useClass: NotificationPreferencesRepositoryImpl },
   ]
 };

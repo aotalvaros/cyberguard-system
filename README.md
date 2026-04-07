@@ -17,11 +17,10 @@ Sistema distribuido de alertas de ciberseguridad en tiempo real con arquitectura
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API (Producer)
-├── worker/            # Node.js Consumer
+├── frontend/          # Angular App (V2 activa: cyberguard-system-appv2)
+├── backend/           # Node.js API Producer (TypeScript hexagonal)
 ├── docs/              # Documentación técnica
-└── docker-compose.yml # RabbitMQ
+└── docker-compose.yml # RabbitMQ + Redis + PostgreSQL + Backend + Worker + Frontend
 ```
 
 ### Flujo de Datos
@@ -34,18 +33,28 @@ cyberguard-system/
 ## 🚀 Stack Tecnológico
 
 ### Frontend
-- **Framework**: Angular 17+
+- **Framework**: Angular 21+
+- **Arquitectura**: Hexagonal (Domain / Application / Presentation)
 - **UI Library**: Angular Material
 - **State Management**: RxJS
 - **HTTP Client**: Angular HttpClient
+- **Testing**: Vitest
 
-### Backend
+### Backend (Producer)
 - **Runtime**: Node.js 20+
 - **Framework**: Express.js
+- **Arquitectura**: Hexagonal (Domain / Application / Infrastructure)
+- **Lenguaje**: TypeScript
 - **Validación**: Joi
-- **Persistencia** : Redis
-- **Autenticación**: JWT (usuario en variables de entorno)
+- **Persistencia**: PostgreSQL 15+ (amenazas, usuarios, auditoría)
+- **Autenticación**: Firebase + JWT
 - **Cliente RabbitMQ**: amqplib
+- **Logging**: Winston
+
+### Worker (Consumer)
+- **Runtime**: Node.js 20+
+- **Cache / Historial**: Redis 7+
+- **WebSocket**: ws
 
 ### Broker
 - **Message Broker**: RabbitMQ 3.12+
@@ -57,7 +66,7 @@ cyberguard-system/
 
 - Docker & Docker Compose
 - Git
-
+- Cuenta y proyecto en **Firebase** (Authentication habilitado)
 ---
 
 ## 🔧 Instalación y Configuración
@@ -83,7 +92,8 @@ docker compose up --build
 
 Esto levanta:
 - **RabbitMQ** (puerto 5672, Management UI: 15672)
-- **Redis** (puerto 6379)
+- **Redis** (puerto 6379, usado por el Worker)
+- **PostgreSQL** (puerto 5432, base de datos principal del Backend)
 - **Backend API** (puerto 3000)
 - **Worker** (WebSocket puerto 8081)
 - **Frontend** (puerto 4200)
@@ -92,7 +102,8 @@ Esto levanta:
 - **Frontend**: http://localhost:4200
 - **Backend API**: http://localhost:3000
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
-- **Credenciales por defecto**: admin / cyberguard2024
+- **Credenciales**: requieren cuenta Firebase configurada (ver `.env.example`).
+  Usuario `admin@cyberguard.com` pre-seeded en PostgreSQL; crea este usuario en tu proyecto Firebase Auth.
 
 #### 5. Detener el sistema
 ```bash
@@ -118,11 +129,16 @@ cd cyberguard-system
 ```bash
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 docker run -d --name cyberguard-redis -p 6379:6379 redis:7-alpine
+docker run -d --name cyberguard-postgres \
+  -e POSTGRES_DB=cyberguard_db \
+  -e POSTGRES_USER=cyberguard \
+  -e POSTGRES_PASSWORD=cyberguard_secret \
+  -p 5432:5432 postgres:15-alpine
 ```
 
 #### 3. Configurar y levantar Backend
 ```bash
-cd backend
+cd backend/producer
 cp .env.example .env
 npm install
 npm run dev
@@ -137,7 +153,7 @@ npm start
 
 #### 5. Configurar y levantar Frontend
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm install
 npm start
 ```
@@ -153,15 +169,22 @@ npm start
 
 ```
 cyberguard-system/
-├── frontend/          # Angular App
-├── backend/           # Node.js API Producer
-├── worker/            # Node.js Consumer
-├── docs/              # Documentación
-│   ├── SECURITY_GUIDELINES.md
-│   ├── QA_EVIDENCE.md
+├── frontend/
+│   └── cyberguard-system-appv2/   # Angular 21 (activo)
+├── backend/
+│   ├── producer/                  # Node.js API Producer (TypeScript hexagonal)
+│   └── worker/                    # Node.js Consumer (Redis + WebSocket)
+├── docs/                          # Documentación
+│   ├── architecture/              # Diagramas y análisis arquitectónico
+│   ├── security/                  # Guías y análisis de seguridad
+│   ├── qa/                        # Evidencias y feedback QA
+│   ├── feedback/                  # Feedback del equipo
+│   ├── project/                   # Contexto, decisiones y changelog
+│   ├── guides/                    # Guías de herramientas
+│   ├── diagrams/
 │   └── images/
-├── docker-compose.yml # RabbitMQ
-├── AI_WORKFLOW.md     # Estrategia de trabajo con IA
+├── docker-compose.yml             # RabbitMQ + Redis + PostgreSQL + Backend + Worker + Frontend
+├── AI_WORKFLOW.md                 # Estrategia de trabajo con IA
 ├── README.md
 └── package.json
 ```
@@ -232,20 +255,20 @@ npx jest GetThreatStatisticsUseCase --no-coverage
 | 🔴 RED | `660ddcb` | Tests escritos antes de la implementación |
 | 🟢 GREEN | `99fb71d` | Implementación mínima para pasar los tests |
 | 🔵 REFACTOR | `ad5d1d1` | Tests de infraestructura y controller |
-9
+
 Ver estrategia completa en [TESTING_STRATEGY_BACKEND.md](backend/producer/TESTING_STRATEGY_BACKEND.md)
 
 
 ### Frontend (Angular + Vitest)
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm test                 # Ejecutar tests con Vitest
 npm run test:demo        # Demo tests (detección de bugs)
 ```
 
 ### QA Evidencias
-- **Auditoría QA Final**: [FEEDBACK_TEAM-4-QA.md](FEEDBACK_TEAM-4-QA.md) - Evaluación AI-First (23.5/25)
-- Registro histórico: [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+- **Auditoría QA Final**: [FEEDBACK_TEAM-4-QA.md](docs/qa/FEEDBACK_TEAM-4-QA.md) - Evaluación AI-First (23.5/25)
+- Registro histórico: [docs/qa/QA_EVIDENCE.md](docs/qa/QA_EVIDENCE.md)
 - Criterios de aceptacion, seguridad y estres documentados por QA
 - Capturas y adjuntos en [docs/images](docs/images)
 
@@ -265,7 +288,7 @@ docker compose ps            # Ver estado de servicios
 
 **Backend:**
 ```bash
-cd backend
+cd backend/producer
 npm run dev      # Modo desarrollo
 npm test         # Ejecutar tests
 ```
@@ -278,7 +301,7 @@ npm start        # Iniciar worker
 
 **Frontend:**
 ```bash
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm start        # Servidor de desarrollo
 npm test         # Ejecutar tests
 npm run build    # Build de producción
@@ -289,7 +312,7 @@ npm run build    # Build de producción
 ## 🛡️ Seguridad
 
 - ✅ Variables de entorno para credenciales
-- ✅ Validación de inputs con Joi/Zod
+- ✅ Validación de inputs con Joi
 - ✅ Sanitización de datos
 - ✅ Rate limiting en API
 - ✅ CORS configurado
@@ -307,7 +330,7 @@ npm run build    # Build de producción
 - WebSocket: entrega de alertas en tiempo real y limpieza
 
 ### Checklist de Seguridad
-- Basado en [docs/SECURITY_GUIDELINES.md](docs/SECURITY_GUIDELINES.md)
+- Basado en [docs/security/SECURITY_GUIDELINES.md](docs/security/SECURITY_GUIDELINES.md)
 - Validado en cada PR por QA
 
 ### Pruebas de Estres (ejemplo)
@@ -317,7 +340,7 @@ npx autocannon -c 50 -d 30 -p 10 http://localhost:3000/api/auth/login \
   -b '{"username":"admin","password":"cyberguard2024"}'
 ```
 
-Evidencia completa en [docs/QA_EVIDENCE.md](docs/QA_EVIDENCE.md)
+Evidencia completa en [docs/qa/QA_EVIDENCE.md](docs/qa/QA_EVIDENCE.md)
 
 ---
 
@@ -426,8 +449,33 @@ Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
 
 ## 📚 Documentación Adicional
 
-- [AI_WORKFLOW.md](./AI_WORKFLOW.md) - Estrategia de trabajo con IA
-- [docs/SECURITY_GUIDELINES.md](./docs/SECURITY_GUIDELINES.md) - Checklist de seguridad
+### Proyecto
+- [AI_WORKFLOW.md](./AI_WORKFLOW.md) - Bitácora viva de desarrollo con IA
+- [docs/project/PROJECT_CONTEXT.md](./docs/project/PROJECT_CONTEXT.md) - Contexto completo: arquitectura, contratos API, variables de entorno
+- [docs/project/DECISION_LOG.md](./docs/project/DECISION_LOG.md) - Registro de decisiones técnicas
+- [docs/project/CHANGELOG_SOURCES.md](./docs/project/CHANGELOG_SOURCES.md) - Fuentes y bitácora de decisiones de diseño
+- [docs/project/Guía de Evaluación - Semana 3 Mid Level (2).md](./docs/project/Guía%20de%20Evaluación%20-%20Semana%203%20Mid%20Level%20(2).md) - Criterios de evaluación Semana 3
+
+### Arquitectura
+- [docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md](./docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md) - Análisis de impacto C4 y secuencia (Threat Statistics)
+- [docs/architecture/HEXAGONAL_FRONTEND.md](./docs/architecture/HEXAGONAL_FRONTEND.md) - Arquitectura hexagonal del Frontend V2
+- [docs/diagrams/sequence-threat-statistics.drawio.xml](./docs/diagrams/sequence-threat-statistics.drawio.xml) - Diagrama de secuencia: carga de estadísticas
+- [docs/diagrams/c4-threat-statistics.drawio.xml](./docs/diagrams/c4-threat-statistics.drawio.xml) - Diagrama C4: Threat Statistics
+- [docs/diagrams/component-notification-feature.drawio.xml](./docs/diagrams/component-notification-feature.drawio.xml) - Diagrama de componentes: notificación omnicanal
+
+### Seguridad
+- [docs/security/SECURITY_GUIDELINES.md](./docs/security/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio por PR
+- [docs/security/PLANNED_ATTACK.md](./docs/security/PLANNED_ATTACK.md) - Análisis de vectores de ataque planificados
+
+### QA y Feedback
+- [docs/qa/QA_EVIDENCE.md](./docs/qa/QA_EVIDENCE.md) - Evidencias y criterios de aceptación
+- [docs/qa/FEEDBACK_TEAM-4-QA.md](./docs/qa/FEEDBACK_TEAM-4-QA.md) - Auditoría QA AI-First (23.5/25)
+- [docs/feedback/FEEDBACK_DAVID.md](./docs/feedback/FEEDBACK_DAVID.md) - Feedback David
+- [docs/feedback/FEEDBACK_Jhorman.md](./docs/feedback/FEEDBACK_Jhorman.md) - Feedback Jhorman
+
+### Guías y Frontend
+- [docs/guides/TOOLS_GUIDE.md](./docs/guides/TOOLS_GUIDE.md) - Guía de herramientas del proyecto
+- [frontend/cyberguard-system-appv2/docs/README.md](./frontend/cyberguard-system-appv2/docs/README.md) - Guía completa del Frontend V2 (incluye Threat Statistics)
 
 ---
 
@@ -439,4 +487,4 @@ Durante la implementación, agregar comentarios `// ⚠️ HUMAN CHECK:` en:
 
 ---
 
-**Última actualización**: 11 de febrero de 2026
+**Última actualización**: 06 de abril de 2026

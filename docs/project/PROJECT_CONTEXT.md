@@ -40,33 +40,46 @@
 
 ### Componentes
 
-1. **Frontend (Angular 21)**
-   - UI para login y dashboard
-   - Formulario de reporte de amenazas
-   - Cliente WebSocket para notificaciones
-   - Gestión de historial local
+1. **Frontend (Angular 21 — Hexagonal)**
+   - Arquitectura hexagonal: `core/domain/`, `core/application/use-cases/`, `presentation/`
+   - Use Cases: `LoginUseCase`, `ReportThreatUseCase`, `GetThreatsUseCase`, `DeleteThreatUseCase`, `GetStatisticsUseCase`
+   - Ports: `AuthRepository`, `ThreatRepository`, `StatisticsRepository`, `WebSocketRepository`
+   - Presentation: `DashboardComponent`, `StatisticsWidgetComponent`, `AlertsComponent`, `ReportThreatComponent`, `AutenticacionComponent`
+   - Guards: `AuthGuard`, `AdminGuard`
+   - Strategies + Factory: `ThreatValidationStrategy`, `ThreatValidationFactory`
+   - Shared state via RxJS signals/Observables
 
-2. **Backend API (Node.js + Express)**
-   - Autenticación JWT
-   - Validación de payloads (Joi)
-   - Producer de RabbitMQ
-   - Rate limiting y seguridad
+2. **Backend API — Producer (Node.js + Express — Hexagonal TypeScript)**
+   - Autenticación dual: **Firebase** (identity provider) + **JWT** (sesiones)
+   - Validación de payloads: Joi
+   - Controllers: `AuthController`, `ThreatController`, `StatisticsController`, `AdminController`
+   - Use Cases: `GetThreatStatisticsUseCase`, `ListThreatsUseCase`, `DeleteThreatUseCase`
+   - Domain Ports: `ThreatRepository`, `ThreatStatisticsRepository`, `UserRepository`, `AuditLogRepository`, `EventPublisher`, `ThreatClassificationStrategy`
+   - Infraestructura: `PostgresThreatRepository`, `PostgresThreatStatisticsRepository`, `PostgresUserRepository`, `PostgresAuditLogRepository`, `RabbitMQPublisher`, `FirebaseAuthProvider`, `JWTTokenService`
+   - Middlewares: `authMiddleware`, `bruteForceDetection`, `errorMiddleware`, `validationMiddleware`
+   - Rate limiting y Helmet.js para seguridad de headers
+   - Logging: Winston
 
 3. **RabbitMQ**
    - Message broker
-   - Cola: `threats.queue`
-   - Exchange: `threats.exchange`
-   - Routing key: `threat.reported`
+   - Exchange: `cyberguard.events`
+   - Topic: `#`
 
 4. **Worker (Node.js Consumer)**
    - Consume mensajes de RabbitMQ
-   - Procesa amenazas
-   - Envía notificaciones vía WebSocket
+   - Persiste historial en **Redis**
    - Servidor WebSocket en puerto 8081
+   - Reenvía eventos al Frontend en tiempo real
 
-5. **Redis**
-   - Almacenamiento de sesiones
-   - Cache de datos temporales
+5. **PostgreSQL 15+**
+   - Persistencia principal del Backend
+   - Tablas: `users`, `threats`, `audit_logs`
+   - Migración inicial: `backend/producer/migrations/001_initial_schema.sql`
+   - Usuario `admin` pre-seeded
+
+6. **Redis 7+**
+   - Usado únicamente por el Worker
+   - Historial de alertas recibidas por WebSocket
 
 ---
 
@@ -174,7 +187,90 @@ Content-Type: application/json
 
 ---
 
-## 🔌 Contrato WebSocket
+### 3. Estadísticas de Amenazas
+
+#### GET `/api/statistics`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response 200:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalThreats": 42,
+    "bySeverity": { "low": 5, "medium": 15, "high": 18, "critical": 4 },
+    "byType": { "malware": 12, "intrusion": 10, "phishing": 8, "ddos": 7, "ransomware": 5 },
+    "timeWindow": "all_time",
+    "generatedAt": "2026-04-06T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 4. Listado de Amenazas
+
+#### GET `/api/threats`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response 200:**
+```json
+{ "total": 10, "threats": [ { "id": "...", "type": "malware", "severity": "high", ... } ] }
+```
+
+---
+
+### 5. Eliminar Amenaza
+
+#### DELETE `/api/threats/:threatId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response 200:**
+```json
+{ "success": true, "threatId": "...", "message": "Threat deleted successfully" }
+```
+
+**Response 404:**
+```json
+{ "success": false, "error": "Threat not found" }
+```
+
+---
+
+### 6. Gestión de Roles (Admin)
+
+#### PATCH `/api/admin/users/:username/role`
+
+**Headers:**
+```
+Authorization: Bearer <token>  (role=admin requerido)
+```
+
+**Request:**
+```json
+{ "role": "analyst" }
+```
+
+**Roles válidos:** `admin`, `analyst`, `viewer`
+
+**Response 200:**
+```json
+{ "message": "Role updated", "username": "...", "role": "analyst" }
+```
+
+---
 
 ### Conexión
 
@@ -272,10 +368,15 @@ Content-Type: application/json
 - **Capacidad:** 200 mensajes
 - **Deduplicación:** Por `eventId`, `threatId`, o hash
 
-### Backend (Redis)
-- Sesiones de usuario
-- Cache temporal
-- TTL: 24 horas
+### Backend (Redis) — Worker únicamente
+- Historial de alertas recibidas vía WebSocket
+- TTL configurable
+
+### Backend (PostgreSQL)
+- Tabla `users`: sincronizada desde Firebase en primer login
+- Tabla `threats`: amenazas reportadas, con índices por tipo, severidad y fecha
+- Tabla `audit_logs`: registro de acciones por usuario
+- Usuario `admin` pre-seeded en migración inicial
 
 ### RabbitMQ
 - Persistencia de mensajes
@@ -315,42 +416,55 @@ Content-Type: application/json
 ```
 cyberguard-system/
 ├── frontend/
-│   └── cyberguard-system/
-│       ├── src/
-│       │   ├── app/
-│       │   │   ├── services/
-│       │   │   │   ├── auth.service.ts       # Autenticación y sesiones
-│       │   │   │   ├── threat.service.ts     # Reporte de amenazas
-│       │   │   │   └── ws.service.ts         # Cliente WebSocket
-│       │   │   ├── guards/
-│       │   │   │   └── admin.guard.ts        # Protección de rutas
-│       │   │   ├── admin/
-│       │   │   │   └── admin-dashboard.component.ts  # Dashboard principal
-│       │   │   └── autenticacion/
-│       │   │       └── autenticacion.component.ts    # Login
-│       │   └── environment.ts
-│       ├── TESTING_GUIDE.md          # Guía de testing (2000+ líneas)
-│       ├── ANGULAR_JEST_SETUP.md     # Setup de Jest para Angular
-│       └── package.json
+│   └── cyberguard-system-appv2/          # Frontend activo (Angular 21 + Hexagonal)
+│       └── src/
+│           ├── core/
+│           │   ├── domain/
+│           │   │   ├── models/              # Entidades y enums de dominio
+│           │   │   ├── ports/               # Interfaces (repositorios, servicios)
+│           │   │   └── services/            # Servicios de dominio
+│           │   └── application/
+│           │       └── use-cases/           # LoginUseCase, ReportThreatUseCase, etc.
+│           ├── presentation/
+│           │   ├── components/          # Dashboard, Alerts, ReportThreat, Login
+│           │   └── guards/              # AuthGuard, AdminGuard
+│           ├── shared/
+│           │   ├── strategies/          # ThreatValidationStrategy
+│           │   └── factories/           # ThreatValidationFactory
+│           └── environments/
 ├── backend/
-│   ├── src/
-│   │   ├── routes/
-│   │   │   ├── auth.routes.js        # Rutas de autenticación
-│   │   │   └── threats.routes.js     # Rutas de amenazas
-│   │   ├── middleware/
-│   │   │   ├── auth.middleware.js    # Validación JWT
-│   │   │   └── validation.middleware.js  # Validación Joi
-│   │   ├── services/
-│   │   │   └── rabbitmq.service.js   # Producer de RabbitMQ
-│   │   └── server.js
-│   └── worker/
-│       ├── consumer.js               # Consumer de RabbitMQ
-│       └── websocket.server.js       # Servidor WebSocket
-├── docker-compose.yml                # RabbitMQ + Redis
+│   ├── producer/                         # Backend API (TypeScript + Hexagonal)
+│   │   ├── migrations/
+│   │   │   └── 001_initial_schema.sql    # Esquema PostgreSQL inicial
+│   │   └── src/
+│   │       ├── domain/
+│   │       │   ├── entities/             # Threat
+│   │       │   ├── ports/                # Interfaces de repositorios y proveedores
+│   │       │   └── services/             # ThreatClassifier
+│   │       ├── application/
+│   │       │   ├── use-cases/            # GetThreatStatisticsUseCase, ListThreatsUseCase, DeleteThreatUseCase
+│   │       │   └── services/             # AuthService, ThreatService
+│   │       └── infrastructure/
+│   │           ├── http/
+│   │           │   ├── controllers/      # auth, threat, statistics, admin
+│   │           │   ├── middlewares/      # auth, bruteforce, error, validation
+│   │           │   └── validators/       # threat.schema.ts
+│   │           ├── persistence/      # PostgresThreatRepository, PostgresUserRepository, etc.
+│   │           ├── providers/        # FirebaseAuthProvider, JWTTokenService, RabbitMQPublisher
+│   │           ├── factories/        # ServiceFactory
+│   │           └── config/           # env.ts, database.ts, logger.ts, rabbitmq.ts
+│   └── worker/                           # Worker Consumer (Redis + WebSocket)
+├── docker-compose.yml                    # RabbitMQ + Redis + PostgreSQL + Backend + Worker + Frontend
 ├── docs/
-│   ├── SECURITY_GUIDELINES.md        # Checklist de seguridad
-│   └── QA_EVIDENCE.md                # Evidencias de QA
-└── README.md                         # Este archivo
+│   ├── architecture/                     # ARCHITECTURAL_IMPACT_ANALYTICS.md, HEXAGONAL_FRONTEND.md
+│   ├── security/                         # SECURITY_GUIDELINES.md, PLANNED_ATTACK.md
+│   ├── qa/                               # QA_EVIDENCE.md, FEEDBACK_TEAM-4-QA.md
+│   ├── feedback/                         # FEEDBACK_DAVID.md, FEEDBACK_Jhorman.md
+│   ├── project/                          # PROJECT_CONTEXT.md, DECISION_LOG.md, CHANGELOG_SOURCES.md
+│   ├── guides/                           # TOOLS_GUIDE.md
+│   └── diagrams/                         # drawio: C4, secuencia, componentes
+├── AI_WORKFLOW.md
+└── README.md
 ```
 
 ---
@@ -360,21 +474,27 @@ cyberguard-system/
 ### Backend (.env)
 ```bash
 PORT=3000
+NODE_ENV=development
 JWT_SECRET=your-secret-key-here
-JWT_EXPIRATION=24h
 RABBITMQ_URL=amqp://localhost:5672
-REDIS_URL=redis://localhost:6379
 ALLOWED_ORIGINS=http://localhost:4200
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX=100
+# Firebase (identity provider)
+FIREBASE_API_KEY=your-firebase-api-key
+FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+FIREBASE_PROJECT_ID=your-project-id
+# PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=cyberguard_db
+POSTGRES_USER=cyberguard
+POSTGRES_PASSWORD=cyberguard_secret
 ```
 
 ### Frontend (environment.ts)
 ```typescript
 export const environment = {
   production: false,
-  baseUrl: 'http://localhost:3000/api/auth',
-  apiBase: 'http://localhost:3000/api',
+  apiUrl: 'http://localhost:3000',
   wsUrl: 'ws://localhost:8081'
 };
 ```
@@ -382,10 +502,10 @@ export const environment = {
 ### Worker (.env)
 ```bash
 RABBITMQ_URL=amqp://localhost:5672
-WEBSOCKET_PORT=8081
-QUEUE_NAME=threats.queue
-EXCHANGE_NAME=threats.exchange
-ROUTING_KEY=threat.reported
+REDIS_URL=redis://localhost:6379
+WORKER_WS_PORT=8081
+WORKER_EXCHANGE=cyberguard.events
+WORKER_TOPIC=#
 ```
 
 ---
@@ -427,7 +547,7 @@ npm install
 npm start
 
 # 4. Frontend
-cd frontend/cyberguard-system
+cd frontend/cyberguard-system-appv2
 npm install
 npm start
 ```
@@ -438,26 +558,40 @@ npm start
 
 ### Frontend
 ```bash
-cd frontend/cyberguard-system
-npm test                    # Ejecutar tests
+cd frontend/cyberguard-system-appv2
+npm test                    # Ejecutar tests con Vitest
 npm run test:coverage       # Con cobertura
 ```
 
 **Cobertura Objetivo:** 85%+
 
-**Archivos Testeados:**
-- ✅ auth.service.spec.ts (95%+)
-- ✅ threat.service.spec.ts (90%+)
-- ✅ ws.service.spec.ts (95%+)
-- ✅ admin-dashboard.component.spec.ts (90%+)
-- ✅ autenticacion.component.spec.ts (95%+)
-- ✅ admin.guard.spec.ts (100%)
+**Archivos Testeados (hexagonal):**
+- ✅ `core/application/use-cases/__tests__/` — todos los use-cases
+- ✅ `core/domain/services/__tests__/` — servicios de dominio
+- ✅ `core/domain/ports/__tests__/` — contratos de puertos
+- ✅ `presentation/components/dashboard/__tests__/` — Dashboard + integración
+- ✅ `presentation/components/alerts/__tests__/` — Alerts + integración
+- ✅ `presentation/guards/__tests__/` — AuthGuard, AdminGuard
+- ✅ `shared/strategies/__tests__/` — ThreatValidationStrategy
 
 ### Backend
 ```bash
-cd backend
+cd backend/producer
 npm test
 ```
+
+**Suites testeadas:** 21 suites, ~506 tests
+
+**Capas cubiertas:**
+- ✅ `unit/domain/entities/` — entidades de dominio
+- ✅ `unit/domain/services/` — ThreatClassifier
+- ✅ `unit/aplication/use-cases/` — GetThreatStatisticsUseCase, ListThreatsUseCase, DeleteThreatUseCase
+- ✅ `unit/aplication/services/` — AuthService, ThreatService
+- ✅ `unit/infrastructure/http/controllers/` — auth, threat, statistics, admin
+- ✅ `unit/infrastructure/http/middlewares/` — auth, bruteforce, error, validation
+- ✅ `unit/infrastructure/persistence/` — Postgres repositories
+- ✅ `unit/infrastructure/providers/` — Firebase, JWT, RabbitMQ
+- ✅ `integration/` — auth y statistics
 
 ---
 
@@ -535,4 +669,4 @@ MIT License - Ver LICENSE para más detalles
 
 ---
 
-**Última actualización:** Febrero 2024
+**Última actualización:** Abril 2026

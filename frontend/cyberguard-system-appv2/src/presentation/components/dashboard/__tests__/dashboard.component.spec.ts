@@ -1,6 +1,10 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { DashboardComponent } from '../dashboard.component';
@@ -15,6 +19,15 @@ import { Router } from '@angular/router';
 import { type ThreatStatistics } from '../../../../core/domain/models/threat-statistics.model';
 import { ThreatType } from '../../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../../core/domain/models/threat-severity.enum';
+import { NotificationPreferencesRepository } from '../../../../core/domain/ports/notification-preferences.repository';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 const mockStats: ThreatStatistics = {
   totalThreats: 10,
@@ -32,6 +45,7 @@ describe('DashboardComponent', () => {
   let mockRouter: { navigate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     mockReportThreatUseCase = { execute: vi.fn().mockReturnValue(of({ threatId: 'threat-123' })) };
     mockLogoutUseCase = { execute: vi.fn() };
     mockRouter = { navigate: vi.fn() };
@@ -48,7 +62,9 @@ describe('DashboardComponent', () => {
           provide: WebSocketRepository,
           useValue: {
             connect: vi.fn(), disconnect: vi.fn(), sendCommand: vi.fn(),
-            getMessages$: vi.fn().mockReturnValue(of([])), isConnected: vi.fn().mockReturnValue(false),
+            getMessages$: vi.fn().mockReturnValue(of([])),
+            isConnected: vi.fn().mockReturnValue(false),
+            getConnectionStatus$: vi.fn().mockReturnValue(of('DISCONNECTED')),
           },
         },
         {
@@ -64,6 +80,13 @@ describe('DashboardComponent', () => {
             reportThreat: vi.fn().mockReturnValue(of({})),
             getThreats: vi.fn().mockReturnValue(of({ threats: [], total: 0 })),
             deleteThreat: vi.fn().mockReturnValue(of({})),
+          },
+        },
+        {
+          provide: NotificationPreferencesRepository,
+          useValue: {
+            get: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })),
+            save: vi.fn().mockReturnValue(of(undefined)),
           },
         },
       ],

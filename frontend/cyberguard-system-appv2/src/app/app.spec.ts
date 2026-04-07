@@ -1,17 +1,30 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { App } from './app';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from '../core/infrastructure/services/auth.service';
 import { WebSocketService } from '../core/infrastructure/services/websocket.service';
 
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
+
 describe('App', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };
   let mockWsService: { connect: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     mockAuthService = { isAuthenticated: vi.fn().mockReturnValue(false) };
     mockWsService = { connect: vi.fn() };
 

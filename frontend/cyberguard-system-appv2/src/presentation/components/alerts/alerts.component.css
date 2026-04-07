@@ -33,8 +33,20 @@
   color: #999;
 }
 
-.connection-status.connected {
+.status-connected {
   color: #4caf50;
+}
+
+.status-disconnected {
+  color: #6c757d;
+}
+
+.status-connecting {
+  color: #ffc107;
+}
+
+.status-error {
+  color: #dc3545;
 }
 
 .btn-export {

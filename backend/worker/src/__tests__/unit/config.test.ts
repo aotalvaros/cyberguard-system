@@ -115,6 +115,8 @@ describe('Config', () => {
 
     it('should not warn when RABBITMQ_URL is set', () => {
       process.env.RABBITMQ_URL = 'amqp://rabbit:5672';
+      process.env.SENDGRID_API_KEY = 'test-key';
+      process.env.WA_TOKEN = 'test-token';
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
       require('../../config');

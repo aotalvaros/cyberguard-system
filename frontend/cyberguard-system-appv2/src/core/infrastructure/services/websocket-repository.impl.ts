@@ -1,6 +1,6 @@
 import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { WebSocketRepository } from '../../domain/ports/websocket.repository';
+import { WebSocketRepository, ConnectionStatus } from '../../domain/ports/websocket.repository';
 import { AlertMessage } from '../../domain/models/alert-message.model';
 import { WebSocketCommand } from '../../domain/models/websocket-command.model';
 import { environment } from '@environments/environment';
@@ -45,8 +45,11 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   private readonly WS_URL = environment.wsUrl;
   private readonly STORAGE_KEY = STORAGE_KEYS.WS_HISTORY;
   private readonly MAX_MESSAGES = LIMITS.MAX_WS_MESSAGES;
-  private reconnectInterval: ReturnType<typeof setInterval> | null = null;
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempt = 0;
+  private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private connected = false;
+  readonly connectionStatus$ = new BehaviorSubject<ConnectionStatus>('DISCONNECTED');
 
   // Injected dependencies for testability
   protected wsFactory: WebSocketFactory;
@@ -70,11 +73,9 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
 
       this.ws.onopen = () => {
         this.connected = true;
+        this.clearReconnect();
+        this.connectionStatus$.next('CONNECTED');
         console.log('WebSocket connected');
-        if (this.reconnectInterval) {
-          clearInterval(this.reconnectInterval);
-          this.reconnectInterval = null;
-        }
       };
 
       this.ws.onmessage = (event) => {
@@ -97,15 +98,13 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   }
 
   disconnect(): void {
-    if (this.reconnectInterval) {
-      clearInterval(this.reconnectInterval);
-      this.reconnectInterval = null;
-    }
+    this.clearReconnect();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
     this.connected = false;
+    this.connectionStatus$.next('DISCONNECTED');
   }
 
   sendCommand(command: WebSocketCommand): void {
@@ -130,6 +129,10 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
 
   isConnected(): boolean {
     return this.connected;
+  }
+
+  getConnectionStatus$(): Observable<ConnectionStatus> {
+    return this.connectionStatus$.asObservable();
   }
 
   /**
@@ -179,12 +182,25 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
    * Protected for testing access.
    */
   protected scheduleReconnect(): void {
-    if (!this.reconnectInterval) {
-      this.reconnectInterval = setInterval(() => {
-        console.log('Attempting to reconnect...');
-        this.connect();
-      }, 2000);
+    if (this.reconnectAttempt >= this.MAX_RECONNECT_ATTEMPTS) {
+      this.connectionStatus$.next('ERROR');
+      return;
     }
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempt), 30000);
+    this.reconnectAttempt++;
+    this.connectionStatus$.next('CONNECTING');
+    this.reconnectTimeout = setTimeout(() => {
+      console.log('Attempting to reconnect...');
+      this.connect();
+    }, delay);
+  }
+
+  protected clearReconnect(): void {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    this.reconnectAttempt = 0;
   }
 
   /**

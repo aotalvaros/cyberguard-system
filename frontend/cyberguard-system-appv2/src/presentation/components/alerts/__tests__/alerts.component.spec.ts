@@ -1,6 +1,10 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { of, BehaviorSubject } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
 import { WebSocketService } from '../../../../core/infrastructure/services/websocket.service';
@@ -8,6 +12,15 @@ import { AlertsDomainService } from '../../../../core/domain/services/alerts-dom
 import { AuthService } from '../../../../core/infrastructure/services/auth.service';
 import { DeleteThreatUseCase } from '../../../../core/application/use-cases/delete-threat.use-case';
 import { AlertMessage } from '../../../../core/domain/models/alert-message.model';
+import { ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 const mockAlerts: AlertMessage[] = [
   { eventId: 'evt-1', data: { threatId: 't-1', type: 'malware', severity: 'high', sourceIp: '192.168.1.1', description: 'Malware detected' }, timestamp: Date.now() },
@@ -19,12 +32,14 @@ describe('AlertsComponent', () => {
   let fixture: ComponentFixture<AlertsComponent>;
   let component: AlertsComponent;
   let messagesSubject: BehaviorSubject<AlertMessage[]>;
+  let statusSubject: BehaviorSubject<ConnectionStatus>;
 
   let mockWsService: {
     getMessages$: ReturnType<typeof vi.fn>;
     isConnected: ReturnType<typeof vi.fn>;
     deleteMessage: ReturnType<typeof vi.fn>;
     clearAll: ReturnType<typeof vi.fn>;
+    getConnectionStatus$: ReturnType<typeof vi.fn>;
   };
 
   let mockAlertsDomain: {
@@ -40,13 +55,16 @@ describe('AlertsComponent', () => {
   let mockDeleteThreatUseCase: { execute: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     messagesSubject = new BehaviorSubject<AlertMessage[]>(mockAlerts);
+    statusSubject = new BehaviorSubject<ConnectionStatus>('CONNECTED');
 
     mockWsService = {
       getMessages$: vi.fn().mockReturnValue(messagesSubject.asObservable()),
       isConnected: vi.fn().mockReturnValue(true),
       deleteMessage: vi.fn(),
       clearAll: vi.fn(),
+      getConnectionStatus$: vi.fn().mockReturnValue(statusSubject.asObservable()),
     };
 
     mockAlertsDomain = {
@@ -82,9 +100,9 @@ describe('AlertsComponent', () => {
       expect(component.alerts).toEqual(mockAlerts);
     });
 
-    it('should check connection status on init', () => {
-      expect(mockWsService.isConnected).toHaveBeenCalled();
-      expect(component.connected).toBe(true);
+    it('should subscribe to connection status on init', () => {
+      expect(mockWsService.getConnectionStatus$).toHaveBeenCalled();
+      expect(component.connectionStatus).toBe('CONNECTED');
     });
   });
 

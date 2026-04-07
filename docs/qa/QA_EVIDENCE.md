@@ -1,7 +1,7 @@
 # QA Evidence - CyberGuard System
 
 ## 1. Alcance y version
-- Fecha: 11 de febrero de 2026
+- Fecha: 11 de febrero de 2026 — Revisado: 06 de abril de 2026
 - Rama/Commit: develop
 - Entorno: local
 - Responsable QA: Jhonatan Aparicio
@@ -56,7 +56,7 @@ curl -X POST http://localhost:3000/api/auth/login \
     ![Evidencia login](images/login.png)
 
 ### 2.2 Threats (Manual)
-- [ ] POST /api/threats con token valido devuelve 202
+- [ ] POST /api/threats con token valido devuelve 201
 - [ ] POST /api/threats sin token devuelve 401
 - [ ] Validaciones Joi: type, severity, sourceIp, description
 
@@ -68,12 +68,12 @@ curl -X POST http://localhost:3000/api/threats \
   -H "Authorization: Bearer <JWT>" \
   -d '{"type":"malware","severity":"high","sourceIp":"192.168.1.10","description":"Test threat payload"}'
 ```
-- SIMULATED: response 202
+- SIMULATED: response 201
 ```json
 {
-  "message": "Threat reported successfully",
+  "success": true,
   "threatId": "<UUID>",
-  "status": "processing"
+  "message": "Threat reported successfully"
 }
 ```
 - SIMULATED: request 401
@@ -102,7 +102,100 @@ curl -X POST http://localhost:3000/api/threats \
   **- Creacion manual de alerta**
     ![Evidencia threat](images/manual%20_incident_created.png)
 
-### 2.3 WebSocket (Worker)
+### 2.3 Listado de Amenazas (GET /api/threats)
+- [ ] GET /api/threats con token valido devuelve 200 con lista
+- [ ] GET /api/threats sin token devuelve 401
+
+**Evidencia**
+- SIMULATED: request 200
+```
+curl -X GET http://localhost:3000/api/threats \
+  -H "Authorization: Bearer <JWT>"
+```
+- SIMULATED: response 200
+```json
+{
+  "total": 2,
+  "threats": [
+    { "id": "1", "type": "malware", "severity": "high", "sourceIp": "192.168.1.1", "description": "..." }
+  ]
+}
+```
+
+### 2.4 Eliminar Amenaza (DELETE /api/threats/:id)
+- [ ] DELETE /api/threats/:id con token y id valido devuelve 200
+- [ ] DELETE /api/threats/:id con id inexistente devuelve 404
+- [ ] DELETE /api/threats/:id sin token devuelve 401
+
+**Evidencia**
+- SIMULATED: request 200
+```
+curl -X DELETE http://localhost:3000/api/threats/1 \
+  -H "Authorization: Bearer <JWT>"
+```
+- SIMULATED: response 200
+```json
+{ "success": true, "threatId": "1", "message": "Threat deleted successfully" }
+```
+- SIMULATED: response 404
+```json
+{ "success": false, "error": "Threat not found" }
+```
+
+### 2.5 Estadisticas (GET /api/statistics)
+- [ ] GET /api/statistics con token valido devuelve 200 con datos agregados
+- [ ] GET /api/statistics sin token devuelve 401
+- [ ] Respuesta incluye: totalThreats, bySeverity, byType, generatedAt
+
+**Evidencia**
+- SIMULATED: request 200
+```
+curl -X GET http://localhost:3000/api/statistics \
+  -H "Authorization: Bearer <JWT>"
+```
+- SIMULATED: response 200
+```json
+{
+  "success": true,
+  "data": {
+    "totalThreats": 5,
+    "bySeverity": { "low": 1, "medium": 2, "high": 2, "critical": 0 },
+    "byType": { "malware": 2, "intrusion": 1, "phishing": 1, "ddos": 1, "ransomware": 0 },
+    "timeWindow": "all_time",
+    "generatedAt": "2026-04-06T10:00:00.000Z"
+  }
+}
+```
+- SIMULATED: response 401
+```json
+{ "error": "Unauthorized" }
+```
+
+### 2.6 Gestion de Roles — Admin (PATCH /api/admin/users/:username/role)
+- [ ] PATCH con token admin valido cambia el rol y devuelve 200
+- [ ] PATCH con rol invalido devuelve 400
+- [ ] PATCH para usuario inexistente devuelve 404
+- [ ] PATCH con token no-admin devuelve 403
+- [ ] Admin no puede degradarse a si mismo
+
+**Evidencia**
+- SIMULATED: request 200
+```
+curl -X PATCH http://localhost:3000/api/admin/users/jhorman/role \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <JWT_ADMIN>" \
+  -d '{"role":"analyst"}'
+```
+- SIMULATED: response 200
+```json
+{ "message": "Role updated", "username": "jhorman", "role": "analyst" }
+```
+- SIMULATED: response 403
+```json
+{ "error": "Forbidden: admin role required" }
+```
+
+### 2.7 WebSocket (Worker)
 - [ ] Recibe mensajes desde RabbitMQ
 - [ ] Reenvia al dashboard por WebSocket
 - [ ] Soporta `clear-all` y `delete-one`
@@ -133,7 +226,7 @@ curl -X POST http://localhost:3000/api/threats \
   **- Dashboard con alerta**
     ![Evidencia dashboard](images/dashboard.png)
 
-### 2.4 Frontend - Autenticacion (UI)
+### 2.8 Frontend - Autenticacion (UI)
 - [ ] Formulario de login valida campos requeridos
 - [ ] Login exitoso redirige a dashboard
 - [ ] Error de credenciales muestra mensaje amigable
@@ -160,7 +253,7 @@ curl -X POST http://localhost:3000/api/threats \
     **- Validacion de crednciales**
         ![Evidencia login](images/invalid_credentials.png)
 
-### 2.5 Frontend - Dashboard (UI)
+### 2.9 Frontend - Dashboard (UI)
 - [ ] Lista de alertas renderiza nuevas entradas en tiempo real
 - [ ] Boton "Limpiar todo" elimina las alertas
 - [ ] Boton "Eliminar" borra una alerta especifica
@@ -190,7 +283,7 @@ curl -X POST http://localhost:3000/api/threats \
 
 ## 3. Checklist de seguridad
 
-Basado en [docs/SECURITY_GUIDELINES.md](SECURITY_GUIDELINES.md)
+Basado en [docs/security/SECURITY_GUIDELINES.md](../security/SECURITY_GUIDELINES.md)
 
 - [ ] Secrets en variables de entorno
 - [ ] Inputs validados (Joi)

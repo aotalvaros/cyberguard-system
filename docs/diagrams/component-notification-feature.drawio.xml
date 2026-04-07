@@ -1,0 +1,430 @@
+<mxfile host="app.diagrams.net" modified="2026-03-27T00:00:00.000Z" agent="GitHub Copilot" version="24.7.17">
+  <diagram id="component-notifications-v1" name="Componentes — Feature Notificaciones">
+    <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1900" math="0" shadow="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- TITULO Y LEYENDA                                        -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="title" value="CyberGuard — Diagrama de Componentes: Feature de Notificaciones Externas" style="text;html=1;fontStyle=1;fontSize=17;align=center;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="2300" height="36" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="66" width="660" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_label" value="Leyenda:" style="text;html=1;fontStyle=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="210" y="76" width="70" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_new" value="NUEVO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="285" y="73" width="90" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_exist" value="EXISTENTE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="385" y="73" width="100" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_infra" value="INFRAESTRUCTURA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="495" y="73" width="140" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_ext" value="SERVICIO EXTERNO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="645" y="73" width="140" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: FRONTEND — Angular 17+                            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_fe" value="FRONTEND — Angular 17+  |  :4200" style="swimlane;startSize=34;fillColor=#f0f4ff;strokeColor=#6c8ebf;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#1a1a47;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="120" width="760" height="480" as="geometry"/>
+        </mxCell>
+
+        <!-- Auth Module (existing) -->
+        <mxCell id="fe_auth" value="&lt;b&gt;Auth Module&lt;/b&gt;&lt;br/&gt;&lt;i&gt;LoginComponent&lt;/i&gt;&lt;br/&gt;AuthService | JWT Guard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="20" y="55" width="180" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- Threats Module (existing) -->
+        <mxCell id="fe_threat" value="&lt;b&gt;Threats Module&lt;/b&gt;&lt;br/&gt;&lt;i&gt;ReportThreatComponent&lt;/i&gt;&lt;br/&gt;ThreatService | ThreatRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="220" y="55" width="195" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- Dashboard / Alerts (existing) -->
+        <mxCell id="fe_dashboard" value="&lt;b&gt;Dashboard Module&lt;/b&gt;&lt;br/&gt;&lt;i&gt;AlertListComponent&lt;/i&gt;&lt;br/&gt;WebSocketService | AlertService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="435" y="55" width="200" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- Statistics Widget (existing) -->
+        <mxCell id="fe_stats" value="&lt;b&gt;Statistics Widget&lt;/b&gt;&lt;br/&gt;&lt;i&gt;StatisticsWidgetComponent&lt;/i&gt;&lt;br/&gt;StatisticsService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="655" y="55" width="185" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Profile Module -->
+        <mxCell id="fe_profile_box" value="&lt;b&gt;[NUEVO] Profile Module&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=11;fontStyle=1;rounded=1;" vertex="1" parent="zone_fe">
+          <mxGeometry x="20" y="170" width="540" height="280" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_profile_comp" value="&lt;b&gt;ProfileComponent&lt;/b&gt;&lt;br/&gt;Vista de datos personales&lt;br/&gt;(email, teléfono, nombre)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="fe_profile_box">
+          <mxGeometry x="20" y="40" width="190" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_contact_form" value="&lt;b&gt;ContactFormComponent&lt;/b&gt;&lt;br/&gt;Formulario reactivo Angular&lt;br/&gt;Validación: email, teléfono" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="fe_profile_box">
+          <mxGeometry x="230" y="40" width="190" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_profile_service" value="&lt;b&gt;ProfileService&lt;/b&gt;&lt;br/&gt;HTTP Client → PUT /api/profile&lt;br/&gt;GET /api/profile&lt;br/&gt;Observable&lt;UserProfile&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="fe_profile_box">
+          <mxGeometry x="20" y="140" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_user_model" value="&lt;b&gt;UserProfile (Domain Model)&lt;/b&gt;&lt;br/&gt;id, name, email&lt;br/&gt;&lt;b&gt;[NUEVO]&lt;/b&gt; phone: string&lt;br/&gt;notificationsEnabled: boolean" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="fe_profile_box">
+          <mxGeometry x="240" y="140" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_profile_guard" value="&lt;b&gt;ProfileGuard (AuthGuard)&lt;/b&gt;&lt;br/&gt;Protege ruta /profile&lt;br/&gt;Verifica JWT activo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="fe_profile_box">
+          <mxGeometry x="130" y="230" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Angular HTTP Interceptor -->
+        <mxCell id="fe_interceptor" value="&lt;b&gt;AuthInterceptor&lt;/b&gt;&lt;br/&gt;Añade Bearer token&lt;br/&gt;en cada petición HTTP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="590" y="170" width="170" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Angular Router -->
+        <mxCell id="fe_router" value="&lt;b&gt;Angular Router&lt;/b&gt;&lt;br/&gt;/login | /dashboard&lt;br/&gt;&lt;b&gt;[NUEVO]&lt;/b&gt; /profile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="590" y="260" width="170" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Notification Preferences (new) -->
+        <mxCell id="fe_notif_pref" value="&lt;b&gt;[NUEVO] NotificationPreferences&lt;/b&gt;&lt;br/&gt;Toggle: activar email / WhatsApp&lt;br/&gt;Dentro de ProfileComponent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_fe">
+          <mxGeometry x="590" y="350" width="170" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: BACKEND API — Express.js                          -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_be" value="BACKEND API — Express.js + TypeScript  |  :3000" style="swimlane;startSize=34;fillColor=#f0fff4;strokeColor=#82b366;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#1a3a1a;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="120" width="830" height="480" as="geometry"/>
+        </mxCell>
+
+        <!-- Middlewares -->
+        <mxCell id="be_mw" value="&lt;b&gt;Middlewares Stack&lt;/b&gt;&lt;br/&gt;Helmet | CORS | RateLimit&lt;br/&gt;JWT Auth | ErrorHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="20" y="50" width="190" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Auth Controller (existing) -->
+        <mxCell id="be_auth_ctrl" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br/&gt;POST /api/auth/login&lt;br/&gt;POST /api/auth/register" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="230" y="50" width="175" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Threat Controller (existing) -->
+        <mxCell id="be_threat_ctrl" value="&lt;b&gt;ThreatController&lt;/b&gt;&lt;br/&gt;POST /api/threats&lt;br/&gt;GET /api/threats" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="425" y="50" width="170" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Statistics Controller (existing) -->
+        <mxCell id="be_stats_ctrl" value="&lt;b&gt;StatisticsController&lt;/b&gt;&lt;br/&gt;GET /api/statistics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="615" y="50" width="165" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Profile Controller -->
+        <mxCell id="be_profile_ctrl" value="&lt;b&gt;[NUEVO] ProfileController&lt;/b&gt;&lt;br/&gt;GET  /api/profile&lt;br/&gt;PUT  /api/profile&lt;br/&gt;Validación Joi: email + phone" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="20" y="155" width="190" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Profile Use Case -->
+        <mxCell id="be_profile_uc" value="&lt;b&gt;[NUEVO] UpdateProfileUseCase&lt;/b&gt;&lt;br/&gt;GetProfileUseCase&lt;br/&gt;Lógica de negocio pura&lt;br/&gt;(Application Layer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="230" y="155" width="190" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Profile Repository -->
+        <mxCell id="be_profile_repo" value="&lt;b&gt;[NUEVO] IProfileRepository&lt;/b&gt;&lt;br/&gt;+ RedisProfileRepository&lt;br/&gt;save(profile) | findById(id)&lt;br/&gt;(Infrastructure Layer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="440" y="155" width="190" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Enrich Threat Event -->
+        <mxCell id="be_enrich" value="&lt;b&gt;[NUEVO] ThreatEventEnricher&lt;/b&gt;&lt;br/&gt;Añade contactos del usuario&lt;br/&gt;al mensaje RabbitMQ&lt;br/&gt;(email + phone + category)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="650" y="155" width="165" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Threat Use Case (existing) -->
+        <mxCell id="be_threat_uc" value="&lt;b&gt;CreateThreatUseCase&lt;/b&gt;&lt;br/&gt;GetThreatStatisticsUseCase&lt;br/&gt;(Application Layer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="230" y="280" width="190" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Threat Repository (existing) -->
+        <mxCell id="be_threat_repo" value="&lt;b&gt;ThreatRepository&lt;/b&gt;&lt;br/&gt;IThreatRepository&lt;br/&gt;+ PostgresThreatRepository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="440" y="280" width="175" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- RabbitMQ Publisher (existing) -->
+        <mxCell id="be_rabbit_pub" value="&lt;b&gt;RabbitMQPublisher&lt;/b&gt;&lt;br/&gt;Publica a exchange: threats&lt;br/&gt;routing key: threat.created" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="635" y="280" width="180" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin Controller (existing) -->
+        <mxCell id="be_admin_ctrl" value="&lt;b&gt;AdminController&lt;/b&gt;&lt;br/&gt;/api/admin/*&lt;br/&gt;JWT + Role Guard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="20" y="380" width="175" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Express App -->
+        <mxCell id="be_express" value="&lt;b&gt;Express App&lt;/b&gt;&lt;br/&gt;server.ts — entry point&lt;br/&gt;Rutas registradas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_be">
+          <mxGeometry x="640" y="380" width="175" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: MESSAGE BROKER                                    -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_mq" value="MESSAGE BROKER — RabbitMQ 3.12  |  :5672" style="swimlane;startSize=34;fillColor=#f0fff8;strokeColor=#00897b;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#004d40;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="650" width="440" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mq_exchange" value="&lt;b&gt;Exchange: threats&lt;/b&gt;&lt;br/&gt;type: topic&lt;br/&gt;durable: true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=10;" vertex="1" parent="zone_mq">
+          <mxGeometry x="130" y="50" width="165" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mq_queue" value="&lt;b&gt;Queue: threat.created&lt;/b&gt;&lt;br/&gt;durable: true&lt;br/&gt;routing: threat.created" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=10;" vertex="1" parent="zone_mq">
+          <mxGeometry x="20" y="155" width="175" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mq_dlq" value="&lt;b&gt;[NUEVO] DLQ: threat.dlq&lt;/b&gt;&lt;br/&gt;Dead Letter Queue&lt;br/&gt;Mensajes fallidos (&gt;3 reintentos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_mq">
+          <mxGeometry x="230" y="155" width="185" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: WORKER — Consumer                                 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_wk" value="WORKER — Node.js Consumer + WebSocket  |  :8081" style="swimlane;startSize=34;fillColor=#fff8f0;strokeColor=#e65100;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#4a1500;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="650" width="900" height="580" as="geometry"/>
+        </mxCell>
+
+        <!-- RabbitMQ Consumer (existing) -->
+        <mxCell id="wk_consumer" value="&lt;b&gt;RabbitMQConsumer&lt;/b&gt;&lt;br/&gt;Escucha: threat.created&lt;br/&gt;ACK / NACK manual&lt;br/&gt;Retry con backoff exponencial" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="20" y="55" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- WebSocket Server (existing) -->
+        <mxCell id="wk_ws" value="&lt;b&gt;WebSocketServer&lt;/b&gt;&lt;br/&gt;:8081 → broadcast alertas&lt;br/&gt;Redis historial (máx 200)&lt;br/&gt;Deduplicación por hash" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="240" y="55" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Message Handler (existing) -->
+        <mxCell id="wk_handler" value="&lt;b&gt;MessageHandler&lt;/b&gt;&lt;br/&gt;Valida payload&lt;br/&gt;Sanitiza inputs&lt;br/&gt;buildPayload()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="460" y="55" width="185" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Notification Orchestrator -->
+        <mxCell id="wk_orchestrator" value="&lt;b&gt;[NUEVO] NotificationOrchestrator&lt;/b&gt;&lt;br/&gt;Lee contactos desde Redis&lt;br/&gt;Invoca StrategySelector&lt;br/&gt;Invoca adapters habilitados&lt;br/&gt;Registra resultado en logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="20" y="185" width="215" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Strategy Pattern box -->
+        <mxCell id="wk_strategy_box" value="&lt;b&gt;[NUEVO] Strategy Pattern — Contenido por Categoría&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=11;fontStyle=1;rounded=1;" vertex="1" parent="zone_wk">
+          <mxGeometry x="255" y="180" width="395" height="115" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_strategy_sel" value="&lt;b&gt;StrategySelector&lt;/b&gt;&lt;br/&gt;getStrategy(category)&lt;br/&gt;→ INotificationStrategy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="wk_strategy_box">
+          <mxGeometry x="10" y="35" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_strategy_critical" value="&lt;b&gt;CriticalStrategy&lt;/b&gt;&lt;br/&gt;Mensaje urgente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="wk_strategy_box">
+          <mxGeometry x="160" y="35" width="115" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_strategy_med" value="&lt;b&gt;MediumStrategy&lt;/b&gt;&lt;br/&gt;Mensaje estándar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="wk_strategy_box">
+          <mxGeometry x="283" y="35" width="105" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: Adapter Pattern box -->
+        <mxCell id="wk_adapter_box" value="&lt;b&gt;[NUEVO] Adapter Pattern — INotificationService&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=11;fontStyle=1;rounded=1;" vertex="1" parent="zone_wk">
+          <mxGeometry x="20" y="315" width="630" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_inotif" value="&lt;b&gt;&lt;&lt;interface&gt;&gt;&lt;br/&gt;INotificationService&lt;/b&gt;&lt;br/&gt;send(payload: NotifPayload)&lt;br/&gt;: Promise&lt;NotifResult&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;arcSize=10;fontStyle=2;" vertex="1" parent="wk_adapter_box">
+          <mxGeometry x="210" y="38" width="195" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_email_adapter" value="&lt;b&gt;EmailAdapter&lt;/b&gt;&lt;br/&gt;&lt;i&gt;implements INotificationService&lt;/i&gt;&lt;br/&gt;SendGrid SDK&lt;br/&gt;SENDGRID_API_KEY (env)&lt;br/&gt;Retry: exponential backoff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="wk_adapter_box">
+          <mxGeometry x="30" y="115" width="190" height="75" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wk_wa_adapter" value="&lt;b&gt;WhatsAppAdapter&lt;/b&gt;&lt;br/&gt;&lt;i&gt;implements INotificationService&lt;/i&gt;&lt;br/&gt;WA Business API (HTTP)&lt;br/&gt;WA_TOKEN + WA_PHONE_ID (env)&lt;br/&gt;Retry: exponential backoff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="wk_adapter_box">
+          <mxGeometry x="400" y="115" width="190" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- NEW: NotifPayload DTO -->
+        <mxCell id="wk_dto" value="&lt;b&gt;[NUEVO] NotifPayload (DTO)&lt;/b&gt;&lt;br/&gt;threatId, category, severity&lt;br/&gt;email, phone, message&lt;br/&gt;timestamp, retryCount" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="680" y="185" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Logger -->
+        <mxCell id="wk_logger" value="&lt;b&gt;Logger (Winston)&lt;/b&gt;&lt;br/&gt;Trazabilidad de envíos&lt;br/&gt;Sin datos sensibles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=10;" vertex="1" parent="zone_wk">
+          <mxGeometry x="680" y="55" width="185" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: INFRAESTRUCTURA                                   -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_infra" value="INFRAESTRUCTURA" style="swimlane;startSize=30;fillColor=#f3fff3;strokeColor=#82b366;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#1a3a1a;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="660" width="760" height="250" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="infra_redis" value="&lt;b&gt;Redis 7&lt;/b&gt;  :6379&lt;br/&gt;Historial de alertas (máx 200)&lt;br/&gt;&lt;b&gt;[NUEVO]&lt;/b&gt; Datos de contacto de usuario&lt;br/&gt;(email, phone, preferences)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=10;" vertex="1" parent="zone_infra">
+          <mxGeometry x="20" y="50" width="215" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="infra_pg" value="&lt;b&gt;PostgreSQL 15&lt;/b&gt;  :5432&lt;br/&gt;Tabla: threats&lt;br/&gt;&lt;b&gt;[NUEVO]&lt;/b&gt; Tabla: users&lt;br/&gt;(+phone, +notif_enabled)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;arcSize=10;" vertex="1" parent="zone_infra">
+          <mxGeometry x="265" y="50" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="infra_docker" value="&lt;b&gt;Docker Compose&lt;/b&gt;&lt;br/&gt;Red: cyberguard-network&lt;br/&gt;&lt;b&gt;[NUEVO]&lt;/b&gt; Vars: SENDGRID_API_KEY&lt;br/&gt;WA_TOKEN, WA_PHONE_NUMBER_ID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=10;" vertex="1" parent="zone_infra">
+          <mxGeometry x="495" y="50" width="210" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="infra_note" value="Volúmenes: rabbitmq_data | redis_data | postgres_data" style="text;html=1;fontSize=10;fontStyle=2;align=center;fontColor=#555555;" vertex="1" parent="zone_infra">
+          <mxGeometry x="20" y="160" width="700" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: SERVICIOS EXTERNOS                                -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_ext" value="SERVICIOS EXTERNOS (Cloud)" style="swimlane;startSize=30;fillColor=#fdf4ff;strokeColor=#9673a6;strokeWidth=2;fontSize=13;fontStyle=1;fontColor=#3a0050;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="1290" width="560" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ext_sendgrid" value="&lt;b&gt;SendGrid API&lt;/b&gt;&lt;br/&gt;api.sendgrid.com&lt;br/&gt;Envío de correos transaccionales&lt;br/&gt;Auth: API Key (Bearer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;arcSize=10;" vertex="1" parent="zone_ext">
+          <mxGeometry x="30" y="50" width="215" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ext_whatsapp" value="&lt;b&gt;WhatsApp Business API&lt;/b&gt;&lt;br/&gt;graph.facebook.com/v18.0&lt;br/&gt;Mensajes automatizados&lt;br/&gt;Auth: Bearer Token + Phone ID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;arcSize=10;" vertex="1" parent="zone_ext">
+          <mxGeometry x="295" y="50" width="230" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ZONA: FIREBASE AUTH                                     -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="zone_fb" value="FIREBASE AUTH (Externo)" style="swimlane;startSize=30;fillColor=#fdf4ff;strokeColor=#9673a6;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#3a0050;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="970" width="280" height="130" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ext_firebase" value="&lt;b&gt;Firebase Auth&lt;/b&gt;&lt;br/&gt;Validación de tokens&lt;br/&gt;OAuth 2.0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;arcSize=10;" vertex="1" parent="zone_fb">
+          <mxGeometry x="40" y="45" width="195" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- CONECTOR: ADMIN → Frontend                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <mxCell id="actor_admin" value="&lt;b&gt;Administrador&lt;/b&gt;&lt;br/&gt;(Browser)" style="shape=mxgraph.general.person_simple;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;fontColor=#333333;labelPosition=bottom;verticalLabelPosition=bottom;align=center;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="330" width="50" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- FLECHAS — FLUJO PRINCIPAL                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <!-- Admin → Frontend -->
+        <mxCell id="e_admin_fe" value="HTTP / Browser" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#6c8ebf;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="actor_admin" target="zone_fe" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Frontend → Backend -->
+        <mxCell id="e_fe_be" value="REST API / JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#82b366;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="zone_fe" target="zone_be" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend → RabbitMQ -->
+        <mxCell id="e_be_mq" value="AMQP Publish" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#00897b;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="be_rabbit_pub" target="zone_mq" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- RabbitMQ → Worker -->
+        <mxCell id="e_mq_wk" value="AMQP Consume" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.3;strokeColor=#e65100;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="zone_mq" target="zone_wk" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → WebSocket → Frontend -->
+        <mxCell id="e_wk_fe_ws" value="WebSocket :8081" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.3;entryX=0.5;entryY=1;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;fontStyle=2;fontSize=10;" edge="1" source="zone_wk" target="zone_fe" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend → Redis (profile save) -->
+        <mxCell id="e_be_redis" value="[NUEVO] Guarda perfil" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=1;entryX=0.5;entryY=0;strokeColor=#d79b00;strokeWidth=2;dashed=1;fontStyle=2;fontSize=10;" edge="1" source="zone_be" target="infra_redis" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker → Redis (read profile) -->
+        <mxCell id="e_wk_redis" value="[NUEVO] Lee contactos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.8;entryX=1;entryY=0.3;strokeColor=#d79b00;strokeWidth=2;dashed=1;fontStyle=2;fontSize=10;" edge="1" source="zone_wk" target="infra_redis" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker EmailAdapter → SendGrid -->
+        <mxCell id="e_wk_sg" value="HTTPS / API Key" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.3;exitY=1;entryX=0.2;entryY=0;strokeColor=#9673a6;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="zone_wk" target="ext_sendgrid" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Worker WhatsAppAdapter → WhatsApp -->
+        <mxCell id="e_wk_wa" value="HTTPS / Bearer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.6;exitY=1;entryX=0.7;entryY=0;strokeColor=#9673a6;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="zone_wk" target="ext_whatsapp" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend → PostgreSQL -->
+        <mxCell id="e_be_pg" value="SQL (TypeORM/pg)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.3;exitY=1;entryX=0.5;entryY=0;strokeColor=#82b366;strokeWidth=2;fontStyle=1;fontSize=10;" edge="1" source="zone_be" target="infra_pg" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend → Firebase -->
+        <mxCell id="e_be_fb" value="Token Verify" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=1;entryX=0.5;entryY=0;strokeColor=#9673a6;strokeWidth=2;dashed=1;fontStyle=2;fontSize=10;" edge="1" source="zone_be" target="zone_fb" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: Orchestrator → Adapters -->
+        <mxCell id="e_orch_adapter" value="invoca" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#d79b00;strokeWidth=1.5;dashed=1;fontSize=10;fontStyle=2;" edge="1" source="wk_orchestrator" target="wk_adapter_box" parent="zone_wk">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: Orchestrator → Strategy -->
+        <mxCell id="e_orch_strategy" value="selecciona" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#d79b00;strokeWidth=1.5;dashed=1;fontSize=10;fontStyle=2;" edge="1" source="wk_orchestrator" target="wk_strategy_box" parent="zone_wk">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: Consumer → Orchestrator -->
+        <mxCell id="e_cons_orch" value="[NUEVO] dispara" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#d79b00;strokeWidth=1.5;fontSize=10;fontStyle=1;" edge="1" source="wk_consumer" target="wk_orchestrator" parent="zone_wk">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: Orchestrator → DTO -->
+        <mxCell id="e_orch_dto" value="crea" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.3;entryX=0;entryY=0.5;strokeColor=#d79b00;strokeWidth=1.5;dashed=1;fontSize=10;fontStyle=2;" edge="1" source="wk_orchestrator" target="wk_dto" parent="zone_wk">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: ProfileController → ProfileUseCase -->
+        <mxCell id="e_pctrl_puc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#d79b00;strokeWidth=1.5;fontSize=10;" edge="1" source="be_profile_ctrl" target="be_profile_uc" parent="zone_be">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: ProfileUseCase → ProfileRepo -->
+        <mxCell id="e_puc_prepo" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#d79b00;strokeWidth=1.5;fontSize=10;" edge="1" source="be_profile_uc" target="be_profile_repo" parent="zone_be">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: ThreatController → ThreatEventEnricher -->
+        <mxCell id="e_tctrl_enrich" value="[NUEVO] enriquece" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=0.7;exitY=1;entryX=0.5;entryY=0;strokeColor=#d79b00;strokeWidth=1.5;dashed=1;fontSize=10;fontStyle=1;" edge="1" source="be_threat_ctrl" target="be_enrich" parent="zone_be">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Internal: ThreatEventEnricher → RabbitMQPublisher -->
+        <mxCell id="e_enrich_rabbit" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#d79b00;strokeWidth=1.5;fontSize=10;" edge="1" source="be_enrich" target="be_rabbit_pub" parent="zone_be">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

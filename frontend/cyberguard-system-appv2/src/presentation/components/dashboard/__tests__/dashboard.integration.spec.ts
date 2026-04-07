@@ -1,6 +1,10 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 
@@ -8,7 +12,7 @@ import { DashboardComponent } from '../dashboard.component';
 import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
 import { StatisticsRepository } from '../../../../core/domain/ports/statistics.repository';
 import { AuthRepository } from '../../../../core/domain/ports/auth.repository';
-import { WebSocketRepository } from '../../../../core/domain/ports/websocket.repository';
+import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
 import { AuthService } from '../../../../core/infrastructure/services/auth.service';
 import { ThreatRequest } from '../../../../core/domain/models/threat-request.model';
 import { ThreatResponse } from '../../../../core/domain/models/threat-response.model';
@@ -24,6 +28,15 @@ import { AlertMessage } from '../../../../core/domain/models/alert-message.model
 import { WebSocketCommand } from '../../../../core/domain/models/websocket-command.model';
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
 import { Router } from '@angular/router';
+import { NotificationPreferencesRepository } from '../../../../core/domain/ports/notification-preferences.repository';
+
+beforeAll(() => {
+  TestBed.initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting(),
+  );
+});
+
 
 class InMemoryThreatRepository extends ThreatRepository {
   reportedThreats: ThreatRequest[] = [];
@@ -149,6 +162,10 @@ class InMemoryWebSocketRepository extends WebSocketRepository {
     return this.connected;
   }
 
+  getConnectionStatus$(): Observable<ConnectionStatus> {
+    return of(this.connected ? ('CONNECTED' as const) : ('DISCONNECTED' as const));
+  }
+
   pushAlert(alert: AlertMessage): void {
     this.stream.next([alert, ...this.stream.value]);
   }
@@ -175,6 +192,7 @@ describe('DashboardComponent Integration', () => {
   };
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     threatRepository = new InMemoryThreatRepository();
     statisticsRepository = new StubStatisticsRepository(statistics);
     authRepository = new InMemoryAuthRepository();
@@ -190,6 +208,13 @@ describe('DashboardComponent Integration', () => {
         { provide: AuthRepository, useValue: authRepository },
         { provide: WebSocketRepository, useValue: wsRepository },
         { provide: AuthService, useFactory: () => new AuthServiceStub(authRepository) },
+        {
+          provide: NotificationPreferencesRepository,
+          useValue: {
+            get: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })),
+            save: vi.fn().mockReturnValue(of(undefined)),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -211,8 +236,10 @@ describe('DashboardComponent Integration', () => {
     fixture.detectChanges();
 
     // When: the analyst submits the form
-    const form = fixture.debugElement.query(By.css('form'));
-    form.triggerEventHandler('ngSubmit', {});
+    // Note: By.css('form') selects the threat-report form inside .threat-form-card
+    const forms = fixture.debugElement.queryAll(By.css('form'));
+    const threatForm = forms[forms.length - 1]; // threat form is the last form
+    threatForm.triggerEventHandler('ngSubmit', {});
     fixture.detectChanges();
 
     // Then: the domain chain hits the repository and UI shows the success message
