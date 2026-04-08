@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -20,13 +19,6 @@ const mockStats: ThreatStatistics = {
   criticalActive: 5,
 };
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('StatisticsRepositoryImpl', () => {
   let repo: StatisticsRepositoryImpl;

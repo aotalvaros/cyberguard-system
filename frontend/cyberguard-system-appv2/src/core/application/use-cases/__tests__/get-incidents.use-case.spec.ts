@@ -1,18 +1,10 @@
-import { describe, it, expect, vi, beforeEach, beforeAll} from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { GetIncidentsUseCase } from '../get-incidents.use-case';
 import { IncidentRepository } from '../../../domain/ports/incident.repository';
 import { IncidentList } from '../../../domain/models/incident.model';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('GetIncidentsUseCase', () => {
   let useCase: GetIncidentsUseCase;

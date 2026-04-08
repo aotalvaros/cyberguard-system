@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, NEVER, throwError } from 'rxjs';
 import { StatisticsWidgetComponent } from './statistics-widget.component';
@@ -39,13 +38,6 @@ async function setupFixture(stats: ThreatStatistics | 'never' | 'error'): Promis
   return fixture;
 }
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('StatisticsWidgetComponent', () => {
   beforeEach(() => {

@@ -1,17 +1,9 @@
-import { describe, it, expect, afterEach, beforeEach, beforeAll} from 'vitest';
+import { describe, it, expect, afterEach, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { retryInterceptor } from '../retry.interceptor';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('retryInterceptor', () => {
   let httpClient: HttpClient;

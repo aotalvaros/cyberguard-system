@@ -1,15 +1,7 @@
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { firstValueFrom } from 'rxjs';
 import { StatisticsMockRepository } from '../statistics-mock-repository.impl';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('StatisticsMockRepository', () => {
   let repository: StatisticsMockRepository;

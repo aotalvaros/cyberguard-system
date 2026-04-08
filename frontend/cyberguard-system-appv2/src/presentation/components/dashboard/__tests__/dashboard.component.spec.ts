@@ -1,6 +1,5 @@
-import {describe, it, expect, vi, beforeEach, beforeAll} from 'vitest';
+import {describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { DashboardComponent } from '../dashboard.component';
 import { GetCurrentUserUseCase } from '../../../../core/application/use-cases/get-current-user.use-case';
@@ -20,13 +19,6 @@ const mockStats: ThreatStatistics = {
   last24Hours: 3,
   criticalActive: 2,
 };
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('DashboardComponent', () => {
   let fixture: ComponentFixture<DashboardComponent>;

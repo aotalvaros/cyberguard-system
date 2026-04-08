@@ -1,6 +1,5 @@
-import {describe, it, expect, vi, beforeEach, afterEach, beforeAll} from 'vitest';
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
@@ -54,13 +53,6 @@ async function buildFixture(overrides: {
   fixture.detectChanges();
   return fixture;
 }
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('UserManagementComponent', () => {
 

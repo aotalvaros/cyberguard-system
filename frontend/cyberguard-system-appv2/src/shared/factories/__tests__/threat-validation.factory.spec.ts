@@ -1,6 +1,5 @@
-import {describe, it, expect, beforeEach, beforeAll} from 'vitest';
+import {describe, it, expect, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ThreatValidationFactory } from '../threat-validation.factory';
 import { ThreatType } from '../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../core/domain/models/threat-severity.enum';
@@ -18,13 +17,6 @@ const baseThreat = {
   sourceIp: '192.168.1.1',
   description: 'malware detected on workstation',
 };
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('ThreatValidationFactory', () => {
   let factory: ThreatValidationFactory;

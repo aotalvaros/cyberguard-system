@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { firstValueFrom } from 'rxjs';
 import {
   WebSocketRepositoryImpl,
@@ -111,13 +110,6 @@ class TestableWebSocketRepository extends WebSocketRepositoryImpl {
   }
 }
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('WebSocketRepositoryImpl', () => {
   let repository: TestableWebSocketRepository;

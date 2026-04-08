@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, BehaviorSubject } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
 import { WebSocketService } from '../../../../core/infrastructure/services/websocket.service';
@@ -17,13 +16,6 @@ const mockAlerts: AlertMessage[] = [
   { eventId: 'evt-3', data: { threatId: '', type: 'phishing', severity: 'low', sourceIp: '172.16.0.1', description: 'Phishing attempt' }, timestamp: Date.now() },
 ];
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('AlertsComponent', () => {
   let fixture: ComponentFixture<AlertsComponent>;

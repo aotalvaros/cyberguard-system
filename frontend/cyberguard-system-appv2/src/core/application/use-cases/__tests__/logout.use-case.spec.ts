@@ -1,17 +1,9 @@
-import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 // Tipo de prueba: Unitario
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { LogoutUseCase } from '../logout.use-case';
 import { AuthRepository } from '../../../domain/ports/auth.repository';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('LogoutUseCase', () => {
   let useCase: LogoutUseCase;

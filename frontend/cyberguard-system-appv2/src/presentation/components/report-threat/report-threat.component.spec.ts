@@ -1,7 +1,6 @@
 // Tipo de prueba: Unitaria
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, throwError } from 'rxjs';
 import { ReportThreatComponent } from './report-threat.component';
 import { ReportThreatUseCase } from '../../../core/application/use-cases/report-threat.use-case';
@@ -9,13 +8,6 @@ import { ThreatValidationFactory } from '../../../shared/factories/threat-valida
 import { Router } from '@angular/router';
 import { ThreatType } from '../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../core/domain/models/threat-severity.enum';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('ReportThreatComponent', () => {
   let fixture: ComponentFixture<ReportThreatComponent>;

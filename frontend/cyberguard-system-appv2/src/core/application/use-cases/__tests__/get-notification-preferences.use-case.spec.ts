@@ -1,18 +1,10 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { GetNotificationPreferencesUseCase } from '../get-notification-preferences.use-case';
 import { NotificationPreferencesRepository } from '../../../domain/ports/notification-preferences.repository';
 import { DEFAULT_PREFERENCES } from '../../../domain/models/notification-preferences.model';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('GetNotificationPreferencesUseCase', () => {
   let useCase: GetNotificationPreferencesUseCase;

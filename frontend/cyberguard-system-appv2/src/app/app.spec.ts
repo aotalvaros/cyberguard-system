@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { App } from './app';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
@@ -10,13 +9,6 @@ import { WebSocketService } from '../core/infrastructure/services/websocket.serv
 import { GetCurrentUserUseCase } from '../core/application/use-cases/get-current-user.use-case';
 import { LogoutUseCase } from '../core/application/use-cases/logout.use-case';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('App', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };

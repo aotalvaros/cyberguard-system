@@ -1,6 +1,5 @@
-import {describe, it, expect, beforeEach, vi, beforeAll} from 'vitest';
+import {describe, it, expect, beforeEach, vi} from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 
 import { DashboardComponent } from '../dashboard.component';
@@ -85,13 +84,6 @@ class InMemoryWebSocketRepository extends WebSocketRepository {
 class RouterStub {
   navigate = vi.fn();
 }
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('DashboardComponent Integration', () => {
   let fixture: ComponentFixture<DashboardComponent>;

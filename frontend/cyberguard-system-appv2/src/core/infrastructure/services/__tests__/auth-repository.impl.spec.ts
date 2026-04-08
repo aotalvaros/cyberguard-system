@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthRepositoryImpl } from '../auth-repository.impl';
@@ -10,13 +9,6 @@ import { LoginCredentials } from '../../../domain/models/login-credentials.model
 import { User } from '../../../domain/models/user.model';
 import { firstValueFrom } from 'rxjs';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('AuthRepositoryImpl', () => {
   let repository: AuthRepositoryImpl;

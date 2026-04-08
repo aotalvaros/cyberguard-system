@@ -1,7 +1,6 @@
 // Tipo de prueba: Unitario
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, throwError, firstValueFrom } from 'rxjs';
 import { GetStatisticsUseCase } from '../get-statistics.use-case';
 import { StatisticsRepository } from '../../../domain/ports/statistics.repository';
@@ -15,13 +14,6 @@ const mockStats: ThreatStatistics = {
   criticalActive: 5,
 };
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('GetStatisticsUseCase', () => {
   let useCase: GetStatisticsUseCase;

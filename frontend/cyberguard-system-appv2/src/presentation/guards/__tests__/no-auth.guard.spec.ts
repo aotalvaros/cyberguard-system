@@ -1,19 +1,11 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach, beforeAll} from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { Router } from '@angular/router';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { noAuthGuard } from '../no-auth.guard';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('noAuthGuard', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };

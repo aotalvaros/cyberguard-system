@@ -1,8 +1,7 @@
 // Tipo de prueba: Unitario
-import {describe, it, expect, beforeEach, vi, afterEach, beforeAll} from 'vitest';
+import {describe, it, expect, beforeEach, vi, afterEach} from 'vitest';
 import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { Router, provideRouter } from '@angular/router';
 import {
   AppErrorType,
@@ -10,13 +9,6 @@ import {
   createAppError,
   GlobalErrorHandler
 } from '../global-error.handler';
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('GlobalErrorHandler', () => {
   describe('createAppError', () => {

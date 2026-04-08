@@ -1,20 +1,12 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of, throwError } from 'rxjs';
 import { NotificationPreferencesComponent } from '../notification-preferences.component';
 import { GetNotificationPreferencesUseCase } from '../../../../core/application/use-cases/get-notification-preferences.use-case';
 import { SaveNotificationPreferencesUseCase } from '../../../../core/application/use-cases/save-notification-preferences.use-case';
 import { DEFAULT_PREFERENCES } from '../../../../core/domain/models/notification-preferences.model';
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('NotificationPreferencesComponent', () => {
   let fixture: ComponentFixture<NotificationPreferencesComponent>;

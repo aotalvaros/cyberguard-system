@@ -1,7 +1,6 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
 import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
@@ -53,13 +52,6 @@ class InMemoryThreatRepository {
   }
 }
 
-
-beforeAll(() => {
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting(),
-  );
-});
 
 describe('AlertsComponent integration', () => {
   let fixture: ComponentFixture<AlertsComponent>;
