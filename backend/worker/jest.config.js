@@ -21,7 +21,8 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
-    '!src/**/*.spec.ts'
+    '!src/**/*.spec.ts',
+    '!src/index.ts'  // Entry point: bootstrap que levanta toda la infraestructura real (Redis, RabbitMQ, WebSocket). No testeable en unitario sin integración.
   ],
   
   clearMocks: true,

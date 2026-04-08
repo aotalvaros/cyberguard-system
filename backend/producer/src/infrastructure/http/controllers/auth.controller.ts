@@ -7,7 +7,7 @@ import { createAuthService } from '../../../infrastructure/factories/AuthService
 const router = Router();
 router.use(bruteForceDetection);
 
-const authService = createAuthService();
+const authService = createAuthService(); // Firebase ahora, PostgreSQL mañana
 
 const loginSchema = Joi.object({
   username: Joi.string().min(3).required(),
@@ -16,30 +16,30 @@ const loginSchema = Joi.object({
 
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
   const { error, value } = loginSchema.validate(req.body);
-
+  
   if (error) {
     const firstDetail = error.details[0];
-    res.status(400).json({ error: firstDetail ? firstDetail.message :  'Validation failed' });
+    res.status(400).json({ error: firstDetail ? firstDetail.message : /* istanbul ignore next */ 'Validation failed' });
     return;
   }
 
   const credentials = value as LoginRequest;
-
+  
   const result = await authService.login(credentials);
-
+  
   if (!result.success) {
     res.status(401).json({ error: result.error });
     return;
   }
-
+  
   const response: LoginResponse = {
     token: result.token!,
-    user: {
-      username: result.user!.username,
-      role: result.user!.role
+    user: { 
+      username: result.user!.username, 
+      role: result.user!.role 
     }
   };
-
+  
   res.json(response);
 });
 

@@ -16,7 +16,6 @@ function requireAdmin(req: AuthRequest, res: Response, next: () => void): void {
   }
   next();
 }
-
 router.post(
   '/users',
   authMiddleware,
@@ -46,7 +45,6 @@ router.post(
     }
   }
 );
-
 router.get(
   '/users',
   authMiddleware,
@@ -64,7 +62,6 @@ router.get(
     }
   }
 );
-
 router.get(
   '/users/:id',
   authMiddleware,
@@ -87,7 +84,6 @@ router.get(
     }
   }
 );
-
 router.put(
   '/users/:id',
   authMiddleware,
@@ -173,5 +169,6 @@ router.patch(
     }
   }
 );
+
 
 export default router;

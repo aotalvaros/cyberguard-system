@@ -1,14 +1,13 @@
 import { ThreatType, SeverityLevel } from '../entities/Threat';
 
 export interface ThreatAnalysisResult {
-  readonly riskScore: number;
+  readonly riskScore: number;         // 0-100
   readonly recommendedSeverity: SeverityLevel;
   readonly tags: readonly string[];
   readonly autoBlock: boolean;
 }
 
 export interface ThreatClassificationStrategy {
-
   readonly supportedType: ThreatType;
 
   analyze(context: ThreatContext): ThreatAnalysisResult;

@@ -1,48 +1,22 @@
-// Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
+import {describe, it, expect, beforeEach, vi, beforeAll} from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { By } from '@angular/platform-browser';
 
 import { DashboardComponent } from '../dashboard.component';
-import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
 import { StatisticsRepository } from '../../../../core/domain/ports/statistics.repository';
 import { AuthRepository } from '../../../../core/domain/ports/auth.repository';
 import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
+import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
 import { AuthService } from '../../../../core/infrastructure/services/auth.service';
-import { ThreatRequest } from '../../../../core/domain/models/threat-request.model';
-import { ThreatResponse } from '../../../../core/domain/models/threat-response.model';
-import { ThreatList } from '../../../../core/domain/models/threat-list.model';
-import { DeleteThreatResult } from '../../../../core/domain/models/delete-threat-result.model';
-import { ThreatType } from '../../../../core/domain/models/threat-type.enum';
-import { ThreatSeverity } from '../../../../core/domain/models/threat-severity.enum';
-import { ThreatStatistics } from '../../../../core/domain/models/threat-statistics.model';
-import { LoginCredentials } from '../../../../core/domain/models/login-credentials.model';
 import { AuthResponse } from '../../../../core/domain/models/auth-response.model';
 import { User } from '../../../../core/domain/models/user.model';
 import { AlertMessage } from '../../../../core/domain/models/alert-message.model';
 import { WebSocketCommand } from '../../../../core/domain/models/websocket-command.model';
+import { ThreatStatistics } from '../../../../core/domain/models/threat-statistics.model';
+import { LoginCredentials } from '../../../../core/domain/models/login-credentials.model';
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
-import { Router } from '@angular/router';
-import { NotificationPreferencesRepository } from '../../../../core/domain/ports/notification-preferences.repository';
-
-class InMemoryThreatRepository extends ThreatRepository {
-  reportedThreats: ThreatRequest[] = [];
-
-  reportThreat(threat: ThreatRequest): Observable<ThreatResponse> {
-    this.reportedThreats.push(threat);
-    return of({ threatId: `th-${this.reportedThreats.length}` });
-  }
-
-  getThreats(): Observable<ThreatList> {
-    return of({ threats: [], total: 0 });
-  }
-
-  deleteThreat(threatId: string): Observable<DeleteThreatResult> {
-    return of({ success: true, threatId, message: 'deleted' });
-  }
-}
+import { Router, provideRouter } from '@angular/router';
 
 class StubStatisticsRepository extends StatisticsRepository {
   constructor(private stats: ThreatStatistics) {
@@ -68,102 +42,47 @@ class InMemoryAuthRepository extends AuthRepository {
     return of({ token: this.token, user: this.user });
   }
 
-  saveToken(token: string): void {
-    this.token = token;
-  }
-
-  getToken(): string | null {
-    return this.token;
-  }
-
-  saveUser(user: User): void {
-    this.user = user;
-  }
-
-  getUser(): User | null {
-    return this.user;
-  }
-
-  clearAuth(): void {
-    this.token = null;
-    this.user = null;
-  }
-
-  isAuthenticated(): boolean {
-    return Boolean(this.token);
-  }
+  saveToken(token: string): void { this.token = token; }
+  getToken(): string | null { return this.token; }
+  saveUser(user: User): void { this.user = user; }
+  getUser(): User | null { return this.user; }
+  clearAuth(): void { this.token = null; this.user = null; }
+  isAuthenticated(): boolean { return Boolean(this.token); }
 }
 
 class AuthServiceStub {
   constructor(private readonly authRepository: AuthRepository) {}
-
-  login(): Observable<AuthResponse> {
-    return of({ token: 'token', user: this.authRepository.getUser()! });
-  }
-
+  login(): Observable<AuthResponse> { return of({ token: 'token', user: this.authRepository.getUser()! }); }
   logout(): void {}
-
-  getCurrentUser(): User | null {
-    return this.authRepository.getUser();
-  }
-
-  getToken(): string | null {
-    return this.authRepository.getToken();
-  }
-
-  isAdmin(): boolean {
-    return this.authRepository.getUser()?.role === ROLES.ADMIN;
-  }
-
-  isAuthenticated(): boolean {
-    return this.authRepository.isAuthenticated();
-  }
+  getCurrentUser(): User | null { return this.authRepository.getUser(); }
+  getToken(): string | null { return this.authRepository.getToken(); }
+  isAdmin(): boolean { return this.authRepository.getUser()?.role === ROLES.ADMIN; }
+  isAuthenticated(): boolean { return this.authRepository.isAuthenticated(); }
 }
 
 class InMemoryWebSocketRepository extends WebSocketRepository {
   private readonly stream = new BehaviorSubject<AlertMessage[]>([]);
   private connected = true;
 
-  connect(): void {
-    this.connected = true;
-  }
-
-  disconnect(): void {
-    this.connected = false;
-  }
+  connect(): void { this.connected = true; }
+  disconnect(): void { this.connected = false; }
 
   sendCommand(command: WebSocketCommand): void {
-    if (command.type === WS_COMMANDS.CLEAR_ALL) {
-      this.stream.next([]);
-      return;
-    }
-
+    if (command.type === WS_COMMANDS.CLEAR_ALL) { this.stream.next([]); return; }
     if (command.type === WS_COMMANDS.DELETE_ONE && command.id) {
-      this.stream.next(this.stream.value.filter(alert => alert.eventId !== command.id));
+      this.stream.next(this.stream.value.filter(a => a.eventId !== command.id));
     }
   }
 
-  getMessages$(): Observable<AlertMessage[]> {
-    return this.stream.asObservable();
-  }
-
-  isConnected(): boolean {
-    return this.connected;
-  }
-
-  getConnectionStatus$(): Observable<ConnectionStatus> {
-    return of(this.connected ? ('CONNECTED' as const) : ('DISCONNECTED' as const));
-  }
-
-  pushAlert(alert: AlertMessage): void {
-    this.stream.next([alert, ...this.stream.value]);
-  }
+  getMessages$(): Observable<AlertMessage[]> { return this.stream.asObservable(); }
+  isConnected(): boolean { return this.connected; }
+  getConnectionStatus$(): Observable<ConnectionStatus> { return of('CONNECTED' as ConnectionStatus); }
+  pushAlert(alert: AlertMessage): void { this.stream.next([alert, ...this.stream.value]); }
 }
 
 class RouterStub {
   navigate = vi.fn();
 }
-
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -174,11 +93,9 @@ beforeAll(() => {
 
 describe('DashboardComponent Integration', () => {
   let fixture: ComponentFixture<DashboardComponent>;
-  let threatRepository: InMemoryThreatRepository;
   let statisticsRepository: StubStatisticsRepository;
   let authRepository: InMemoryAuthRepository;
   let wsRepository: InMemoryWebSocketRepository;
-  let router: RouterStub;
 
   const statistics: ThreatStatistics = {
     totalThreats: 42,
@@ -189,27 +106,25 @@ describe('DashboardComponent Integration', () => {
   };
 
   beforeEach(async () => {
-    TestBed.resetTestingModule();
-    threatRepository = new InMemoryThreatRepository();
     statisticsRepository = new StubStatisticsRepository(statistics);
     authRepository = new InMemoryAuthRepository();
     wsRepository = new InMemoryWebSocketRepository();
-    router = new RouterStub();
 
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
-        { provide: Router, useValue: router },
-        { provide: ThreatRepository, useValue: threatRepository },
+        provideRouter([]),
         { provide: StatisticsRepository, useValue: statisticsRepository },
         { provide: AuthRepository, useValue: authRepository },
         { provide: WebSocketRepository, useValue: wsRepository },
         { provide: AuthService, useFactory: () => new AuthServiceStub(authRepository) },
         {
-          provide: NotificationPreferencesRepository,
+          provide: ThreatRepository,
           useValue: {
-            get: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })),
-            save: vi.fn().mockReturnValue(of(undefined)),
+            reportThreat: vi.fn().mockReturnValue(of({})),
+            getThreats: vi.fn().mockReturnValue(of({ threats: [] })),
+            deleteThreat: vi.fn().mockReturnValue(of({ success: true })),
           },
         },
       ],
@@ -219,53 +134,25 @@ describe('DashboardComponent Integration', () => {
     fixture.detectChanges();
   });
 
-  it('should execute ReportThreat workflow and show success feedback', () => {
-    const component = fixture.componentInstance;
-
-    // Given: a valid threat ready to be reported end-to-end
-    component.threatForm.setValue({
-      type: ThreatType.RANSOMWARE,
-      severity: ThreatSeverity.CRITICAL,
-      sourceIp: '10.10.0.5',
-      targetIp: '10.10.0.10',
-      description: 'Critical ransomware attack detected in production'
-    });
-    fixture.detectChanges();
-
-    // When: the analyst submits the form
-    // Note: By.css('form') selects the threat-report form inside .threat-form-card
-    const forms = fixture.debugElement.queryAll(By.css('form'));
-    const threatForm = forms[forms.length - 1]; // threat form is the last form
-    threatForm.triggerEventHandler('ngSubmit', {});
-    fixture.detectChanges();
-
-    // Then: the domain chain hits the repository and UI shows the success message
-    expect(threatRepository.reportedThreats).toHaveLength(1);
-    expect(threatRepository.reportedThreats[0]).toMatchObject({
-      type: ThreatType.RANSOMWARE,
-      severity: ThreatSeverity.CRITICAL,
-      sourceIp: '10.10.0.5',
-      targetIp: '10.10.0.10'
-    });
-
-    const successBanner: HTMLElement | null = fixture.nativeElement.querySelector('.alert-success');
-    expect(successBanner?.textContent).toContain('Amenaza reportada exitosamente');
-    expect(component.loading).toBe(false);
-    expect(component.error).toBe('');
-  });
-
   it('should render statistics coming from GetStatisticsUseCase', async () => {
-    // Given: statistics repository returns aggregated metrics used by the widget
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // When: the asynchronous pipe resolves the observable
     const element: HTMLElement = fixture.nativeElement;
     const totalThreats = element.querySelector('[data-testid="total-threats"]');
     const criticalActive = element.querySelector('[data-testid="critical-active"]');
 
-    // Then: the widget prints the real values instead of placeholders
     expect(totalThreats?.textContent?.trim()).toBe('42');
     expect(criticalActive?.textContent?.trim()).toBe('5');
+  });
+
+  it('should NOT render an inline threat form — reporting is delegated to /report-threat', () => {
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('form')).toBeNull();
+  });
+
+  it('should render the quick-action navigation card', () => {
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.quick-action-card')).not.toBeNull();
   });
 });

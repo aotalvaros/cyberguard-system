@@ -1,3 +1,4 @@
+
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { logger } from '../../infrastructure/config/logger';
 
@@ -11,7 +12,6 @@ export interface ThreatResponseDto {
   timestamp: string;
   metadata?: Record<string, unknown>;
 }
-
 export class ListThreatsUseCase {
   constructor(private threatRepository: ThreatRepository) {}
 

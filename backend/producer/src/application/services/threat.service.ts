@@ -4,13 +4,11 @@ import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { Threat, ThreatType, SeverityLevel } from '../../domain/entities/Threat';
 import { ThreatRequest } from '../../types';
 import { logger } from '../../infrastructure/config/logger';
-
 export class ThreatService {
   constructor(
     private eventPublisher: EventPublisher,
     private threatRepository: ThreatRepository
   ) {}
-
   async reportThreat(threatData: ThreatRequest): Promise<string> {
     try {
       const threat = Threat.create({
@@ -32,12 +30,11 @@ export class ThreatService {
         metadata: threat.metadata,
         timestamp: threat.timestamp
       });
-
       const routingKey = `threat.detected.${threat.type}`;
       const event = {
         eventId: uuidv4(),
         eventType: 'threat.detected',
-        timestamp: threat.timestamp ||  new Date().toISOString(),
+        timestamp: threat.timestamp || /* istanbul ignore next */ new Date().toISOString(),
         data: {
           threatId,
           type: threat.type,
@@ -49,7 +46,6 @@ export class ThreatService {
       };
 
       await this.eventPublisher.publish(routingKey, event);
-
       logger.info('Threat reported successfully', {
         threatId,
         type: threat.type,

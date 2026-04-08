@@ -12,7 +12,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly auditLogRepository: AuditLogRepository
   ) {}
-
+  
   async login(
     credentials: LoginCredentials,
     ipAddress?: string,
@@ -54,7 +54,7 @@ export class AuthService {
           username: result.user.username
         });
 
-        const newUser: import('../../domain/ports/UserRepository').UserRecord = {
+        const newUser = {
           id: uuidv4(),
           username: result.user.username,
           email: result.user.username,
@@ -80,10 +80,6 @@ export class AuthService {
         }).catch((err: unknown) => {
           logger.error('Failed to log audit', { error: err instanceof Error ? err.message : String(err) });
         });
-      }
-
-      if (!user) {
-        return { success: false, error: 'User could not be resolved.' };
       }
 
       if (user.isLocked) {
@@ -128,7 +124,7 @@ export class AuthService {
         token,
         user: {
           id: user.id,
-          username: user.username,
+          username: user.username, 
           role: user.role
         }
       };

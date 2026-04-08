@@ -14,7 +14,6 @@ import { ListUsersUseCase } from '../../application/use-cases/ListUsersUseCase';
 import { CreateIncidentUseCase } from '../../application/use-cases/CreateIncidentUseCase';
 import { ListIncidentsUseCase } from '../../application/use-cases/ListIncidentsUseCase';
 import { PostgresThreatStatisticsRepository } from '../persistence/PostgresThreatStatisticsRepository';
-import { RedisNotificationPreferencesRepository } from '../persistence/RedisNotificationPreferencesRepository';
 import { RabbitMQPublisher } from '../providers/RabbitMQPublisher';
 import { FirebaseAuthProvider } from '../providers/FirebaseAuthProvider';
 import { JWTTokenService } from '../providers/JWTTokenService';
@@ -22,11 +21,12 @@ import { PostgresThreatRepository } from '../persistence/PostgresThreatRepositor
 import { PostgresUserRepository } from '../persistence/PostgresUserRepository';
 import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepository';
 import { PostgresIncidentRepository } from '../persistence/PostgresIncidentRepository';
+import { RedisNotificationPreferencesRepository } from '../persistence/RedisNotificationPreferencesRepository';
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { UserRepository } from '../../domain/ports/UserRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
-import { NotificationPreferencesRepository } from '../../domain/ports/NotificationPreferencesRepository';
 import { IncidentRepository } from '../../domain/ports/IncidentRepository';
+import { NotificationPreferencesRepository } from '../../domain/ports/NotificationPreferencesRepository';
 import { ThreatClassifier } from '../../domain/services/ThreatClassifier';
 import {
   MalwareClassificationStrategy,
@@ -47,18 +47,17 @@ export class ServiceFactory {
   private static auditLogRepository: AuditLogRepository | null = null;
   private static incidentRepository: IncidentRepository | null = null;
   private static threatClassifier: ThreatClassifier | null = null;
-  private static notifPrefsRepository: NotificationPreferencesRepository | null = null;
-  private static getNotifPrefsUseCase: GetNotificationPreferencesUseCase | null = null;
-  private static saveNotifPrefsUseCase: SaveNotificationPreferencesUseCase | null = null;
-  private static getAdminProfileUseCase: GetAdminProfileUseCase | null = null;
-  private static updateAdminProfileUseCase: UpdateAdminProfileUseCase | null = null;
-
   private static createUserUseCase: CreateUserUseCase | null = null;
   private static createIncidentUseCase: CreateIncidentUseCase | null = null;
   private static listIncidentsUseCase: ListIncidentsUseCase | null = null;
   private static updateUserUseCase: UpdateUserUseCase | null = null;
   private static toggleUserStatusUseCase: ToggleUserStatusUseCase | null = null;
   private static listUsersUseCase: ListUsersUseCase | null = null;
+  private static notifPrefsRepository: NotificationPreferencesRepository | null = null;
+  private static getNotifPrefsUseCase: GetNotificationPreferencesUseCase | null = null;
+  private static saveNotifPrefsUseCase: SaveNotificationPreferencesUseCase | null = null;
+  private static getAdminProfileUseCase: GetAdminProfileUseCase | null = null;
+  private static updateAdminProfileUseCase: UpdateAdminProfileUseCase | null = null;
 
   static getThreatRepository(): ThreatRepository {
     if (!this.threatRepository) {
@@ -238,17 +237,17 @@ export class ServiceFactory {
     this.auditLogRepository = null;
     this.incidentRepository = null;
     this.threatClassifier = null;
-    this.notifPrefsRepository = null;
-    this.getNotifPrefsUseCase = null;
-    this.saveNotifPrefsUseCase = null;
-    this.getAdminProfileUseCase = null;
-    this.updateAdminProfileUseCase = null;
     this.createUserUseCase = null;
     this.updateUserUseCase = null;
     this.toggleUserStatusUseCase = null;
     this.listUsersUseCase = null;
     this.createIncidentUseCase = null;
     this.listIncidentsUseCase = null;
+    this.notifPrefsRepository = null;
+    this.getNotifPrefsUseCase = null;
+    this.saveNotifPrefsUseCase = null;
+    this.getAdminProfileUseCase = null;
+    this.updateAdminProfileUseCase = null;
   }
 
   static getThreatClassifier(): ThreatClassifier {

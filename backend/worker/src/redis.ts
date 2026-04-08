@@ -13,7 +13,7 @@ const getMessageId = (payload: unknown): string | null => {
   if (data?.['threatId'] && typeof data['threatId'] === 'string') return data['threatId'];
   if (record['routingKey'] && record['receivedAt']) return `${String(record['routingKey'])}::${String(record['receivedAt'])}`;
   if (record['routing'] && record['timestamp']) return `${String(record['routing'])}::${String(record['timestamp'])}`;
-
+  
   try {
     const str = JSON.stringify(payload);
     let hash = 0;
@@ -78,7 +78,7 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
   if (!redisClient?.isOpen) return;
   try {
     const items = await redisClient.lRange(HISTORY_KEY, 0, -1);
-
+    
     let found = false;
     const remaining: string[] = [];
     for (const item of items) {
@@ -93,9 +93,9 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
         remaining.push(item);
       }
     }
-
+    
     if (found) {
-
+      
       const pipeline = redisClient.multi();
       pipeline.del(HISTORY_KEY);
       for (const item of remaining) {
@@ -114,39 +114,4 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
 
 export const closeRedis = async (): Promise<void> => {
   if (redisClient?.isOpen) await redisClient.quit();
-};
-
-export interface NotifPreferences {
-  emailEnabled: boolean;
-  whatsappEnabled: boolean;
-  email: string;
-  phone: string;
-}
-
-export const getNotifPreferences = async (username: string): Promise<NotifPreferences | null> => {
-  if (!redisClient?.isOpen) return null;
-  try {
-    const raw = await redisClient.get(`notif:prefs:${username}`);
-    if (!raw) return null;
-    return JSON.parse(raw) as NotifPreferences;
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    logger.error('Failed to get notif preferences', { error: message });
-    return null;
-  }
-};
-
-export const saveNotifLog = async (
-  eventId: string,
-  results: Array<{ canal: string; status: string; attempts: number; error?: string }>,
-): Promise<void> => {
-  if (!redisClient?.isOpen) return;
-  try {
-    const key = `notif:log:${eventId}`;
-    await redisClient.set(key, JSON.stringify({ eventId, results, savedAt: new Date().toISOString() }));
-    await redisClient.expire(key, 604800);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    logger.error('Failed to save notif log', { error: message });
-  }
 };

@@ -5,15 +5,12 @@ import rateLimit from 'express-rate-limit';
 import { config } from './infrastructure/config/env';
 import { logger } from './infrastructure/config/logger';
 import { connectRabbitMQ, closeRabbitMQ } from './infrastructure/config/rabbitmq';
-import { connectRedis, closeRedis } from './infrastructure/config/redis';
 import { errorHandler } from './infrastructure/http/middlewares/error.middleware';
 import authRoutes from './infrastructure/http/controllers/auth.controller';
 import threatRoutes from './infrastructure/http/controllers/threat.controller';
 import adminRoutes from './infrastructure/http/controllers/admin.controller';
-import profileRoutes from './infrastructure/http/controllers/profile.controller';
 import incidentRoutes from './infrastructure/http/controllers/incident.controller';
 import { statisticsRouter } from './infrastructure/http/controllers/statistics.controller';
-import { profileNotificationsRouter } from './infrastructure/http/controllers/profile-notifications.controller';
 
 const app = express();
 
@@ -24,16 +21,16 @@ app.use(cors({
 }));
 
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 300,
+  windowMs: 15 * 60 * 1000, 
+  max: 300,                 
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
+  windowMs: 15 * 60 * 1000, 
+  max: 100,                  
   message: 'Too many login attempts from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -51,10 +48,8 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/threats', threatRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin/profile', profileRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/statistics', statisticsRouter);
-app.use('/api/profile/notification-preferences', profileNotificationsRouter);
 
 app.use(errorHandler);
 
@@ -62,9 +57,6 @@ async function startServer() {
   try {
     await connectRabbitMQ();
     logger.info('RabbitMQ connected successfully');
-
-    await connectRedis();
-    logger.info('Redis connected successfully');
 
     app.listen(config.port, () => {
       logger.info(`Backend API running on port ${config.port}`);
@@ -79,7 +71,6 @@ async function startServer() {
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, closing server...');
   await closeRabbitMQ();
-  await closeRedis();
   process.exit(0);
 });
 

@@ -21,7 +21,7 @@ function getThreatService(): ThreatService {
 }
 
 const MAX_ATTEMPTS = 5;
-const TIME_WINDOW = 5 * 60 * 1000;
+const TIME_WINDOW = 5 * 60 * 1000; // 5 minutos
 
 export function resetBruteForceState(): void {
   loginAttempts.clear();
@@ -37,14 +37,13 @@ export function bruteForceDetection(req: Request, res: Response, next: NextFunct
 
   if (attempt && attempt.reported && (Date.now() - attempt.firstAttempt < TIME_WINDOW)) {
     logger.warn('Blocking request from blacklisted IP', { ip });
-    res.status(403).json({
-      error: 'Access denied due to multiple failed attempts. Try again later.'
+    res.status(403).json({ 
+      error: 'Access denied due to multiple failed attempts. Try again later.' 
     });
     return;
   }
-
   const originalJson = res.json.bind(res);
-
+  
   res.json = function(body: unknown) {
     if (req.path === '/login') {
       if (res.statusCode === 401) {
@@ -55,7 +54,7 @@ export function bruteForceDetection(req: Request, res: Response, next: NextFunct
     }
     return originalJson(body);
   };
-
+  
   next();
 }
 
@@ -78,9 +77,10 @@ async function trackFailedAttempt(ip: string, username?: string) {
 
   if (attempt.count >= MAX_ATTEMPTS && !attempt.reported) {
     attempt.reported = true;
+    
 
     const service = getThreatService();
-
+    
     await service.reportThreat({
       type: 'intrusion',
       severity: 'high',

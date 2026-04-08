@@ -1,8 +1,6 @@
 import { buildPayload, handleMessage } from '../../handler';
 import { describe, it, expect, jest } from '@jest/globals';
 
-
-// Suppress logger output in tests
 jest.mock('../../logger', () => ({
   logger: {
     info: jest.fn(),
@@ -14,9 +12,9 @@ jest.mock('../../logger', () => ({
 import { logger } from '../../logger';
 
 describe('Handler', () => {
-  // ==========================================================================
-  // buildPayload
-  // ==========================================================================
+  
+  
+  
 
   describe('buildPayload', () => {
     it('should create a payload with routingKey, data and receivedAt', () => {
@@ -83,16 +81,16 @@ describe('Handler', () => {
     it('should produce a readonly payload', () => {
       const payload = buildPayload({}, 'key');
 
-      // Payload type is Readonly — verify structure is immutable at runtime
+      
       expect(Object.keys(payload)).toEqual(
         expect.arrayContaining(['routingKey', 'data', 'receivedAt']),
       );
     });
   });
 
-  // ==========================================================================
-  // handleMessage
-  // ==========================================================================
+  
+  
+  
 
   describe('handleMessage', () => {
     it('should return a valid payload for object data', async () => {

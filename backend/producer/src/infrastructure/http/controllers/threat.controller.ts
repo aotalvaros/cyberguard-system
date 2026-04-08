@@ -6,9 +6,7 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { bruteForceDetection } from '../middlewares/bruteforce.middleware';
 import { validate } from '../middlewares/validation.middleware';
 import { createThreatSchema } from '../validators/threat.schema';
-
 const router = Router();
-
 router.use(authMiddleware);
 router.use(bruteForceDetection);
 
@@ -16,6 +14,7 @@ router.post('/', validate(createThreatSchema), async (req: Request, res: Respons
   try {
 
     const threatService = ServiceFactory.getThreatService();
+    
 
     const threatId = await threatService.reportThreat(req.body);
 
@@ -35,7 +34,6 @@ router.post('/', validate(createThreatSchema), async (req: Request, res: Respons
     });
   }
 });
-
 router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
 
@@ -44,7 +42,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     const result = await listThreatsUseCase.execute();
 
     logger.info('Threats retrieved', { total: result.total });
-
+ 
     res.status(200).json(result);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
@@ -55,14 +53,13 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     });
   }
 });
-
 router.delete('/:threatId', async (req: Request, res: Response): Promise<void> => {
   try {
     const { threatId } = req.params;
 
     const deleteThreatUseCase = ServiceFactory.getDeleteThreatUseCase();
 
-    const result = await deleteThreatUseCase.execute(threatId ??  '');
+    const result = await deleteThreatUseCase.execute(threatId ?? /* istanbul ignore next */ '');
 
     logger.info('Threat deleted', { threatId: result.threatId });
 

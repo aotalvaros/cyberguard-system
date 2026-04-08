@@ -1,6 +1,5 @@
 import { describe, it, expect, jest, afterAll, beforeEach } from '@jest/globals';
 
-
 describe('Config', () => {
   const originalEnv = process.env;
 
@@ -13,9 +12,9 @@ describe('Config', () => {
     process.env = originalEnv;
   });
 
-  // ==========================================================================
-  // DEFAULT VALUES
-  // ==========================================================================
+  
+  
+  
 
   describe('default values', () => {
     it('should default RABBITMQ_URL to amqp://localhost', () => {
@@ -54,9 +53,9 @@ describe('Config', () => {
     });
   });
 
-  // ==========================================================================
-  // ENVIRONMENT OVERRIDES
-  // ==========================================================================
+  
+  
+  
 
   describe('environment variable overrides', () => {
     it('should use RABBITMQ_URL from environment', () => {
@@ -96,9 +95,9 @@ describe('Config', () => {
     });
   });
 
-  // ==========================================================================
-  // EDGE CASES
-  // ==========================================================================
+  
+  
+  
 
   describe('edge cases', () => {
     it('should warn when RABBITMQ_URL is not set', () => {

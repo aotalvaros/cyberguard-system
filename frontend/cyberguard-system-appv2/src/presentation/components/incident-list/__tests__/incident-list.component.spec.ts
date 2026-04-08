@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll} from 'vitest';
+import {describe, it, expect, vi, beforeEach, beforeAll} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { ComponentFixture } from '@angular/core/testing';
@@ -54,7 +54,6 @@ async function buildFixture(overrides: {
   fixture.detectChanges();
   return { fixture, component, mockGetIncidents };
 }
-
 
 beforeAll(() => {
   TestBed.initTestEnvironment(
@@ -282,6 +281,162 @@ describe('IncidentListComponent', () => {
     it('should navigate to /autenticacion on logout', () => {
       component.logout();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/autenticacion']);
+    });
+  });
+
+ describe('clearFilters', () => {
+    let component: IncidentListComponent;
+    let mockGetIncidents: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+      ({ component, mockGetIncidents } = await buildFixture());
+      mockGetIncidents.mockClear();
+      mockGetIncidents.mockReturnValue(of({ incidents: [], total: 0 }));
+    });
+
+    it('should reset filterForm to empty values', () => {
+      component.filterForm.patchValue({ status: 'open', severity: 'critical' });
+      component.clearFilters();
+      expect(component.filterForm.value.status).toBe('');
+      expect(component.filterForm.value.severity).toBe('');
+    });
+
+    it('should call loadIncidents after clearing', () => {
+      component.clearFilters();
+      expect(mockGetIncidents).toHaveBeenCalledWith({});
+    });
+  });
+
+  describe('toggleCreateForm', () => {
+    let component: IncidentListComponent;
+
+    beforeEach(async () => {
+      ({ component } = await buildFixture());
+    });
+
+    it('should toggle showCreateForm from false to true', () => {
+      component.toggleCreateForm();
+      expect(component.showCreateForm).toBe(true);
+    });
+
+    it('should toggle showCreateForm back to false on second call', () => {
+      component.toggleCreateForm();
+      component.toggleCreateForm();
+      expect(component.showCreateForm).toBe(false);
+    });
+
+    it('should reset createForm on toggle', () => {
+      component.createForm.patchValue({ threatId: 'some-id' });
+      component.toggleCreateForm();
+      expect(component.createForm.value.threatId).toBeNull();
+    });
+
+    it('should clear error and success messages', () => {
+      component.error   = 'prev error';
+      component.success = 'prev success';
+      component.toggleCreateForm();
+      expect(component.error).toBe('');
+      expect(component.success).toBe('');
+    });
+  });
+
+  describe('onCreateIncident — invalid form', () => {
+    it('should not call use case when threatId is missing', async () => {
+      const createMock = vi.fn();
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [IncidentListComponent],
+        providers: [
+          { provide: GetIncidentsUseCase,   useValue: { execute: vi.fn().mockReturnValue(of({ incidents: [], total: 0 })) } },
+          { provide: CreateIncidentUseCase, useValue: { execute: createMock } },
+          { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue({ username: 'a', role: 'soc_analyst' }) } },
+          { provide: LogoutUseCase,         useValue: { execute: vi.fn() } },
+          { provide: Router,                useValue: { navigate: vi.fn() } },
+        ],
+      }).compileComponents();
+      const comp = TestBed.createComponent(IncidentListComponent).componentInstance;
+      comp.onCreateIncident();
+      expect(createMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('onCreateIncident — success', () => {
+    let component: IncidentListComponent;
+    const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+
+    beforeEach(async () => {
+      ({ component } = await buildFixture());
+    });
+
+    it('should set success message with incident title and id', () => {
+      component.createForm.patchValue({ threatId: validUuid });
+      component.onCreateIncident();
+      expect(component.success).toContain('malware desde 10.0.0.1');
+      expect(component.success).toContain('inc-1');
+    });
+
+    it('should hide form after successful creation', () => {
+      component.showCreateForm = true;
+      component.createForm.patchValue({ threatId: validUuid });
+      component.onCreateIncident();
+      expect(component.showCreateForm).toBe(false);
+    });
+
+    it('should set creating to false after success', () => {
+      component.createForm.patchValue({ threatId: validUuid });
+      component.onCreateIncident();
+      expect(component.creating).toBe(false);
+    });
+  });
+
+  describe('onCreateIncident — error', () => {
+    it('should set error message on create failure', async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [IncidentListComponent],
+        providers: [
+          { provide: GetIncidentsUseCase,   useValue: { execute: vi.fn().mockReturnValue(of({ incidents: [], total: 0 })) } },
+          { provide: CreateIncidentUseCase, useValue: { execute: vi.fn().mockReturnValue(throwError(() => ({ message: 'Amenaza no encontrada' }))) } },
+          { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue({ username: 'a', role: 'soc_analyst' }) } },
+          { provide: LogoutUseCase,         useValue: { execute: vi.fn() } },
+          { provide: Router,                useValue: { navigate: vi.fn() } },
+        ],
+      }).compileComponents();
+      const comp = TestBed.createComponent(IncidentListComponent).componentInstance;
+      comp.createForm.patchValue({ threatId: '550e8400-e29b-41d4-a716-446655440000' });
+      comp.onCreateIncident();
+      expect(comp.error).toBe('Amenaza no encontrada');
+      expect(comp.creating).toBe(false);
+    });
+
+    it('should use fallback error message when no message provided', async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [IncidentListComponent],
+        providers: [
+          { provide: GetIncidentsUseCase,   useValue: { execute: vi.fn().mockReturnValue(of({ incidents: [], total: 0 })) } },
+          { provide: CreateIncidentUseCase, useValue: { execute: vi.fn().mockReturnValue(throwError(() => ({}))) } },
+          { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue({ username: 'a', role: 'soc_analyst' }) } },
+          { provide: LogoutUseCase,         useValue: { execute: vi.fn() } },
+          { provide: Router,                useValue: { navigate: vi.fn() } },
+        ],
+      }).compileComponents();
+      const comp = TestBed.createComponent(IncidentListComponent).componentInstance;
+      comp.createForm.patchValue({ threatId: '550e8400-e29b-41d4-a716-446655440000' });
+      comp.onCreateIncident();
+      expect(comp.error).toBe('Error al crear incidente');
+    });
+  });
+
+ describe('trackByIncidentId', () => {
+    let component: IncidentListComponent;
+
+    beforeEach(async () => {
+      ({ component } = await buildFixture());
+    });
+
+    it('should return the incident id', () => {
+      expect(component.trackByIncidentId(0, mockIncident)).toBe('inc-1');
     });
   });
 });

@@ -15,95 +15,10 @@
       <app-notification-preferences />
     }
 
-    <div class="threat-form-card">
-      <h2>Reportar Amenaza</h2>
-      
-      <form [formGroup]="threatForm" (ngSubmit)="onSubmit()">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="type">Tipo de Amenaza</label>
-            <select id="type" formControlName="type">
-              @for (type of threatTypes; track type) {
-                <option [value]="type">{{ type }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="severity">Severidad</label>
-            <select id="severity" formControlName="severity">
-              @for (severity of severityLevels; track severity) {
-                <option [value]="severity">{{ severity }}</option>
-              }
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sourceIp">IP Origen *</label>
-            <input
-              id="sourceIp"
-              type="text"
-              formControlName="sourceIp"
-              placeholder="192.168.1.100"
-              [class.error]="threatForm.get('sourceIp')?.invalid && threatForm.get('sourceIp')?.touched"
-            />
-            @if (threatForm.get('sourceIp')?.hasError('required') && threatForm.get('sourceIp')?.touched) {
-              <span class="error-message">IP origen requerida</span>
-            }
-            @if (threatForm.get('sourceIp')?.hasError('ip') && threatForm.get('sourceIp')?.touched) {
-              <span class="error-message">IP inválida</span>
-            }
-          </div>
-
-          <div class="form-group">
-            <label for="targetIp">IP Destino</label>
-            <input
-              id="targetIp"
-              type="text"
-              formControlName="targetIp"
-              placeholder="10.0.0.1 (opcional)"
-              [class.error]="threatForm.get('targetIp')?.invalid && threatForm.get('targetIp')?.touched"
-            />
-            @if (threatForm.get('targetIp')?.hasError('ip') && threatForm.get('targetIp')?.touched) {
-              <span class="error-message">IP inválida</span>
-            }
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="description">Descripción *</label>
-          <textarea
-            id="description"
-            formControlName="description"
-            placeholder="Describe la amenaza detectada (10-500 caracteres)"
-            rows="4"
-            [class.error]="threatForm.get('description')?.invalid && threatForm.get('description')?.touched"
-          ></textarea>
-          @if (threatForm.get('description')?.hasError('required') && threatForm.get('description')?.touched) {
-            <span class="error-message">Descripción requerida</span>
-          }
-          @if (threatForm.get('description')?.hasError('minlength')) {
-            <span class="error-message">Mínimo 10 caracteres</span>
-          }
-          @if (threatForm.get('description')?.hasError('maxlength')) {
-            <span class="error-message">Máximo 500 caracteres</span>
-          }
-        </div>
-
-        @if (success) {
-          <div class="alert-success">{{ success }}</div>
-        }
-
-        @if (error) {
-          <div class="alert-error">{{ error }}</div>
-        }
-
-        <button type="submit" [disabled]="threatForm.invalid || loading">
-          {{ loading ? 'Reportando...' : 'Reportar Amenaza' }}
-        </button>
-      </form>
+    <div class="quick-actions">
+      <a class="quick-action-card" [routerLink]="['/report-threat']">
+        🚨 Reportar Amenaza
+      </a>
     </div>
 
     <app-alerts />

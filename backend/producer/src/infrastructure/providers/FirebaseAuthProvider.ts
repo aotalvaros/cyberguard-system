@@ -10,25 +10,23 @@ interface FirebaseConfig {
 
 export class FirebaseAuthProvider implements AuthProvider {
   private auth: Auth;
-
+  
   constructor(config: FirebaseConfig) {
     const app: FirebaseApp = initializeApp(config);
     this.auth = getAuth(app);
   }
-
+  
   async authenticate(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-
       const email = this.mapUsernameToEmail(credentials.username);
-
+      
       const userCredential = await signInWithEmailAndPassword(
         this.auth,
         email,
         credentials.password
       );
-
+      
       const firebaseUser = userCredential.user;
-
       const idToken = await firebaseUser.getIdToken(true);
       const decodedToken = await firebaseUser.getIdTokenResult(true);
 
@@ -67,7 +65,6 @@ export class FirebaseAuthProvider implements AuthProvider {
     if (typeof claimRole === 'string' && validRoles.includes(claimRole)) {
       return claimRole;
     }
-
     return 'viewer';
   }
 }

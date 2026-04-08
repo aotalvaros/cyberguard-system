@@ -1,3 +1,4 @@
+
 export interface Threat {
   threatId: string;
   type: string;
@@ -10,7 +11,6 @@ export interface Threat {
 }
 
 export interface ThreatRepository {
-
   save(threat: Threat): Promise<string>;
 
   findAll(): Promise<Threat[]>;

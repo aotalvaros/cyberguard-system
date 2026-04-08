@@ -1,7 +1,6 @@
 import { query } from '../config/database';
 import { UserRepository, UserRecord, ProfileUpdateData } from '../../domain/ports/UserRepository';
 import { logger } from '../config/logger';
-
 interface UserRow {
   readonly id: string;
   readonly username: string;
@@ -66,34 +65,6 @@ export class PostgresUserRepository implements UserRepository {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('Failed to find user by email', { email, error: message });
-      throw error;
-    }
-  }
-
-  async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
-    try {
-      const rows = await query<UserRow>(
-        `UPDATE users SET
-           username   = COALESCE($2, username),
-           email      = COALESCE($3, email),
-           updated_at = NOW()
-         WHERE id = $1
-         RETURNING *`,
-        [
-          id,
-          data.username ?? null,
-          data.email    ?? null,
-        ]
-      );
-      const row = rows[0];
-      if (!row) {
-        throw new Error(`Failed to update profile: no row returned for userId ${id}`);
-      }
-      logger.info('Profile updated in PostgreSQL', { userId: id, fields: Object.keys(data) });
-      return rowToUser(row);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error('Failed to update profile', { userId: id, error: message });
       throw error;
     }
   }
@@ -213,5 +184,33 @@ export class PostgresUserRepository implements UserRepository {
 
   async lockUser(id: string): Promise<void> {
     await query('UPDATE users SET is_locked = true, updated_at = NOW() WHERE id = $1', [id]);
+  }
+
+  async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
+    try {
+      const rows = await query<UserRow>(
+        `UPDATE users SET
+           username   = COALESCE($2, username),
+           email      = COALESCE($3, email),
+           updated_at = NOW()
+         WHERE id = $1
+         RETURNING *`,
+        [
+          id,
+          data.username ?? null,
+          data.email    ?? null,
+        ]
+      );
+      const row = rows[0];
+      if (!row) {
+        throw new Error(`Failed to update profile: no row returned for userId ${id}`);
+      }
+      logger.info('Profile updated in PostgreSQL', { userId: id, fields: Object.keys(data) });
+      return rowToUser(row);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to update profile', { userId: id, error: message });
+      throw error;
+    }
   }
 }

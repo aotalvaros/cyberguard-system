@@ -144,7 +144,7 @@ export class DdosClassificationStrategy implements ThreatClassificationStrategy 
       riskScore,
       recommendedSeverity: riskScore >= 70 ? 'critical' : context.severity,
       tags: ['ddos', 'network-attack'],
-      autoBlock: true,
+      autoBlock: true, // DDoS siempre auto-block
     };
   }
 
@@ -163,15 +163,14 @@ export class RansomwareClassificationStrategy implements ThreatClassificationStr
   readonly supportedType: ThreatType = 'ransomware';
 
   analyze(context: ThreatContext): ThreatAnalysisResult {
-
     const baseSeverityScore = this.getSeverityScore(context.severity);
-    const riskScore = Math.min(100, baseSeverityScore + 10);
+    const riskScore = Math.min(100, baseSeverityScore + 10); // +10 inherent risk
 
     return {
       riskScore,
-      recommendedSeverity: 'critical',
+      recommendedSeverity: 'critical', // Ransomware siempre escalado a critical
       tags: this.generateTags(context),
-      autoBlock: true,
+      autoBlock: true, // Ransomware siempre auto-block
     };
   }
 

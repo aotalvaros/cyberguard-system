@@ -20,7 +20,6 @@ function requireRole(roles: string[]) {
     next();
   };
 }
-
 router.post(
   '/',
   authMiddleware,
@@ -61,7 +60,6 @@ router.post(
     }
   },
 );
-
 router.get(
   '/',
   authMiddleware,
@@ -82,7 +80,6 @@ router.get(
     }
   },
 );
-
 router.get(
   '/:id',
   authMiddleware,

@@ -1,3 +1,4 @@
+
 export interface AuditLogEntry {
   readonly userId: string | undefined;
   readonly action: string;
