@@ -93,14 +93,14 @@ describe('NotificationPreferencesComponent', () => {
   it('should show success message after saving', () => {
     fixture.detectChanges();
     component.save();
-    expect(component.saveSuccess).toBe(true);
+    expect(component.saveSuccess()).toBe(true);
   });
 
   it('should show error message on save failure', () => {
     mockSave.execute.mockReturnValue(throwError(() => new Error('fail')));
     fixture.detectChanges();
     component.save();
-    expect(component.savingError).toBeTruthy();
-    expect(component.saveSuccess).toBe(false);
+    expect(component.savingError()).toBeTruthy();
+    expect(component.saveSuccess()).toBe(false);
   });
 });

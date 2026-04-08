@@ -3,14 +3,15 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { DashboardComponent } from '../dashboard.component';
-import { LogoutUseCase } from '../../../../core/application/use-cases/logout.use-case';
 import { GetCurrentUserUseCase } from '../../../../core/application/use-cases/get-current-user.use-case';
 import { GetStatisticsUseCase } from '../../../../core/application/use-cases/get-statistics.use-case';
 import { WebSocketRepository } from '../../../../core/domain/ports/websocket.repository';
 import { AuthRepository } from '../../../../core/domain/ports/auth.repository';
 import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
-import { Router, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { type ThreatStatistics } from '../../../../core/domain/models/threat-statistics.model';
+import { GetNotificationPreferencesUseCase } from '../../../../core/application/use-cases/get-notification-preferences.use-case';
+import { SaveNotificationPreferencesUseCase } from '../../../../core/application/use-cases/save-notification-preferences.use-case';
 
 const mockStats: ThreatStatistics = {
   totalThreats: 10,
@@ -30,22 +31,24 @@ beforeAll(() => {
 describe('DashboardComponent', () => {
   let fixture: ComponentFixture<DashboardComponent>;
   let component: DashboardComponent;
-  let mockLogoutUseCase: { execute: ReturnType<typeof vi.fn> };
-  let router: Router;
-  let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    mockLogoutUseCase = { execute: vi.fn() };
-
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
         provideRouter([]),
-        { provide: LogoutUseCase, useValue: mockLogoutUseCase },
         {
           provide: GetCurrentUserUseCase,
           useValue: { execute: vi.fn().mockReturnValue({ username: 'testuser', role: 'admin' }) },
+        },
+        {
+          provide: GetNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })) },
+        },
+        {
+          provide: SaveNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of(undefined)) },
         },
         {
           provide: GetStatisticsUseCase,
@@ -83,9 +86,6 @@ describe('DashboardComponent', () => {
       ],
     }).compileComponents();
 
-    router = TestBed.inject(Router);
-    navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true) as ReturnType<typeof vi.fn>;
-
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -107,23 +107,17 @@ describe('DashboardComponent', () => {
 
     it('should NOT render an inline threat form on the dashboard', () => {
       const el: HTMLElement = fixture.nativeElement;
-      expect(el.querySelector('form')).toBeNull();
+      expect(el.querySelector('form.threat-form')).toBeNull();
+      expect(el.querySelector('app-report-threat')).toBeNull();
     });
 
     it('should display current user info', () => {
       expect(component.user).toEqual({ username: 'testuser', role: 'admin' });
     });
-  });
 
-  describe('logout', () => {
-    it('should call logoutUseCase.execute', () => {
-      component.logout();
-      expect(mockLogoutUseCase.execute).toHaveBeenCalled();
-    });
-
-    it('should navigate to /autenticacion after logout', () => {
-      component.logout();
-      expect(navigateSpy).toHaveBeenCalledWith(['/autenticacion']);
+    it('should NOT render a logout button in the dashboard header', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.btn-logout')).toBeNull();
     });
   });
 });

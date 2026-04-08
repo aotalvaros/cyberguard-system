@@ -17,6 +17,8 @@ import { ThreatStatistics } from '../../../../core/domain/models/threat-statisti
 import { LoginCredentials } from '../../../../core/domain/models/login-credentials.model';
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
 import { Router, provideRouter } from '@angular/router';
+import { GetNotificationPreferencesUseCase } from '../../../../core/application/use-cases/get-notification-preferences.use-case';
+import { SaveNotificationPreferencesUseCase } from '../../../../core/application/use-cases/save-notification-preferences.use-case';
 
 class StubStatisticsRepository extends StatisticsRepository {
   constructor(private stats: ThreatStatistics) {
@@ -120,6 +122,14 @@ describe('DashboardComponent Integration', () => {
         { provide: WebSocketRepository, useValue: wsRepository },
         { provide: AuthService, useFactory: () => new AuthServiceStub(authRepository) },
         {
+          provide: GetNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })) },
+        },
+        {
+          provide: SaveNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of(undefined)) },
+        },
+        {
           provide: ThreatRepository,
           useValue: {
             reportThreat: vi.fn().mockReturnValue(of({})),
@@ -148,7 +158,8 @@ describe('DashboardComponent Integration', () => {
 
   it('should NOT render an inline threat form — reporting is delegated to /report-threat', () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('form')).toBeNull();
+    expect(element.querySelector('form.threat-form')).toBeNull();
+    expect(element.querySelector('app-report-threat')).toBeNull();
   });
 
   it('should render the quick-action navigation card', () => {
