@@ -54,7 +54,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should be at least medium severity');
+      expect(result.errors).toContain('Malware no puede ser severidad LOW: implica un riesgo activo (mínimo MEDIUM)');
     });
 
     it('should reject malware without malware/virus keyword', () => {
@@ -67,7 +67,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should mention malware or virus');
+      expect(result.errors).toContain('La descripción debe mencionar "malware" o "virus" para este tipo de amenaza');
     });
   });
 
@@ -132,7 +132,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Ransomware should always be critical severity');
+      expect(result.errors).toContain('Ransomware siempre debe ser CRITICAL: compromete disponibilidad e integridad de los datos');
     });
   });
 
@@ -177,7 +177,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Phishing threats should mention phishing or email');
+      expect(result.errors).toContain('La descripción debe mencionar "phishing" o "email" para este tipo de amenaza');
     });
   });
 
@@ -210,7 +210,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Description must be at least 10 characters');
+      expect(result.errors).toContain('La descripción debe tener al menos 10 caracteres');
     });
 
     it('should reject invalid IP format', () => {
@@ -223,7 +223,7 @@ describe('ThreatValidationStrategies', () => {
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Invalid source IP format');
+      expect(result.errors).toContain('Formato de IP origen inválido');
     });
 
     it('should reject both short description and invalid IP', () => {

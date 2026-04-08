@@ -5,6 +5,7 @@ import { ThreatType } from '../../../core/domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../core/domain/models/threat-severity.enum';
 import {
   MalwareValidationStrategy,
+  IntrusionValidationStrategy,
   PhishingValidationStrategy,
   DdosValidationStrategy,
   RansomwareValidationStrategy,
@@ -43,8 +44,8 @@ describe('ThreatValidationFactory', () => {
       expect(factory.createValidator(ThreatType.RANSOMWARE)).toBeInstanceOf(RansomwareValidationStrategy);
     });
 
-    it('should return DefaultValidationStrategy for INTRUSION (unhandled type)', () => {
-      expect(factory.createValidator(ThreatType.INTRUSION)).toBeInstanceOf(DefaultValidationStrategy);
+    it('should return IntrusionValidationStrategy for INTRUSION', () => {
+      expect(factory.createValidator(ThreatType.INTRUSION)).toBeInstanceOf(IntrusionValidationStrategy);
     });
   });
 
@@ -66,7 +67,7 @@ describe('ThreatValidationFactory', () => {
         description: 'malware detected',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should be at least medium severity');
+      expect(result.errors).toContain('Malware no puede ser severidad LOW: implica un riesgo activo (mínimo MEDIUM)');
     });
 
     it('should fail when description does not mention malware or virus', () => {
@@ -96,7 +97,7 @@ describe('ThreatValidationFactory', () => {
         description: 'suspicious network traffic detected',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('phishing or email');
+      expect(result.errors[0]).toContain('"phishing" o "email"');
     });
   });
 
@@ -129,7 +130,7 @@ describe('ThreatValidationFactory', () => {
         description: 'traffic anomaly',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('high or critical');
+      expect(result.errors[0]).toContain('HIGH o CRITICAL');
     });
   });
 
@@ -152,12 +153,12 @@ describe('ThreatValidationFactory', () => {
         description: 'ransomware detected but contained',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('critical');
+      expect(result.errors[0]).toContain('CRITICAL');
     });
   });
 
-  describe('DefaultValidationStrategy — validate()', () => {
-    it('should pass with valid description and IP', () => {
+  describe('IntrusionValidationStrategy — validate()', () => {
+    it('should pass with valid description containing intrusion keyword', () => {
       const result = factory.createValidator(ThreatType.INTRUSION).validate({
         ...baseThreat,
         type: ThreatType.INTRUSION,
@@ -167,26 +168,27 @@ describe('ThreatValidationFactory', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should fail when description is too short', () => {
+    it('should fail when description does not mention intrusion, intruso or breach', () => {
       const result = factory.createValidator(ThreatType.INTRUSION).validate({
         ...baseThreat,
         type: ThreatType.INTRUSION,
-        description: 'short',
+        description: 'suspicious activity on network',
         sourceIp: '10.0.0.1',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Description must be at least 10 characters');
+      expect(result.errors).toContain('La descripción debe mencionar "intrusion", "intruso" o "breach" para este tipo de amenaza');
     });
 
-    it('should fail when sourceIp is invalid', () => {
+    it('should fail when severity is LOW', () => {
       const result = factory.createValidator(ThreatType.INTRUSION).validate({
         ...baseThreat,
         type: ThreatType.INTRUSION,
+        severity: ThreatSeverity.LOW,
         description: 'intrusion on internal network segment',
-        sourceIp: 'not-an-ip',
+        sourceIp: '10.0.0.1',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Invalid source IP format');
+      expect(result.errors).toContain('Intrusión no puede ser severidad LOW: implica acceso no autorizado (mínimo MEDIUM)');
     });
   });
 });
