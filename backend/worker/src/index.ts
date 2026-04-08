@@ -3,7 +3,7 @@ import { connectAndConsume, closeRabbit } from './rabbitmq';
 import { handleMessage } from './handler';
 import { WS_PORT } from './config';
 import { logger } from './logger';
-import { connectRedis, saveToRedis, closeRedis, getAllNotifPreferences } from './redis';
+import { connectRedis, saveToRedis, closeRedis, getAllNotifPreferences, removeHistoryItemByThreatId } from './redis';
 import { NotificationOrchestrator } from './notifications/notification.orchestrator';
 import { EmailAdapter } from './notifications/email.adapter';
 import { WhatsAppAdapter } from './notifications/whatsapp.adapter';
@@ -55,11 +55,25 @@ async function main() {
   const orchestrator = buildOrchestrator();
 
   await connectAndConsume(async (data, routingKey, _raw) => {
+    if (routingKey.startsWith('threat.deleted')) {
+      const event = data as Record<string, unknown>;
+      const inner = (event['data'] ?? event) as Record<string, unknown>;
+      const threatId = String(inner['threatId'] ?? '');
+
+      if (threatId) {
+        await removeHistoryItemByThreatId(threatId);
+        broadcast({ type: 'delete-one', id: threatId, deletedAt: new Date().toISOString() });
+        logger.info('Threat deleted event processed', { threatId, routingKey });
+      } else {
+        logger.warn('Threat deleted event missing threatId', { routingKey });
+      }
+      return;
+    }
+
     const payload = await handleMessage(data, routingKey);
     await saveToRedis(payload);
     broadcast(payload);
 
-    // — Notification dispatch —
     const notifPayload = extractNotifPayload(data, routingKey);
     if (!notifPayload) return;
 

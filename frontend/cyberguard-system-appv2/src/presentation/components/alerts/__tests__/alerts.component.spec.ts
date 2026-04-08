@@ -225,7 +225,7 @@ describe('AlertsComponent', () => {
       component.deleteAlert(mockAlerts[0]);
 
       // Observable completes synchronously with mock
-      expect(mockWsService.deleteMessage).toHaveBeenCalledWith('evt-1');
+      expect(mockWsService.deleteMessage).toHaveBeenCalledWith('t-1');
     });
 
     it('should delete local message even on backend error (graceful degradation)', () => {
@@ -240,7 +240,7 @@ describe('AlertsComponent', () => {
 
       component.deleteAlert(mockAlerts[0]);
 
-      expect(mockWsService.deleteMessage).toHaveBeenCalledWith('evt-1');
+      expect(mockWsService.deleteMessage).toHaveBeenCalledWith('t-1');
       consoleErrorSpy.mockRestore();
     });
 

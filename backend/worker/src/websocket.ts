@@ -1,6 +1,6 @@
 import WebSocket, { Server } from 'ws';
 import { logger } from './logger';
-import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById } from './redis';
+import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById, removeHistoryItemByThreatId } from './redis';
 
 type WebSocketMessage = {
   type: 'clear-all' | 'delete-one';
@@ -56,7 +56,9 @@ export const startWebSocket = (port: number): Server => {
         }
 
         if (msg.type === 'delete-one' && msg.id) {
+          // Try both: by eventId (message ID) and by threatId (domain ID)
           await removeHistoryItemById(msg.id);
+          await removeHistoryItemByThreatId(msg.id);
           broadcast({ type: 'delete-one', id: msg.id, deletedAt: new Date().toISOString() });
         }
       } catch (err: unknown) {

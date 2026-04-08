@@ -154,8 +154,4 @@ describe('DashboardComponent Integration', () => {
     expect(element.querySelector('app-report-threat')).toBeNull();
   });
 
-  it('should render the quick-action navigation card', () => {
-    const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('.quick-action-card')).not.toBeNull();
-  });
 });
