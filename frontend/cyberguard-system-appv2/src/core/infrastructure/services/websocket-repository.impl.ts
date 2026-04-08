@@ -6,35 +6,22 @@ import { WebSocketCommand } from '../../domain/models/websocket-command.model';
 import { environment } from '@environments/environment';
 import { STORAGE_KEYS, WS_COMMANDS, LIMITS } from '@environments/constants';
 
-/**
- * Factory function type for creating WebSocket instances.
- * Extracted to enable dependency injection and testability.
- */
+
 export type WebSocketFactory = (url: string) => WebSocket;
 
-/**
- * Storage adapter interface to abstract localStorage operations.
- * Enables testing without real localStorage.
- */
 export interface StorageAdapter {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }
 
-/**
- * Default storage adapter using localStorage.
- */
 export const defaultStorageAdapter: StorageAdapter = {
   getItem: (key: string) => localStorage.getItem(key),
   setItem: (key: string, value: string) => localStorage.setItem(key, value),
 };
 
-/**
- * Default WebSocket factory using native WebSocket.
- */
+
 export const defaultWebSocketFactory: WebSocketFactory = (url: string) => new WebSocket(url);
 
-/** Injection tokens for testability */
 export const WS_FACTORY_TOKEN = new InjectionToken<WebSocketFactory>('WebSocketFactory');
 export const STORAGE_ADAPTER_TOKEN = new InjectionToken<StorageAdapter>('StorageAdapter');
 
@@ -48,7 +35,6 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   private reconnectInterval: ReturnType<typeof setInterval> | null = null;
   private connected = false;
 
-  // Injected dependencies for testability
   protected wsFactory: WebSocketFactory;
   protected storage: StorageAdapter;
 
@@ -132,15 +118,27 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     return this.connected;
   }
 
-  /**
-   * Handle incoming WebSocket message.
-   * Extracted as protected method for testability.
-   */
+
   protected handleMessage(event: MessageEvent): void {
     try {
       const message = JSON.parse(event.data);
       
-      // Extraer estructura anidada del worker
+      if (message.type === 'delete-one' && typeof message.id === 'string') {
+        const current = this.messages$.value;
+        const filtered = current.filter(m => m.eventId !== message.id);
+        if (filtered.length !== current.length) {
+          this.messages$.next(filtered);
+          this.saveToStorage(filtered);
+        }
+        return;
+      }
+
+      if (message.type === 'clear-all') {
+        this.messages$.next([]);
+        this.saveToStorage([]);
+        return;
+      }
+
       if (message.data && message.data.eventId && message.data.data) {
         const alert: AlertMessage = {
           eventId: message.data.eventId,
@@ -154,14 +152,9 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  /**
-   * Add a message to the list with deduplication.
-   * Protected for testing access.
-   */
   protected addMessage(message: AlertMessage): void {
     const current = this.messages$.value;
     
-    // Deduplicación con validación null-safe
     const exists = current.some(m => 
       m.eventId === message.eventId || 
       (m.data?.threatId && message.data?.threatId && m.data.threatId === message.data.threatId)
@@ -174,10 +167,7 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  /**
-   * Schedule reconnection attempt.
-   * Protected for testing access.
-   */
+
   protected scheduleReconnect(): void {
     if (!this.reconnectInterval) {
       this.reconnectInterval = setInterval(() => {
@@ -187,16 +177,12 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  /**
-   * Load messages from storage.
-   * Protected for testing access.
-   */
+
   protected loadFromStorage(): void {
     try {
       const stored = this.storage.getItem(this.STORAGE_KEY);
       if (stored) {
         const messages: AlertMessage[] = JSON.parse(stored);
-        // Filtrar solo alertas válidas (ignorar comandos como clear-all)
         const validMessages = messages.filter((m: AlertMessage) => 
           m.eventId && m.data && m.data.threatId
         );
@@ -207,10 +193,6 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
     }
   }
 
-  /**
-   * Save messages to storage.
-   * Protected for testing access.
-   */
   protected saveToStorage(messages: AlertMessage[]): void {
     try {
       this.storage.setItem(this.STORAGE_KEY, JSON.stringify(messages));

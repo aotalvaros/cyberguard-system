@@ -3,14 +3,13 @@ import { ThreatType } from '../../core/domain/models/threat-type.enum';
 import {
   ThreatValidationStrategy,
   MalwareValidationStrategy,
+  IntrusionValidationStrategy,
   PhishingValidationStrategy,
   DdosValidationStrategy,
   RansomwareValidationStrategy,
   DefaultValidationStrategy
 } from '../strategies/threat-validation.strategy';
 
-// ⚠️ HUMAN CHECK:
-// Factory Pattern para crear estrategias de validación según tipo de amenaza
 @Injectable({
   providedIn: 'root'
 })
@@ -19,6 +18,8 @@ export class ThreatValidationFactory {
     switch (type) {
       case ThreatType.MALWARE:
         return new MalwareValidationStrategy();
+      case ThreatType.INTRUSION:
+        return new IntrusionValidationStrategy();
       case ThreatType.PHISHING:
         return new PhishingValidationStrategy();
       case ThreatType.DDOS:

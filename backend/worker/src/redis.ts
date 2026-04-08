@@ -10,6 +10,8 @@ const getMessageId = (payload: unknown): string | null => {
   const record = payload as Record<string, unknown>;
   if (record['eventId'] && typeof record['eventId'] === 'string') return record['eventId'];
   const data = record['data'] as Record<string, unknown> | undefined;
+  // Worker payloads store the RabbitMQ message in `data`; its eventId lives at data.eventId
+  if (data?.['eventId'] && typeof data['eventId'] === 'string') return data['eventId'];
   if (data?.['threatId'] && typeof data['threatId'] === 'string') return data['threatId'];
   if (record['routingKey'] && record['receivedAt']) return `${String(record['routingKey'])}::${String(record['receivedAt'])}`;
   if (record['routing'] && record['timestamp']) return `${String(record['routing'])}::${String(record['timestamp'])}`;
