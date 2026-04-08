@@ -36,15 +36,15 @@
       </div>
     </div>
 
-    <button type="submit" [disabled]="saving">
-      {{ saving ? 'Guardando...' : 'Guardar Preferencias' }}
+    <button type="submit" [disabled]="saving()">
+      {{ saving() ? 'Guardando...' : 'Guardar Preferencias' }}
     </button>
   </form>
 
-  @if (saveSuccess) {
+  @if (saveSuccess()) {
     <p class="msg-success">Preferencias guardadas correctamente.</p>
   }
-  @if (savingError) {
-    <p class="msg-error">{{ savingError }}</p>
+  @if (savingError()) {
+    <p class="msg-error">{{ savingError() }}</p>
   }
 </section>

@@ -22,6 +22,7 @@ const makeUserRecord = (overrides: Partial<UserRecord> = {}): UserRecord => ({
   email: 'admin@cyberguard.com',
   role: 'admin',
   fullName: null,
+  phone: null,
   isActive: true,
   isLocked: false,
   failedAttempts: 0,

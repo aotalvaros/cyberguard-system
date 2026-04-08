@@ -22,13 +22,13 @@ describe('WhatsAppAdapter', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
-    adapter = new WhatsAppAdapter('wa-token', 'phone-number-id');
+    adapter = new WhatsAppAdapter('AC-test-sid', 'test-auth-token', 'whatsapp:+14155238886');
   });
 
   afterEach(() => jest.useRealTimers());
 
   it('should return success on first attempt', async () => {
-    mockedAxios.post.mockResolvedValueOnce({ data: { messages: [{ id: 'wamid.123' }] } });
+    mockedAxios.post.mockResolvedValueOnce({ data: { sid: 'SM123' } });
     const result = await adapter.send(mockPayload);
     expect(result.status).toBe('success');
     expect(result.canal).toBe('whatsapp');
@@ -38,7 +38,7 @@ describe('WhatsAppAdapter', () => {
   it('should retry on failure and succeed on second attempt', async () => {
     mockedAxios.post
       .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce({ data: { messages: [{ id: 'wamid.456' }] } });
+      .mockResolvedValueOnce({ data: { sid: 'SM456' } });
 
     const promise = adapter.send(mockPayload);
     await jest.advanceTimersByTimeAsync(1000);
@@ -67,14 +67,14 @@ describe('WhatsAppAdapter', () => {
     await expect(promise).resolves.toMatchObject({ status: 'error', canal: 'whatsapp' });
   });
 
-  it('should call the correct WhatsApp API URL', async () => {
-    mockedAxios.post.mockResolvedValueOnce({ data: { messages: [{ id: 'wamid.789' }] } });
+  it('should call the Twilio API URL with basic auth', async () => {
+    mockedAxios.post.mockResolvedValueOnce({ data: { sid: 'SM789' } });
     await adapter.send(mockPayload);
     expect(mockedAxios.post).toHaveBeenCalledWith(
-      'https://graph.facebook.com/v18.0/phone-number-id/messages',
-      expect.any(Object),
+      'https://api.twilio.com/2010-04-01/Accounts/AC-test-sid/Messages.json',
+      expect.any(String),
       expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: 'Bearer wa-token' }),
+        auth: { username: 'AC-test-sid', password: 'test-auth-token' },
       }),
     );
   });

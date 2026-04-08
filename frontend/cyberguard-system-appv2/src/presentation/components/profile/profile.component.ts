@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { skip, take } from 'rxjs/operators';
 import { AdminProfileFacade } from '../../../core/application/facades/admin-profile.facade';
 import { AdminProfile, ProfileUpdateData } from '../../../core/domain/models/admin-profile.model';
 
@@ -168,7 +170,7 @@ function phoneE164Validator(control: AbstractControl): ValidationErrors | null {
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   `]
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   private fb     = inject(FormBuilder);
   private facade = inject(AdminProfileFacade);
 
@@ -180,9 +182,9 @@ export class ProfileComponent implements OnInit {
   errorMessage   = signal('');
 
   private originalValues: Partial<AdminProfile> = {};
+  private subscriptions = new Subscription();
 
   ngOnInit(): void {
-
     this.profileForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       email:    ['', [Validators.required, Validators.email]],
@@ -190,23 +192,35 @@ export class ProfileComponent implements OnInit {
       role:     [{ value: '', disabled: true }],
     });
 
-    this.facade.loading$.subscribe(isLoading => {
+    this.subscriptions.add(
+      this.facade.loading$.subscribe(isLoading => {
+        if (!this.saving()) this.loading.set(isLoading);
+      })
+    );
 
-      if (!this.saving()) this.loading.set(isLoading);
-    });
+    this.subscriptions.add(
+      this.facade.profile$.subscribe(profile => {
+        if (profile) {
+          this.currentProfile.set(profile);
+          this.patchForm(profile);
+        }
+      })
+    );
 
-    this.facade.profile$.subscribe(profile => {
-      if (profile) {
-        this.currentProfile.set(profile);
-        this.patchForm(profile);
-      }
-    });
-
-    this.facade.error$.subscribe(err => {
-      if (err) this.errorMessage.set(err);
-    });
+    this.subscriptions.add(
+      this.facade.error$.subscribe(err => {
+        if (err) {
+          this.errorMessage.set(err);
+          this.saving.set(false);
+        }
+      })
+    );
 
     this.facade.loadProfile();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   onSave(): void {
@@ -226,21 +240,19 @@ export class ProfileComponent implements OnInit {
 
     this.facade.updateProfile(data);
 
-    const sub = this.facade.profile$.subscribe(updated => {
-      if (updated && updated !== this.currentProfile()) {
+    this.subscriptions.add(
+      this.facade.loading$.pipe(
+        skip(1),
+        take(1)
+      ).subscribe(() => {
         this.saving.set(false);
-        this.successMessage.set('Perfil actualizado correctamente.');
-        setTimeout(() => this.successMessage.set(''), 5000);
-        sub.unsubscribe();
-      }
-    });
-
-    this.facade.error$.subscribe(err => {
-      if (err) {
-        this.saving.set(false);
-        sub.unsubscribe();
-      }
-    });
+        const currentError = this.facade.error$.getValue();
+        if (!currentError) {
+          this.successMessage.set('Perfil actualizado correctamente.');
+          setTimeout(() => this.successMessage.set(''), 5000);
+        }
+      })
+    );
   }
 
   hasChanges(): boolean {

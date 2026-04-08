@@ -112,6 +112,36 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
   }
 };
 
+export interface StoredNotifPreferences {
+  username: string;
+  emailEnabled: boolean;
+  whatsappEnabled: boolean;
+  email: string;
+  phone: string;
+}
+
+/**
+ * Retrieves all notification preferences stored by the producer.
+ * Keys follow the pattern `notif:prefs:{username}`.
+ */
+export const getAllNotifPreferences = async (): Promise<StoredNotifPreferences[]> => {
+  if (!redisClient?.isOpen) return [];
+  try {
+    const keys = await redisClient.keys('notif:prefs:*');
+    if (keys.length === 0) return [];
+
+    const values = await Promise.all(keys.map((k) => redisClient!.get(k)));
+    return values
+      .filter((v): v is string => v !== null)
+      .map((v) => JSON.parse(v) as StoredNotifPreferences)
+      .filter((p) => p.emailEnabled || p.whatsappEnabled);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Failed to fetch notification preferences', { error: message });
+    return [];
+  }
+};
+
 export const closeRedis = async (): Promise<void> => {
   if (redisClient?.isOpen) await redisClient.quit();
 };

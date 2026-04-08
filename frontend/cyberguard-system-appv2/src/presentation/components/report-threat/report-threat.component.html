@@ -78,6 +78,17 @@
           }
         </div>
 
+        @if (validationErrors().length > 0) {
+          <div class="alert-warning">
+            <strong>Errores de validación:</strong>
+            <ul>
+              @for (err of validationErrors(); track err) {
+                <li>{{ err }}</li>
+              }
+            </ul>
+          </div>
+        }
+
         @if (success()) {
           <div class="alert-success">{{ success() }}</div>
         }

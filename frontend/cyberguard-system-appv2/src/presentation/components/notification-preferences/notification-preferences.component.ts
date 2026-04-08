@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -24,9 +24,9 @@ export class NotificationPreferencesComponent implements OnInit, OnDestroy {
     phone: new FormControl({ value: '', disabled: true }),
   });
 
-  saving = false;
-  saveSuccess = false;
-  savingError: string | null = null;
+  saving = signal(false);
+  saveSuccess = signal(false);
+  savingError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.subs.add(
@@ -64,9 +64,9 @@ export class NotificationPreferencesComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
-    this.saving = true;
-    this.saveSuccess = false;
-    this.savingError = null;
+    this.saving.set(true);
+    this.saveSuccess.set(false);
+    this.savingError.set(null);
 
     const raw = this.form.getRawValue();
     this.subs.add(
@@ -79,13 +79,13 @@ export class NotificationPreferencesComponent implements OnInit, OnDestroy {
         })
         .subscribe({
           next: () => {
-            this.saving = false;
-            this.saveSuccess = true;
+            this.saving.set(false);
+            this.saveSuccess.set(true);
           },
           error: (err: Error) => {
-            this.saving = false;
-            this.saveSuccess = false;
-            this.savingError = err.message || 'Error al guardar preferencias';
+            this.saving.set(false);
+            this.saveSuccess.set(false);
+            this.savingError.set(err.message || 'Error al guardar preferencias');
           },
         })
     );

@@ -75,6 +75,7 @@ const baseUser = {
   email:          'bob@example.com',
   role:           'soc_analyst',
   fullName:       'Bob Smith',
+  phone:          null,
   isActive:       true,
   isLocked:       false,
   failedAttempts: 0,

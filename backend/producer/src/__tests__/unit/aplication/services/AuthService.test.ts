@@ -31,6 +31,7 @@ describe('AuthService', () => {
     email: 'admin@test.com',
     role: 'admin',
     fullName: null,
+    phone: null,
     isActive: true,
     isLocked: false,
     failedAttempts: 0,

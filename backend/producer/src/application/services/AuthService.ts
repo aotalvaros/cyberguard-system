@@ -60,6 +60,7 @@ export class AuthService {
           email: result.user.username,
           role: result.user.role,
           fullName: null,
+          phone: null,
           isActive: true,
           isLocked: false,
           failedAttempts: 0,

@@ -50,7 +50,7 @@ export class UpdateAdminProfileUseCase {
       username:  updated.username,
       email:     updated.email,
       role:      updated.role,
-      phone:     null,
+      phone:     updated.phone ?? null,
       createdAt: updated.createdAt.toISOString(),
     };
   }

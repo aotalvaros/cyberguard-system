@@ -41,11 +41,16 @@ export class EmailAdapter implements INotificationService {
 
         return { canal: 'email', status: 'success', attempts: attempt };
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
+        let message = err instanceof Error ? err.message : String(err);
+        const sgErr = err as { response?: { body?: { errors?: Array<{ message: string }> }; statusCode?: number } };
+        if (sgErr?.response?.body?.errors) {
+          message = sgErr.response.body.errors.map(e => e.message).join('; ');
+        }
         logger.warn('Email send failed', {
           eventId: payload.eventId,
           attempt,
           error: message,
+          statusCode: sgErr?.response?.statusCode,
         });
 
         if (attempt < this.maxRetries) {

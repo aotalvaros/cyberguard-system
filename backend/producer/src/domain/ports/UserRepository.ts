@@ -4,6 +4,7 @@ export interface UserRecord {
   readonly email: string;
   readonly role: string;
   readonly fullName: string | null;
+  readonly phone: string | null;
   readonly isActive: boolean;
   readonly isLocked: boolean;
   readonly failedAttempts: number;

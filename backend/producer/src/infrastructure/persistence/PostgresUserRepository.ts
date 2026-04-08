@@ -7,6 +7,7 @@ interface UserRow {
   readonly email: string;
   readonly role: string;
   readonly full_name: string | null;
+  readonly phone: string | null;
   readonly is_active: boolean;
   readonly is_locked: boolean;
   readonly failed_attempts: number;
@@ -22,6 +23,7 @@ function rowToUser(row: UserRow): UserRecord {
     email:          row.email,
     role:           row.role,
     fullName:       row.full_name,
+    phone:          row.phone ?? null,
     isActive:       row.is_active,
     isLocked:       row.is_locked,
     failedAttempts: row.failed_attempts,
@@ -188,10 +190,12 @@ export class PostgresUserRepository implements UserRepository {
 
   async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
     try {
+      const phoneProvided = 'phone' in data;
       const rows = await query<UserRow>(
         `UPDATE users SET
            username   = COALESCE($2, username),
            email      = COALESCE($3, email),
+           phone      = CASE WHEN $4::boolean THEN $5 ELSE phone END,
            updated_at = NOW()
          WHERE id = $1
          RETURNING *`,
@@ -199,6 +203,8 @@ export class PostgresUserRepository implements UserRepository {
           id,
           data.username ?? null,
           data.email    ?? null,
+          phoneProvided,
+          phoneProvided ? (data.phone ?? null) : null,
         ]
       );
       const row = rows[0];

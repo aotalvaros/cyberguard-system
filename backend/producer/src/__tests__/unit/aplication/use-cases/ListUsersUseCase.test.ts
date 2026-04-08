@@ -7,6 +7,7 @@ const makeUserRecord = (overrides?: Partial<UserRecord>): UserRecord => ({
   username:       'alice',
   email:          'alice@example.com',
   fullName:       'Alice Smith',
+  phone:          null,
   role:           'soc_analyst',
   isActive:       true,
   isLocked:       false,

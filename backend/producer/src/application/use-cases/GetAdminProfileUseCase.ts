@@ -30,7 +30,7 @@ export class GetAdminProfileUseCase {
       username:  user.username,
       email:     user.email,
       role:      user.role,
-      phone:     null,
+      phone:     user.phone ?? null,
       createdAt: user.createdAt.toISOString(),
     };
   }
