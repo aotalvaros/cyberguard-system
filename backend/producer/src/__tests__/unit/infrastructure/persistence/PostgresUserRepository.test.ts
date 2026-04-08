@@ -131,6 +131,87 @@ describe('PostgresUserRepository', () => {
     });
   });
 
+  // ── findByEmail ───────────────────────────────────────────────────────────
+  describe('findByEmail()', () => {
+    it('should return UserRecord when email exists', async () => {
+      mockQuery.mockResolvedValueOnce([baseRow]);
+
+      const result = await repository.findByEmail('alice@example.com');
+
+      expect(result?.id).toBe('user-id-1');
+      expect(result?.email).toBe('alice@example.com');
+    });
+
+    it('should return null when email is not found', async () => {
+      mockQuery.mockResolvedValueOnce([]);
+
+      const result = await repository.findByEmail('unknown@example.com');
+
+      expect(result).toBeNull();
+    });
+
+    it('should propagate and log database errors', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('email lookup error'));
+
+      await expect(repository.findByEmail('alice@example.com')).rejects.toThrow('email lookup error');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to find user by email',
+        expect.objectContaining({ error: 'email lookup error' }),
+      );
+    });
+
+    it('should stringify non-Error thrown from findByEmail()', async () => {
+      mockQuery.mockRejectedValueOnce('crash' as never);
+
+      await expect(repository.findByEmail('alice@example.com')).rejects.toBe('crash');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to find user by email',
+        expect.objectContaining({ error: 'crash' }),
+      );
+    });
+  });
+
+  // ── findAllActive ─────────────────────────────────────────────────────────
+  describe('findAllActive()', () => {
+    it('should return active users mapped from rows', async () => {
+      mockQuery.mockResolvedValueOnce([baseRow, { ...baseRow, id: 'user-id-2', username: 'bob' }]);
+
+      const result = await repository.findAllActive();
+
+      expect(result).toHaveLength(2);
+      expect(result[0]?.username).toBe('alice');
+      expect(result[1]?.username).toBe('bob');
+    });
+
+    it('should return empty array when no active users exist', async () => {
+      mockQuery.mockResolvedValueOnce([]);
+
+      const result = await repository.findAllActive();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate and log database errors', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('active users error'));
+
+      await expect(repository.findAllActive()).rejects.toThrow('active users error');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to list active users',
+        expect.objectContaining({ error: 'active users error' }),
+      );
+    });
+
+    it('should stringify non-Error thrown from findAllActive()', async () => {
+      mockQuery.mockRejectedValueOnce('crash' as never);
+
+      await expect(repository.findAllActive()).rejects.toBe('crash');
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to list active users',
+        expect.objectContaining({ error: 'crash' }),
+      );
+    });
+  });
+
   // ── save ──────────────────────────────────────────────────────────────────
   describe('save()', () => {
     it('should return the saved UserRecord', async () => {

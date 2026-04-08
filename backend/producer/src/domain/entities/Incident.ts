@@ -32,8 +32,6 @@ export class Incident {
     public readonly createdAt:   Date,
     public readonly updatedAt:   Date,
   ) {}
-
-
   static create(props: IncidentProps): Incident {
     const now = new Date();
     return new Incident(

@@ -1,10 +1,6 @@
 import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals';
 import type * as amqp from 'amqplib';
 
-// ============================================================================
-// MOCKS - Configurados ANTES de las importaciones
-// ============================================================================
-
 const mockLogger = {
   info: jest.fn(),
   warn: jest.fn(),
@@ -21,7 +17,6 @@ jest.mock('../../config', () => ({
   TOPIC: '#'
 }));
 
-// Channel mock
 const mockAck = jest.fn();
 const mockNack = jest.fn();
 const mockAssertExchange = jest.fn().mockResolvedValue({ exchange: 'test.exchange' } as never);
@@ -30,7 +25,6 @@ const mockBindQueue = jest.fn().mockResolvedValue(undefined as never);
 const mockConsume = jest.fn().mockResolvedValue({ consumerTag: 'tag-1' } as never);
 const mockChannelClose = jest.fn().mockResolvedValue(undefined as never);
 
-// Connection mock
 const mockCreateChannel = jest.fn();
 const mockConnectionClose = jest.fn().mockResolvedValue(undefined as never);
 const mockConnectionOn = jest.fn();
@@ -41,16 +35,7 @@ jest.mock('amqplib', () => ({
   connect: mockConnect
 }));
 
-// ============================================================================
-// IMPORTACIONES (después de los mocks)
-// ============================================================================
-
 import { connectAndConsume, closeRabbit } from '../../rabbitmq';
-
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 interface MockMessage {
   content: Buffer;
@@ -58,10 +43,6 @@ interface MockMessage {
 }
 
 type MessageHandler = (msg: amqp.ConsumeMessage | null) => void | Promise<void>;
-
-// ============================================================================
-// SUITE DE PRUEBAS
-// ============================================================================
 
 describe('RabbitMQ Module', () => {
   const onMessage = jest.fn().mockResolvedValue(undefined as never) as never
@@ -93,9 +74,9 @@ describe('RabbitMQ Module', () => {
     jest.useRealTimers();
   });
 
-  // ==========================================================================
-  // connectAndConsume
-  // ==========================================================================
+  
+  
+  
 
   describe('connectAndConsume', () => {
     it('should connect to RabbitMQ', async () => {
@@ -281,7 +262,7 @@ describe('RabbitMQ Module', () => {
         'RabbitMQ connection closed, reconnecting in 2s'
       );
 
-      // Advance timers to trigger reconnection
+      
       jest.advanceTimersByTime(2000);
     });
 
@@ -357,9 +338,9 @@ describe('RabbitMQ Module', () => {
     });
   });
 
-  // ==========================================================================
-  // Message Processing
-  // ==========================================================================
+  
+  
+  
 
   describe('message processing', () => {
     beforeEach(() => {
@@ -695,7 +676,7 @@ describe('RabbitMQ Module', () => {
       await connectAndConsume(onMessage);
       await new Promise(resolve => setImmediate(resolve));
 
-      // Empty string is not valid JSON, so it should nack
+      
       expect(mockNack).toHaveBeenCalledWith(msg, false, false);
     });
 
@@ -725,9 +706,9 @@ describe('RabbitMQ Module', () => {
     });
   });
 
-  // ==========================================================================
-  // closeRabbit
-  // ==========================================================================
+  
+  
+  
 
   describe('closeRabbit', () => {
     it('should close channel and connection', async () => {
@@ -768,7 +749,7 @@ describe('RabbitMQ Module', () => {
 
       await connectAndConsume(onMessage);
 
-      // Should not throw even if channel close fails
+      
       await expect(closeRabbit()).resolves.toBeUndefined();
     });
 
@@ -785,7 +766,7 @@ describe('RabbitMQ Module', () => {
       await closeRabbit();
       await closeRabbit();
 
-      // Second call should not throw
+      
       expect(mockChannelClose).toHaveBeenCalled();
     });
   });

@@ -25,7 +25,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
   const credentials = value as LoginRequest;
   
-  // Delegar toda la lógica al servicio
   const result = await authService.login(credentials);
   
   if (!result.success) {

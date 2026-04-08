@@ -1,8 +1,6 @@
 import { query } from '../config/database';
 import { UserRepository, UserRecord } from '../../domain/ports/UserRepository';
 import { logger } from '../config/logger';
-
-
 interface UserRow {
   readonly id: string;
   readonly username: string;

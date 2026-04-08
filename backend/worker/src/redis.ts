@@ -95,7 +95,7 @@ export const removeHistoryItemById = async (id: string): Promise<void> => {
     }
     
     if (found) {
-      // del primero, luego rPush de los items restantes (sin el eliminado)
+      
       const pipeline = redisClient.multi();
       pipeline.del(HISTORY_KEY);
       for (const item of remaining) {

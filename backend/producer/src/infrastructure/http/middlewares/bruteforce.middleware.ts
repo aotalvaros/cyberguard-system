@@ -11,7 +11,6 @@ interface LoginAttempt {
 
 const loginAttempts = new Map<string, LoginAttempt>();
 
-// ✅ SOLUCIÓN: Usar ServiceFactory para obtener ThreatService con dependencias inyectadas
 let threatService: ThreatService;
 
 function getThreatService(): ThreatService {
@@ -43,8 +42,6 @@ export function bruteForceDetection(req: Request, res: Response, next: NextFunct
     });
     return;
   }
-
-
   const originalJson = res.json.bind(res);
   
   res.json = function(body: unknown) {
@@ -71,7 +68,6 @@ async function trackFailedAttempt(ip: string, username?: string) {
     return;
   }
 
-  // Resetear si pasó el tiempo
   if (now - attempt.firstAttempt > TIME_WINDOW) {
     loginAttempts.set(ip, { count: 1, firstAttempt: now, reported: false });
     return;
@@ -79,7 +75,6 @@ async function trackFailedAttempt(ip: string, username?: string) {
 
   attempt.count++;
 
-  // Detectar ataque de fuerza bruta
   if (attempt.count >= MAX_ATTEMPTS && !attempt.reported) {
     attempt.reported = true;
     
@@ -107,7 +102,6 @@ async function trackFailedAttempt(ip: string, username?: string) {
   }
 }
 
-// Limpiar intentos antiguos cada 10 minutos
 const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [ip, attempt] of loginAttempts.entries()) {
@@ -117,7 +111,6 @@ const cleanupInterval = setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-// Permitir limpieza del intervalo en tests para evitar open handles
 export function stopBruteForceCleanup(): void {
   clearInterval(cleanupInterval);
 }

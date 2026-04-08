@@ -12,8 +12,6 @@ export interface ThreatResponseDto {
   timestamp: string;
   metadata?: Record<string, unknown>;
 }
-
-
 export class ListThreatsUseCase {
   constructor(private threatRepository: ThreatRepository) {}
 
@@ -21,10 +19,8 @@ export class ListThreatsUseCase {
     try {
       logger.info('Executing ListThreatsUseCase');
 
-      // ✅ Delegar al repositorio (que optimiza el retrieval)
       const threats = await this.threatRepository.findAll();
 
-      // ✅ Convertir entidades a DTOs (desacopla representación interna)
       const threatDtos = threats.map(threat => ({
         threatId: threat.threatId,
         type: threat.type,
