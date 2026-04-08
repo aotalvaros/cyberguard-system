@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { GetUsersUseCase } from '../get-users.use-case';
 import { UserAdminRepository } from '../../../domain/ports/user-admin.repository';
 import { UserAdminList } from '../../../domain/models/user-admin.model';
+
 
 describe('GetUsersUseCase', () => {
   let useCase: GetUsersUseCase;
@@ -20,6 +21,7 @@ describe('GetUsersUseCase', () => {
   beforeEach(() => {
     mockRepository = { getUsers: vi.fn().mockReturnValue(of(mockUserList)) };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         GetUsersUseCase,

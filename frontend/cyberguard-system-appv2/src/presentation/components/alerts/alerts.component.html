@@ -1,12 +1,12 @@
 <div class="alerts-container">
   <div class="alerts-header">
-    <h3>🔔 Alertas en Tiempo Real</h3>
+    <h3>Alertas en Tiempo Real</h3>
     <div class="alerts-actions">
-      <span class="connection-status" [class.connected]="connected">
-        {{ connected ? '● Conectado' : '○ Desconectado' }}
+      <span class="connection-status" [class]="'status-' + connectionStatus.toLowerCase()">
+        {{ statusLabel[connectionStatus] }}
       </span>
       @if (alerts.length > 0) {
-        <button (click)="exportToJSON()" class="btn-export">⬇️ Exportar</button>
+        <button (click)="exportToJSON()" class="btn-export">Exportar</button>
         @if (isAdmin) {
           <button (click)="clearAll()" class="btn-clear">Limpiar Todo</button>
         }
@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <!-- Estadísticas -->
+  
   @if (alerts.length > 0) {
     <div class="stats-bar">
       <div class="stat">
@@ -40,7 +40,7 @@
     </div>
   }
 
-  <!-- Filtros -->
+  
   @if (alerts.length > 0) {
     <div class="filters-bar">
       <input
@@ -94,7 +94,7 @@
     }
   </div>
 
-  <!-- Paginación -->
+  
   @if (totalPages > 1) {
     <div class="pagination">
       <button (click)="prevPage()" [disabled]="currentPage === 1" class="btn-page">← Anterior</button>

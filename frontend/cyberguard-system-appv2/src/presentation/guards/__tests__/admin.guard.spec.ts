@@ -5,11 +5,13 @@ import { Router } from '@angular/router';
 import { adminGuard } from '../admin.guard';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 
+
 describe('adminGuard', () => {
   let mockAuthService: Partial<AuthService>;
   let mockRouter: Partial<Router>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockAuthService = { isAdmin: vi.fn() };
     mockRouter = { navigate: vi.fn() };
 

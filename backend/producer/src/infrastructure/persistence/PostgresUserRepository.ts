@@ -1,5 +1,5 @@
 import { query } from '../config/database';
-import { UserRepository, UserRecord } from '../../domain/ports/UserRepository';
+import { UserRepository, UserRecord, ProfileUpdateData } from '../../domain/ports/UserRepository';
 import { logger } from '../config/logger';
 interface UserRow {
   readonly id: string;
@@ -7,6 +7,7 @@ interface UserRow {
   readonly email: string;
   readonly role: string;
   readonly full_name: string | null;
+  readonly phone: string | null;
   readonly is_active: boolean;
   readonly is_locked: boolean;
   readonly failed_attempts: number;
@@ -22,6 +23,7 @@ function rowToUser(row: UserRow): UserRecord {
     email:          row.email,
     role:           row.role,
     fullName:       row.full_name,
+    phone:          row.phone ?? null,
     isActive:       row.is_active,
     isLocked:       row.is_locked,
     failedAttempts: row.failed_attempts,
@@ -184,5 +186,37 @@ export class PostgresUserRepository implements UserRepository {
 
   async lockUser(id: string): Promise<void> {
     await query('UPDATE users SET is_locked = true, updated_at = NOW() WHERE id = $1', [id]);
+  }
+
+  async updateProfile(id: string, data: ProfileUpdateData): Promise<UserRecord> {
+    try {
+      const phoneProvided = 'phone' in data;
+      const rows = await query<UserRow>(
+        `UPDATE users SET
+           username   = COALESCE($2, username),
+           email      = COALESCE($3, email),
+           phone      = CASE WHEN $4::boolean THEN $5 ELSE phone END,
+           updated_at = NOW()
+         WHERE id = $1
+         RETURNING *`,
+        [
+          id,
+          data.username ?? null,
+          data.email    ?? null,
+          phoneProvided,
+          phoneProvided ? (data.phone ?? null) : null,
+        ]
+      );
+      const row = rows[0];
+      if (!row) {
+        throw new Error(`Failed to update profile: no row returned for userId ${id}`);
+      }
+      logger.info('Profile updated in PostgreSQL', { userId: id, fields: Object.keys(data) });
+      return rowToUser(row);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to update profile', { userId: id, error: message });
+      throw error;
+    }
   }
 }

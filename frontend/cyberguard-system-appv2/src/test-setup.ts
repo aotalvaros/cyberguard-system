@@ -7,6 +7,20 @@ import { fileURLToPath } from 'node:url';
 import { resolve, join, basename } from 'node:path';
 import { beforeAll, afterEach } from 'vitest';
 
+if (typeof globalThis.CloseEvent === 'undefined') {
+  (globalThis as any).CloseEvent = class CloseEvent extends Event {
+    code: number;
+    reason: string;
+    wasClean: boolean;
+    constructor(type: string, init?: { code?: number; reason?: string; wasClean?: boolean }) {
+      super(type);
+      this.code = init?.code ?? 1000;
+      this.reason = init?.reason ?? '';
+      this.wasClean = init?.wasClean ?? true;
+    }
+  };
+}
+
 function buildSrcFileMap(): Map<string, string> {
   const map = new Map<string, string>();
   const srcDir = resolve(process.cwd(), 'src');
@@ -21,11 +35,9 @@ function buildSrcFileMap(): Map<string, string> {
           } else if (/\.(html|css|scss)$/.test(entry)) {
             map.set(entry, readFileSync(fullPath, 'utf-8'));
           }
-        } catch {
-        }
+        } catch {}
       }
-    } catch {
-    }
+    } catch {}
   }
 
   scan(srcDir);

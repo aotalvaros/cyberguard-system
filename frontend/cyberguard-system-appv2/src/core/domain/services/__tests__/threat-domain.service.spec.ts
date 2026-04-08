@@ -9,6 +9,7 @@ import { ThreatItem } from '../../models/threat-item.model';
 import { ThreatType } from '../../models/threat-type.enum';
 import { ThreatSeverity } from '../../models/threat-severity.enum';
 
+
 describe('ThreatDomainService', () => {
   let service: ThreatDomainService;
   let mockRepository: {
@@ -34,6 +35,7 @@ describe('ThreatDomainService', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepository = {
       reportThreat: vi.fn(),
       getThreats: vi.fn(),

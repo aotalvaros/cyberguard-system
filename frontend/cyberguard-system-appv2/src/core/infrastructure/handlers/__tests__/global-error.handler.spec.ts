@@ -1,5 +1,5 @@
 // Tipo de prueba: Unitario
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import {describe, it, expect, beforeEach, vi, afterEach} from 'vitest';
 import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
@@ -134,6 +134,7 @@ describe('GlobalErrorHandler class', () => {
   beforeEach(() => {
     mockRouter = { navigate: vi.fn() };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         GlobalErrorHandler,

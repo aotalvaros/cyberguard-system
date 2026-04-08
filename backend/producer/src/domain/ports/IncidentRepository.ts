@@ -1,4 +1,3 @@
-
 export interface ActiveIncidentRecord {
   readonly id:         string;
   readonly threatId:   string;

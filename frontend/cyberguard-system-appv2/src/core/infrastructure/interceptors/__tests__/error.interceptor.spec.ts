@@ -9,6 +9,7 @@ import { LocalStorageAdapter } from '../../adapters/local-storage.adapter';
 import { AppErrorType } from '../../handlers/global-error.handler';
 import { firstValueFrom } from 'rxjs';
 
+
 describe('ErrorInterceptor', () => {
   let httpClient: HttpClient;
   let httpMock: HttpTestingController;
@@ -16,6 +17,7 @@ describe('ErrorInterceptor', () => {
   let mockStorage: { remove: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRouter = {
       navigate: vi.fn()
     };

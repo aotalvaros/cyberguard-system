@@ -1,4 +1,3 @@
-
 import { Threat } from '../entities/Threat';
 import { InvalidIncidentCreationError, DuplicateIncidentError } from '../exceptions/IrmsExceptions';
 

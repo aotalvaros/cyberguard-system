@@ -8,6 +8,7 @@ import { ThreatList } from '../../../domain/models/threat-list.model';
 import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
 
+
 describe('GetThreatsUseCase', () => {
   let useCase: GetThreatsUseCase;
   let mockThreatDomainService: { getThreats: ReturnType<typeof vi.fn> };
@@ -35,6 +36,7 @@ describe('GetThreatsUseCase', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockThreatDomainService = {
       getThreats: vi.fn().mockReturnValue(of(mockThreatList))
     };

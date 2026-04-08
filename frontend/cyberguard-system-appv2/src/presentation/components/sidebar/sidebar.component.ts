@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } 
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { GetCurrentUserUseCase } from '../../../core/application/use-cases/get-current-user.use-case';
+import { LogoutUseCase } from '../../../core/application/use-cases/logout.use-case';
 import { ROLES } from '../../../environments/constants';
 
 const SIDEBAR_COLLAPSED_KEY = 'cyberguard_sidebar_collapsed';
@@ -23,6 +24,7 @@ export interface NavItem {
 })
 export class SidebarComponent implements OnInit {
   private getCurrentUserUseCase = inject(GetCurrentUserUseCase);
+  private logoutUseCase = inject(LogoutUseCase);
   private router = inject(Router);
 
   collapsed = signal(false);
@@ -32,10 +34,11 @@ export class SidebarComponent implements OnInit {
   isAdmin = computed(() => this.currentUser()?.role === ROLES.ADMIN);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard',        icon: '🛡️', route: '/dashboard',     adminOnly: false },
+    { label: 'Dashboard',        icon: '📊', route: '/dashboard',     adminOnly: false },
     { label: 'Reportar Amenaza', icon: '🚨', route: '/report-threat',  adminOnly: false },
     { label: 'Incidentes',       icon: '📋', route: '/incidents',      adminOnly: false },
     { label: 'Gestión Usuarios', icon: '👥', route: '/users',          adminOnly: true  },
+    { label: 'Perfil Personal',  icon: '👤', route: '/profile',        adminOnly: false },
   ];
 
   visibleItems = computed(() =>
@@ -57,5 +60,10 @@ export class SidebarComponent implements OnInit {
 
   isActive(route: string): boolean {
     return this.router.url === route || this.router.url.startsWith(route + '?');
+  }
+
+  logout(): void {
+    this.logoutUseCase.execute();
+    this.router.navigate(['/autenticacion']);
   }
 }

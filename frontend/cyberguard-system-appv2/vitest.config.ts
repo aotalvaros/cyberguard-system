@@ -1,15 +1,18 @@
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
+import path from 'path';
+import angular from '@analogjs/vite-plugin-angular';
 
 export default defineConfig({
+  plugins: [angular()],
   resolve: {
     alias: {
-      '@environments': resolve(__dirname, 'src/environments'),
+      '@environments': path.resolve(__dirname, 'src/environments'),
     },
   },
   test: {
     environment: 'jsdom',
     setupFiles: ['src/test-setup.ts'],
+    pool: 'forks',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json'],

@@ -10,7 +10,7 @@ type WebSocketMessage = {
 const isValidMessage = (obj: unknown): obj is WebSocketMessage => {
   if (typeof obj !== 'object' || obj === null) return false;
   const msg = obj as Record<string, unknown>;
-  return typeof msg['type'] === 'string' && 
+  return typeof msg['type'] === 'string' &&
          ['clear-all', 'delete-one'].includes(msg['type']) &&
          (msg['type'] !== 'delete-one' || typeof msg['id'] === 'string');
 };
@@ -21,10 +21,10 @@ export const startWebSocket = (port: number): Server => {
   wss = new Server({ port });
 
   wss.on('listening', () => logger.info(`WebSocket listening on ws://localhost:${port}`));
-  
+
   wss.on('connection', async (socket: WebSocket) => {
     logger.info('WebSocket client connected');
-    
+
     try {
       const history = await getHistoryFromRedis();
       if (history.length > 0) {
@@ -43,12 +43,12 @@ export const startWebSocket = (port: number): Server => {
     socket.on('message', async (raw) => {
       try {
         const msg = JSON.parse(raw.toString());
-        
+
         if (!isValidMessage(msg)) {
           logger.warn('Invalid WebSocket message format', { msg });
           return;
         }
-        
+
         if (msg.type === 'clear-all') {
           await clearHistoryFromRedis();
           broadcast({ type: 'clear-all', clearedAt: new Date().toISOString() });

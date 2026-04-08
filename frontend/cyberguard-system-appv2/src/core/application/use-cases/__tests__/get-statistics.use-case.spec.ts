@@ -14,11 +14,13 @@ const mockStats: ThreatStatistics = {
   criticalActive: 5,
 };
 
+
 describe('GetStatisticsUseCase', () => {
   let useCase: GetStatisticsUseCase;
   let mockRepository: { getStatistics: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockRepository = { getStatistics: vi.fn() };
 
     TestBed.configureTestingModule({

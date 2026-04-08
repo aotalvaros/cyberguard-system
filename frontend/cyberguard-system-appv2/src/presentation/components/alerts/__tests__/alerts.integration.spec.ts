@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AlertsComponent } from '../alerts.component';
-import { WebSocketRepository } from '../../../../core/domain/ports/websocket.repository';
+import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
 import { AuthRepository } from '../../../../core/domain/ports/auth.repository';
 import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
 import { AlertMessage } from '../../../../core/domain/models/alert-message.model';
@@ -13,9 +13,10 @@ import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
 class InMemoryWebSocketRepository extends WebSocketRepository {
   private stream = new BehaviorSubject<AlertMessage[]>([]);
   private connected = true;
+  private status$ = new BehaviorSubject<ConnectionStatus>('CONNECTED');
 
-  connect(): void { this.connected = true; }
-  disconnect(): void { this.connected = false; }
+  connect(): void { this.connected = true; this.status$.next('CONNECTED'); }
+  disconnect(): void { this.connected = false; this.status$.next('DISCONNECTED'); }
   sendCommand(command: WebSocketCommand): void {
     if (command.type === WS_COMMANDS.CLEAR_ALL) {
       this.stream.next([]);
@@ -27,6 +28,7 @@ class InMemoryWebSocketRepository extends WebSocketRepository {
   }
   getMessages$(): Observable<AlertMessage[]> { return this.stream.asObservable(); }
   isConnected(): boolean { return this.connected; }
+  getConnectionStatus$(): Observable<ConnectionStatus> { return this.status$.asObservable(); }
 
   push(alert: AlertMessage) { this.stream.next([alert, ...this.stream.value]); }
 }
@@ -50,6 +52,7 @@ class InMemoryThreatRepository {
   }
 }
 
+
 describe('AlertsComponent integration', () => {
   let fixture: ComponentFixture<AlertsComponent>;
   let wsRepo: InMemoryWebSocketRepository;
@@ -57,6 +60,7 @@ describe('AlertsComponent integration', () => {
   let threatRepo: InMemoryThreatRepository;
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     wsRepo = new InMemoryWebSocketRepository();
     authRepo = new InMemoryAuthRepository();
     threatRepo = new InMemoryThreatRepository();

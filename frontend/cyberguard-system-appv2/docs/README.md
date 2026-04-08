@@ -17,6 +17,7 @@
 7. [Contratos y APIs](#contratos-y-apis)
 8. [Estructura de carpetas explicada](#estructura-de-carpetas-explicada)
 9. [Glosario de términos](#glosario-de-términos)
+10. [Nueva feature: Threat Statistics (Impacto + Diagramas)](#nueva-feature-threat-statistics-impacto--diagramas)
 
 ---
 
@@ -1002,6 +1003,24 @@ src/
 │  └───────────────┘  └───────────────┘  └───────────────┘       │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Nueva feature: Threat Statistics (Impacto + Diagramas)
+
+Para la nueva feature de estadísticas (`GET /api/statistics`) se documentó el impacto completo para diagramado:
+
+- Impacto por componentes (Frontend/Backend)
+- Patrones de diseño involucrados
+- Comunicación con módulos existentes
+- Secuencia end-to-end para diagrama de secuencia
+- Insumos C4 (Context, Container, Component)
+
+Documento de referencia:
+- [`/docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md`](../../../../docs/architecture/ARCHITECTURAL_IMPACT_ANALYTICS.md)
+- **Diagramas draw.io actualizados**:
+  - `docs/diagrams/sequence-threat-statistics.drawio.xml` (flujo de perfil + notificación omnicanal)
+  - `docs/diagrams/c4-threat-statistics.drawio.xml` (C4 más legible con separación Frontend/Backend y nuevos componentes dentro de su contenedor)
 
 ---
 

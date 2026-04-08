@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
@@ -6,17 +6,23 @@ import { provideRouter } from '@angular/router';
 
 import { SidebarComponent } from '../sidebar.component';
 import { GetCurrentUserUseCase } from '../../../../core/application/use-cases/get-current-user.use-case';
+import { LogoutUseCase } from '../../../../core/application/use-cases/logout.use-case';
 
 const SIDEBAR_COLLAPSED_KEY = 'cyberguard_sidebar_collapsed';
+
+const mockLogoutUseCase = { execute: vi.fn() };
 
 async function buildFixture(
   user: { username: string; role: string } | null = { username: 'admin', role: 'admin' }
 ): Promise<ComponentFixture<SidebarComponent>> {
+  mockLogoutUseCase.execute.mockClear();
+  TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [SidebarComponent],
     providers: [
       provideRouter([]),
       { provide: GetCurrentUserUseCase, useValue: { execute: vi.fn().mockReturnValue(user) } },
+      { provide: LogoutUseCase, useValue: mockLogoutUseCase },
     ],
   }).compileComponents();
 
@@ -24,6 +30,7 @@ async function buildFixture(
   fixture.detectChanges();
   return fixture;
 }
+
 
 describe('SidebarComponent', () => {
 
@@ -43,8 +50,8 @@ describe('SidebarComponent', () => {
       component = fixture.componentInstance;
     });
 
-    it('should show all 4 nav items for admin', () => {
-      expect(component.visibleItems()).toHaveLength(4);
+    it('should show all 5 nav items for admin', () => {
+      expect(component.visibleItems()).toHaveLength(5);
     });
 
     it('should include Gestión Usuarios for admin', () => {
@@ -70,7 +77,7 @@ describe('SidebarComponent', () => {
       const fixture   = await buildFixture({ username: 'user', role });
       const component = fixture.componentInstance;
 
-      expect(component.visibleItems()).toHaveLength(3);
+      expect(component.visibleItems()).toHaveLength(4);
       const labels = component.visibleItems().map(i => i.label);
       expect(labels).not.toContain('Gestión Usuarios');
     });
@@ -210,6 +217,45 @@ describe('SidebarComponent', () => {
       const fixture   = await buildFixture();
       const component = fixture.componentInstance;
       expect(component.isActive('/')).toBe(true);
+    });
+  });
+
+  // ─── LOGOUT ──────────────────────────────────────────────────────────────
+
+  describe('logout', () => {
+    it('should call logoutUseCase.execute', async () => {
+      const fixture   = await buildFixture();
+      const component = fixture.componentInstance;
+      component.logout();
+      expect(mockLogoutUseCase.execute).toHaveBeenCalled();
+    });
+
+    it('should navigate to /autenticacion after logout', async () => {
+      const fixture   = await buildFixture();
+      const component = fixture.componentInstance;
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      component.logout();
+      expect(navigateSpy).toHaveBeenCalledWith(['/autenticacion']);
+    });
+
+    it('should render a logout button in the sidebar footer', async () => {
+      const fixture   = await buildFixture();
+      const el: HTMLElement = fixture.nativeElement;
+      const btn = el.querySelector('.btn-logout');
+      expect(btn).not.toBeNull();
+      expect(btn?.textContent).toContain('Cerrar Sesión');
+    });
+
+    it('should show only the icon when sidebar is collapsed', async () => {
+      const fixture   = await buildFixture();
+      const component = fixture.componentInstance;
+      component.toggleCollapse();
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      const btn = el.querySelector('.btn-logout');
+      expect(btn).not.toBeNull();
+      expect(btn?.textContent?.trim()).not.toContain('Cerrar Sesión');
     });
   });
 

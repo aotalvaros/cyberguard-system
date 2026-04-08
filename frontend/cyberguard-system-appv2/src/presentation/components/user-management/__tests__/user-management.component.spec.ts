@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
@@ -35,6 +35,7 @@ async function buildFixture(overrides: {
   const getUsersMock = overrides.getUsersResult
     ?? vi.fn().mockReturnValue(of({ users: [mockUserItem], total: 1 }));
 
+  TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [UserManagementComponent],
     providers: [
@@ -144,6 +145,7 @@ describe('UserManagementComponent', () => {
 
     beforeEach(async () => {
       mockRouter = { navigate: vi.fn() };
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -259,6 +261,7 @@ describe('UserManagementComponent', () => {
   describe('onCreateUser — invalid form', () => {
     it('should not call use case when form is invalid', async () => {
       const createMock = vi.fn();
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -316,6 +319,7 @@ describe('UserManagementComponent', () => {
 
   describe('onCreateUser — error', () => {
     it('should set error message on failure', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -336,6 +340,7 @@ describe('UserManagementComponent', () => {
     });
 
     it('should use fallback error message when no message provided', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -396,6 +401,7 @@ describe('UserManagementComponent', () => {
   describe('onUpdateUser — invalid form', () => {
     it('should not call use case when editForm is invalid', async () => {
       const updateMock = vi.fn();
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -446,6 +452,7 @@ describe('UserManagementComponent', () => {
 
   describe('onUpdateUser — error', () => {
     it('should set error message on update failure', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -466,6 +473,7 @@ describe('UserManagementComponent', () => {
     });
 
     it('should use fallback message when no error message', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -491,6 +499,7 @@ describe('UserManagementComponent', () => {
   describe('onToggleStatus — confirm denied', () => {
     it('should not call use case when user cancels confirm', async () => {
       const toggleMock = vi.fn();
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -537,6 +546,7 @@ describe('UserManagementComponent', () => {
 
   describe('onToggleStatus — success with reassignment', () => {
     it('should include reassignment count in success message', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [
@@ -559,6 +569,7 @@ describe('UserManagementComponent', () => {
 
   describe('onToggleStatus — error', () => {
     it('should set error on toggle failure', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [UserManagementComponent],
         providers: [

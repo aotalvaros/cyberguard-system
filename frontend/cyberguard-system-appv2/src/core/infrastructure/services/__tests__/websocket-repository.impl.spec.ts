@@ -110,6 +110,7 @@ class TestableWebSocketRepository extends WebSocketRepositoryImpl {
   }
 }
 
+
 describe('WebSocketRepositoryImpl', () => {
   let repository: TestableWebSocketRepository;
   let mockWs: MockWebSocket;
@@ -192,7 +193,7 @@ describe('WebSocketRepositoryImpl', () => {
       // First, trigger reconnect by simulating close
       repository.connect();
       mockWs.simulateClose();
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(1000);
 
       // Now connect successfully
       mockWs.simulateOpen();
@@ -459,6 +460,20 @@ describe('WebSocketRepositoryImpl', () => {
 
       expect(mockStorage.setItem).toHaveBeenCalled();
     });
+
+    it('should cap messages at MAX_MESSAGES (200)', async () => {
+      for (let i = 0; i < 201; i++) {
+        repository.testAddMessage({
+          eventId: `evt-${i}`,
+          timestamp: i,
+          data: { threatId: `t-${i}`, type: 'malware', severity: 'low',
+                  sourceIp: '1.2.3.4', description: 'x' },
+        });
+      }
+      const messages = await firstValueFrom(repository.getMessages$());
+      expect(messages).toHaveLength(200);
+      expect(messages[0].eventId).toBe('evt-200'); // most recent at front
+    });
   });
 
   describe('scheduleReconnect', () => {
@@ -469,21 +484,94 @@ describe('WebSocketRepositoryImpl', () => {
       // Initial connect
       expect(wsFactory).toHaveBeenCalledTimes(1);
 
-      // After 2 seconds, should try again
-      vi.advanceTimersByTime(2000);
+      // After 1 second (exponential backoff attempt 0 → 1000ms)
+      vi.advanceTimersByTime(1000);
       expect(wsFactory).toHaveBeenCalledTimes(2);
     });
 
-    it('should not create multiple reconnect intervals', () => {
+    it('should not create multiple reconnect timeouts', () => {
       repository.connect();
       mockWs.simulateClose();
 
+      // First reconnect at 1000ms
+      vi.advanceTimersByTime(1000);
+      // Second reconnect at 2000ms
+      const ws2 = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+      ws2.simulateClose();
       vi.advanceTimersByTime(2000);
-      vi.advanceTimersByTime(2000);
-      vi.advanceTimersByTime(2000);
+      // Third reconnect at 4000ms
+      const ws3 = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+      ws3.simulateClose();
+      vi.advanceTimersByTime(4000);
 
-      // Should still only have reconnect calls, not exponential
       expect(wsFactory).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
+    });
+  });
+
+  describe('exponential backoff reconnect', () => {
+    it('attempt 0→1000ms, attempt 1→2000ms, attempt 2→4000ms', () => {
+      repository.connect();
+      mockWs.simulateOpen();
+
+      // close 1 → attempt 0, delay 1000ms
+      mockWs.simulateClose();
+      vi.advanceTimersByTime(999);
+      expect(wsFactory).toHaveBeenCalledTimes(1); // not yet
+      vi.advanceTimersByTime(1);
+      expect(wsFactory).toHaveBeenCalledTimes(2); // reconnected at 1000ms
+
+      // close 2 → attempt 1, delay 2000ms
+      const ws2 = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+      ws2.simulateClose();
+      vi.advanceTimersByTime(1999);
+      expect(wsFactory).toHaveBeenCalledTimes(2);
+      vi.advanceTimersByTime(1);
+      expect(wsFactory).toHaveBeenCalledTimes(3); // reconnected at 2000ms
+
+      // close 3 → attempt 2, delay 4000ms
+      const ws3 = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+      ws3.simulateClose();
+      vi.advanceTimersByTime(3999);
+      expect(wsFactory).toHaveBeenCalledTimes(3);
+      vi.advanceTimersByTime(1);
+      expect(wsFactory).toHaveBeenCalledTimes(4); // reconnected at 4000ms
+    });
+
+    it('should stop reconnecting after MAX_RECONNECT_ATTEMPTS (5)', () => {
+      repository.connect();
+      mockWs.simulateOpen();
+
+      for (let i = 0; i < 6; i++) {
+        const lastWs = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+        lastWs.simulateClose();
+        vi.advanceTimersByTime(30000); // skip any delay
+      }
+
+      // 1 initial + 5 retries max = 6 total (6th close doesn't trigger new attempt)
+      expect(wsFactory).toHaveBeenCalledTimes(6);
+    });
+
+    it('should emit ERROR status after max attempts exhausted', () => {
+      const statuses: string[] = [];
+      repository.connectionStatus$.subscribe(s => statuses.push(s));
+
+      repository.connect();
+      mockWs.simulateOpen();
+
+      // 5 close+advance cycles → 5 reconnect attempts exhaust the limit
+      for (let i = 0; i < 5; i++) {
+        const lastWs = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+        lastWs.simulateClose();
+        vi.advanceTimersByTime(30000);
+      }
+
+      // The 5th timer triggered a new connect(), creating WS #6.
+      // When WS #6 also closes, attempt=5 >= MAX → ERROR
+      const finalWs = (wsFactory as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value as MockWebSocket;
+      finalWs.simulateClose();
+
+      // After max attempts exhausted, last status should be ERROR
+      expect(statuses.at(-1)).toBe('ERROR');
     });
   });
 

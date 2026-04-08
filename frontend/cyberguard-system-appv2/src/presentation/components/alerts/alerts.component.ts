@@ -8,23 +8,15 @@ import { AlertsDomainService } from '../../../core/domain/services/alerts-domain
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 import { DeleteThreatUseCase } from '../../../core/application/use-cases/delete-threat.use-case';
 import { SEVERITY_LIST } from '@environments/constants';
+import { ConnectionStatus } from '../../../core/domain/ports/websocket.repository';
 
-/**
- * ⚠️ HUMAN CHECK: Componente de alertas con validación de rol
- * 
- * Arquitectura aplicada:
- * - Lógica de negocio delegada a AlertsDomainService (SRP)
- * - Eliminación real via DeleteThreatUseCase que llama al backend
- * - Validación visual: botones de eliminar SOLO visibles para admin
- * 
- * Decisión de diseño para deleteAlert():
- * 1. Primero intentamos eliminar del backend (DELETE /api/threats/:id)
- * 2. Si el backend responde OK → eliminamos de la lista local
- * 3. Si falla → eliminamos local de todas formas (graceful degradation)
- * 
- * El getter isAdmin evita llamadas repetidas al servicio de auth.
- * SEVERITY_LIST viene de constants.ts para evitar duplicación.
- */
+const STATUS_LABELS: Record<ConnectionStatus, string> = {
+  CONNECTED:    '● Conectado',
+  DISCONNECTED: '○ Desconectado',
+  CONNECTING:   '◌ Reconectando...',
+  ERROR:        '✕ Sin conexión',
+};
+
 @Component({
   selector: 'app-alerts',
   standalone: true,
@@ -42,7 +34,8 @@ export class AlertsComponent implements OnInit, OnDestroy {
 
   alerts: AlertMessage[] = [];
   filteredAlerts: AlertMessage[] = [];
-  connected = false;
+  connectionStatus: ConnectionStatus = 'DISCONNECTED';
+  readonly statusLabel = STATUS_LABELS;
 
   searchTerm = '';
   filterType = '';
@@ -58,7 +51,10 @@ export class AlertsComponent implements OnInit, OnDestroy {
       this.applyFilters();
       this.cdr.detectChanges();
     });
-    this.connected = this.wsService.isConnected();
+    this.wsService.getConnectionStatus$().subscribe(status => {
+      this.connectionStatus = status;
+      this.cdr.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {
@@ -100,39 +96,39 @@ export class AlertsComponent implements OnInit, OnDestroy {
 
   deleteAlert(alert: AlertMessage): void {
     if (!this.isAdmin) return;
-    
+
     const threatId = alert.data?.threatId;
     if (threatId) {
-      // Llamar al servicio DELETE del backend
+
       this.deleteThreatUseCase.execute(threatId).subscribe({
         next: () => {
-          // Eliminar de la lista local después de éxito en backend
+
           this.wsService.deleteMessage(alert.eventId);
         },
         error: (err) => {
           console.error('Error al eliminar amenaza del backend:', err);
-          // Si falla el backend, aún eliminamos localmente
+
           this.wsService.deleteMessage(alert.eventId);
         }
       });
     } else {
-      // Si no tiene threatId, solo eliminar localmente
+
       this.wsService.deleteMessage(alert.eventId);
     }
   }
 
   clearAll(): void {
     if (!this.isAdmin) return;
-    
+
     if (confirm('¿Eliminar todas las alertas?')) {
-      // Para cada alerta con threatId, intentar eliminar del backend
+
       const alertsWithThreatId = this.alerts.filter(a => a.data?.threatId);
       alertsWithThreatId.forEach(alert => {
         this.deleteThreatUseCase.execute(alert.data.threatId).subscribe({
           error: (err) => console.error('Error eliminando threat:', alert.data.threatId, err)
         });
       });
-      // Limpiar todas las alertas locales
+
       this.wsService.clearAll();
     }
   }

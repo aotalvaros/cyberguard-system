@@ -1,4 +1,3 @@
-
 export class InvalidIncidentCreationError extends Error {
   constructor(threatId: string | number, severity: string) {
     super(

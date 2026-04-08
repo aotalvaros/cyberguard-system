@@ -1,7 +1,7 @@
 <div class="page-container">
   <header class="page-header">
     <div class="header-content">
-      <h1>🚨 Incidentes</h1>
+      <h1>Incidentes</h1>
       <div class="user-info">
         <span>{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
         <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
@@ -18,7 +18,7 @@
       <div class="alert alert-error">{{ error }}</div>
     }
 
-    <!-- Toolbar -->
+    
     <div class="toolbar">
       <h2>Incidentes ({{ total }})</h2>
       @if (canCreate()) {
@@ -28,7 +28,7 @@
       }
     </div>
 
-    <!-- Create incident form -->
+    
     @if (showCreateForm) {
       <div class="form-card">
         <h3>Crear Incidente desde Amenaza</h3>
@@ -55,7 +55,7 @@
       </div>
     }
 
-    <!-- Filters -->
+    
     <div class="filters-bar">
       <form [formGroup]="filterForm" (ngSubmit)="applyFilters()" class="filters-form">
         <select formControlName="status">
@@ -73,7 +73,7 @@
       </form>
     </div>
 
-    <!-- Incidents table -->
+    
     @if (loading) {
       <div class="loading">Cargando incidentes...</div>
     } @else {

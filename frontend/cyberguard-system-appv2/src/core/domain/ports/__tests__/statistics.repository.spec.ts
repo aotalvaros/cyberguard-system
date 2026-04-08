@@ -1,5 +1,5 @@
 // Tipo de prueba: Integración
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { StatisticsRepository } from '../statistics.repository';
@@ -16,7 +16,12 @@ class StubStatisticsRepository extends StatisticsRepository {
   }
 }
 
+
 describe('StatisticsRepository', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
   it('should be usable as an Angular DI token', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: StatisticsRepository, useClass: StubStatisticsRepository }],

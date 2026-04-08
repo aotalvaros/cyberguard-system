@@ -16,12 +16,11 @@ export class ThreatRepositoryImpl extends ThreatRepository {
   private readonly API_URL = `${environment.apiUrl}/api/threats`;
 
   reportThreat(threat: ThreatRequest): Observable<ThreatResponse> {
-    // Convertir modelo de dominio a DTO
+
     const requestDto = ThreatMapper.toThreatRequestDto(threat);
-    
-    // El token se agrega automáticamente vía authInterceptor
+
     return this.http.post<ThreatResponseDto>(this.API_URL, requestDto).pipe(
-      // Convertir DTO de respuesta a modelo de dominio
+
       map(dto => ThreatMapper.toThreatResponse(dto))
     );
   }

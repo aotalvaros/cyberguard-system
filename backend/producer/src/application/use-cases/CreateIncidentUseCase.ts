@@ -1,4 +1,3 @@
-
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { IncidentRepository, IncidentRecord } from '../../domain/ports/IncidentRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';

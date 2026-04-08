@@ -4,7 +4,7 @@ Backend API (Producer) del sistema de alertas de ciberseguridad en tiempo real c
 
 **📚 Documentación Relacionada:**
 - 🤖 [AI_WORKFLOW.md](../AI_WORKFLOW.md) - Marco de desarrollo con IA (Prompting por Capas)
-- 🛡️ [SECURITY_GUIDELINES.md](../../docs/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio
+- 🛡️ [SECURITY_GUIDELINES.md](../../docs/security/SECURITY_GUIDELINES.md) - Checklist de seguridad obligatorio
 - � [DEBT_REPORT_BACKEND.md](../docs/DEBT_REPORT_BACKEND.md) - Deuda técnica y plan de refactorización
 - 📊 [ANALISIS_DEUDA_ACTUAL.md](../docs/ANALISIS_DEUDA_ACTUAL.md) - Estado actual vs deuda original (96% resuelto)
 

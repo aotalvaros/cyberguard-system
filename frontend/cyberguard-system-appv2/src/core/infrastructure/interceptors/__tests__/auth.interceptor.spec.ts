@@ -1,10 +1,10 @@
-// Tipo de prueba: Integración
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { authInterceptor } from '../auth.interceptor';
 import { LocalStorageAdapter } from '../../adapters/local-storage.adapter';
+
 
 describe('AuthInterceptor', () => {
   let httpClient: HttpClient;
@@ -12,6 +12,7 @@ describe('AuthInterceptor', () => {
   let mockStorage: { get: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockStorage = {
       get: vi.fn()
     };

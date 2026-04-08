@@ -9,6 +9,7 @@ import { GetCurrentUserUseCase } from '../../../application/use-cases/get-curren
 import { AuthRepository } from '../../../domain/ports/auth.repository';
 import { WebSocketService } from '../websocket.service';
 
+
 describe('AuthService', () => {
   let service: AuthService;
   let mockLoginUseCase: Partial<LoginUseCase>;
@@ -18,6 +19,7 @@ describe('AuthService', () => {
   let mockWebSocketService: Partial<WebSocketService>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockLoginUseCase = { execute: vi.fn() };
     mockLogoutUseCase = { execute: vi.fn() };
     mockGetCurrentUserUseCase = { execute: vi.fn(), isAdmin: vi.fn() };

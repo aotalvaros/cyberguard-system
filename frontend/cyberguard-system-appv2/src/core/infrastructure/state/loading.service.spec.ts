@@ -3,10 +3,12 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { LoadingService, LoadingOperation } from './loading.service';
 
+
 describe('LoadingService', () => {
   let service: LoadingService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [LoadingService]
     });

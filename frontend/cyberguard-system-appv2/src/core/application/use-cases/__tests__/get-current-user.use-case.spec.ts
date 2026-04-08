@@ -4,11 +4,13 @@ import { TestBed } from '@angular/core/testing';
 import { GetCurrentUserUseCase } from '../get-current-user.use-case';
 import { AuthRepository } from '../../../domain/ports/auth.repository';
 
+
 describe('GetCurrentUserUseCase', () => {
   let useCase: GetCurrentUserUseCase;
   let mockAuthRepository: Partial<AuthRepository>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockAuthRepository = {
       getUser: vi.fn(),
     };

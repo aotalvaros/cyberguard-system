@@ -9,11 +9,13 @@ import { WebSocketService } from '../core/infrastructure/services/websocket.serv
 import { GetCurrentUserUseCase } from '../core/application/use-cases/get-current-user.use-case';
 import { LogoutUseCase } from '../core/application/use-cases/logout.use-case';
 
+
 describe('App', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };
   let mockWsService: { connect: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    TestBed.resetTestingModule();
     mockAuthService = { isAuthenticated: vi.fn().mockReturnValue(false) };
     mockWsService = { connect: vi.fn() };
 

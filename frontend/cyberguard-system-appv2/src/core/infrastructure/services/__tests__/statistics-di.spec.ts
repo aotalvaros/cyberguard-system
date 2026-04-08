@@ -5,6 +5,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { StatisticsRepository } from '../../../domain/ports/statistics.repository';
 import { StatisticsRepositoryImpl } from '../statistics-repository.impl';
 
+
 describe('StatisticsRepository DI registration', () => {
   // Given providers mirror app.config.ts
   // When TestBed.inject(StatisticsRepository) is called

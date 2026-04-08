@@ -1,4 +1,3 @@
-
 export interface UserAdminItem {
   readonly id:        string;
   readonly uid:       string;

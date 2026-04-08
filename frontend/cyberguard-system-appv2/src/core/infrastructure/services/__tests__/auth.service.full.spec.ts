@@ -11,6 +11,7 @@ import { WebSocketService } from '../websocket.service';
 import { of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
+
 describe('AuthService', () => {
   let service: AuthService;
   let mockLoginUseCase: { execute: ReturnType<typeof vi.fn> };
@@ -29,6 +30,7 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockLoginUseCase = {
       execute: vi.fn().mockReturnValue(of({ token: 'test-token', user: { username: 'test', role: 'user' }}))
     };

@@ -1,4 +1,3 @@
-
 export enum IncidentStatus {
   OPEN           = 'open',
   CLASSIFIED     = 'classified',

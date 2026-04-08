@@ -11,9 +11,13 @@ import { WebSocketRepositoryImpl } from '../core/infrastructure/services/websock
 import { authInterceptor, retryInterceptor, errorInterceptor, loadingInterceptor } from '../core/infrastructure/interceptors';
 import { GlobalErrorHandler } from '../core/infrastructure/handlers';
 import { StatisticsRepository } from '../core/domain/ports/statistics.repository';
-// Backend endpoint available — use real implementation
+
 import { StatisticsRepositoryImpl } from '../core/infrastructure/services/statistics-repository.impl';
 import { StatisticsMockRepository } from '../core/infrastructure/services/statistics-mock-repository.impl';
+import { NotificationPreferencesRepository } from '../core/domain/ports/notification-preferences.repository';
+import { NotificationPreferencesRepositoryImpl } from '../core/infrastructure/services/notification-preferences-repository.impl';
+import { AdminProfileRepository } from '../core/domain/ports/admin-profile.repository';
+import { AdminProfileHttpAdapter } from '../core/infrastructure/adapters/admin-profile-http.adapter';
 import { UserAdminRepository } from '../core/domain/ports/user-admin.repository';
 import { UserAdminRepositoryImpl } from '../core/infrastructure/services/user-admin-repository.impl';
 import { IncidentRepository } from '../core/domain/ports/incident.repository';
@@ -24,16 +28,19 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(
-      // Orden: loading → auth → retry → error
+
       withInterceptors([loadingInterceptor, authInterceptor, retryInterceptor, errorInterceptor])
     ),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: AuthRepository, useClass: AuthRepositoryImpl },
     { provide: ThreatRepository, useClass: ThreatRepositoryImpl },
     { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
-    // Use real repository now that backend endpoint exists
+
     { provide: StatisticsRepository, useClass: StatisticsRepositoryImpl },
-    // IRMS — HU-008 + HU-001
+    { provide: NotificationPreferencesRepository, useClass: NotificationPreferencesRepositoryImpl },
+
+    { provide: AdminProfileRepository, useClass: AdminProfileHttpAdapter },
+
     { provide: UserAdminRepository, useClass: UserAdminRepositoryImpl },
     { provide: IncidentRepository,   useClass: IncidentRepositoryImpl },
   ]

@@ -38,6 +38,7 @@ async function setupFixture(stats: ThreatStatistics | 'never' | 'error'): Promis
   return fixture;
 }
 
+
 describe('StatisticsWidgetComponent', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();

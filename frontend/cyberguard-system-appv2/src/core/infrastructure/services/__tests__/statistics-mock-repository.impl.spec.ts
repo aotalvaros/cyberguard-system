@@ -7,6 +7,7 @@ describe('StatisticsMockRepository', () => {
   let repository: StatisticsMockRepository;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
     repository = TestBed.inject(StatisticsMockRepository);
   });

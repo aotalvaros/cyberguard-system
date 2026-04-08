@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError, firstValueFrom } from 'rxjs';
 import { CreateIncidentUseCase } from '../create-incident.use-case';
 import { IncidentRepository } from '../../../domain/ports/incident.repository';
 import { CreateIncidentRequest, CreateIncidentResponse } from '../../../domain/models/incident.model';
+
 
 describe('CreateIncidentUseCase', () => {
   let useCase: CreateIncidentUseCase;
@@ -25,6 +26,7 @@ describe('CreateIncidentUseCase', () => {
   beforeEach(() => {
     mockRepository = { createIncident: vi.fn().mockReturnValue(of(mockResponse)) };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         CreateIncidentUseCase,

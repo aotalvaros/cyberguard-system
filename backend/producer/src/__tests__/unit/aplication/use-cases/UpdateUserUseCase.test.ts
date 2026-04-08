@@ -19,6 +19,7 @@ describe('UpdateUserUseCase', () => {
     username: 'ana.torres',
     email: 'ana.torres@example.com',
     fullName: 'Ana Torres',
+    phone: null,
     role: UserRole.SOC_ANALYST,
     isActive: true,
     isLocked: false,

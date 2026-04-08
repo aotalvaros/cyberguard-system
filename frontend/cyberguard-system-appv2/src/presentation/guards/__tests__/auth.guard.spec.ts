@@ -5,11 +5,13 @@ import { Router } from '@angular/router';
 import { authGuard } from '../auth.guard';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
 
+
 describe('authGuard', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };
   let mockRouter: { navigate: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockAuthService = {
       isAuthenticated: vi.fn()
     };

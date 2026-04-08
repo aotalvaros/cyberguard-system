@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { CreateUserAdminUseCase } from '../create-user-admin.use-case';
 import { UserAdminRepository } from '../../../domain/ports/user-admin.repository';
 import { CreateUserAdminRequest } from '../../../domain/models/user-admin-request.model';
 import { UserAdminItem } from '../../../domain/models/user-admin.model';
+
 
 describe('CreateUserAdminUseCase', () => {
   let useCase: CreateUserAdminUseCase;
@@ -23,6 +24,7 @@ describe('CreateUserAdminUseCase', () => {
   beforeEach(() => {
     mockRepository = { createUser: vi.fn().mockReturnValue(of({ success: true, user: newUser })) };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         CreateUserAdminUseCase,

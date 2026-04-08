@@ -6,6 +6,7 @@ import { DeleteThreatUseCase } from '../delete-threat.use-case';
 import { ThreatDomainService } from '../../../domain/services/threat-domain.service';
 import { DeleteThreatResult } from '../../../domain/models/delete-threat-result.model';
 
+
 describe('DeleteThreatUseCase', () => {
   let useCase: DeleteThreatUseCase;
   let mockThreatDomainService: { deleteThreat: ReturnType<typeof vi.fn> };
@@ -17,6 +18,7 @@ describe('DeleteThreatUseCase', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockThreatDomainService = {
       deleteThreat: vi.fn().mockReturnValue(of(mockDeleteResult))
     };

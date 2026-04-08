@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 import { IncidentRepositoryImpl } from '../incident-repository.impl';
+
 
 describe('IncidentRepositoryImpl', () => {
   let repository: IncidentRepositoryImpl;
@@ -20,6 +21,7 @@ describe('IncidentRepositoryImpl', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [IncidentRepositoryImpl, provideHttpClient(), provideHttpClientTesting()],
     });

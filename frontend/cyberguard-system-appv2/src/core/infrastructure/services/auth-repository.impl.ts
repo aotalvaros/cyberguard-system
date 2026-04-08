@@ -20,11 +20,11 @@ export class AuthRepositoryImpl extends AuthRepository {
   private readonly USER_KEY = STORAGE_KEYS.USER;
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    // Convertir modelo de dominio a DTO
+
     const requestDto = AuthMapper.toLoginRequestDto(credentials);
-    
+
     return this.http.post<LoginResponseDto>(`${this.API_URL}/login`, requestDto).pipe(
-      // Convertir DTO de respuesta a modelo de dominio
+
       map(dto => AuthMapper.toAuthResponse(dto))
     );
   }

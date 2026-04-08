@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import {describe, it, expect, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ThreatValidationFactory } from '../threat-validation.factory';
 import { ThreatType } from '../../../core/domain/models/threat-type.enum';
@@ -22,6 +22,8 @@ describe('ThreatValidationFactory', () => {
   let factory: ThreatValidationFactory;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
+
     TestBed.configureTestingModule({});
     factory = TestBed.inject(ThreatValidationFactory);
   });

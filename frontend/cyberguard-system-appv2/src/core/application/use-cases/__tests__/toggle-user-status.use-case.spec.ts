@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { ToggleUserStatusUseCase } from '../toggle-user-status.use-case';
 import { UserAdminRepository } from '../../../domain/ports/user-admin.repository';
 import { UserAdminItem } from '../../../domain/models/user-admin.model';
+
 
 describe('ToggleUserStatusUseCase', () => {
   let useCase: ToggleUserStatusUseCase;
@@ -22,6 +23,7 @@ describe('ToggleUserStatusUseCase', () => {
       toggleUserStatus: vi.fn().mockReturnValue(of({ success: true, user: deactivatedUser, reassignedIncidents: 0 })),
     };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         ToggleUserStatusUseCase,

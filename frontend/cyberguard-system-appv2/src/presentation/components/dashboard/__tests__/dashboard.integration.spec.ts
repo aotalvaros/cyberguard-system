@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {describe, it, expect, beforeEach, vi} from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 
 import { DashboardComponent } from '../dashboard.component';
 import { StatisticsRepository } from '../../../../core/domain/ports/statistics.repository';
 import { AuthRepository } from '../../../../core/domain/ports/auth.repository';
-import { WebSocketRepository } from '../../../../core/domain/ports/websocket.repository';
+import { WebSocketRepository, ConnectionStatus } from '../../../../core/domain/ports/websocket.repository';
 import { ThreatRepository } from '../../../../core/domain/ports/threat.repository';
 import { AuthService } from '../../../../core/infrastructure/services/auth.service';
 import { AuthResponse } from '../../../../core/domain/models/auth-response.model';
@@ -16,6 +16,8 @@ import { ThreatStatistics } from '../../../../core/domain/models/threat-statisti
 import { LoginCredentials } from '../../../../core/domain/models/login-credentials.model';
 import { WS_COMMANDS, ROLES } from '../../../../environments/constants';
 import { Router, provideRouter } from '@angular/router';
+import { GetNotificationPreferencesUseCase } from '../../../../core/application/use-cases/get-notification-preferences.use-case';
+import { SaveNotificationPreferencesUseCase } from '../../../../core/application/use-cases/save-notification-preferences.use-case';
 
 class StubStatisticsRepository extends StatisticsRepository {
   constructor(private stats: ThreatStatistics) {
@@ -75,6 +77,7 @@ class InMemoryWebSocketRepository extends WebSocketRepository {
 
   getMessages$(): Observable<AlertMessage[]> { return this.stream.asObservable(); }
   isConnected(): boolean { return this.connected; }
+  getConnectionStatus$(): Observable<ConnectionStatus> { return of('CONNECTED' as ConnectionStatus); }
   pushAlert(alert: AlertMessage): void { this.stream.next([alert, ...this.stream.value]); }
 }
 
@@ -101,6 +104,7 @@ describe('DashboardComponent Integration', () => {
     authRepository = new InMemoryAuthRepository();
     wsRepository = new InMemoryWebSocketRepository();
 
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
@@ -109,6 +113,14 @@ describe('DashboardComponent Integration', () => {
         { provide: AuthRepository, useValue: authRepository },
         { provide: WebSocketRepository, useValue: wsRepository },
         { provide: AuthService, useFactory: () => new AuthServiceStub(authRepository) },
+        {
+          provide: GetNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' })) },
+        },
+        {
+          provide: SaveNotificationPreferencesUseCase,
+          useValue: { execute: vi.fn().mockReturnValue(of(undefined)) },
+        },
         {
           provide: ThreatRepository,
           useValue: {
@@ -138,7 +150,8 @@ describe('DashboardComponent Integration', () => {
 
   it('should NOT render an inline threat form — reporting is delegated to /report-threat', () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('form')).toBeNull();
+    expect(element.querySelector('form.threat-form')).toBeNull();
+    expect(element.querySelector('app-report-threat')).toBeNull();
   });
 
   it('should render the quick-action navigation card', () => {

@@ -5,12 +5,15 @@ import rateLimit from 'express-rate-limit';
 import { config } from './infrastructure/config/env';
 import { logger } from './infrastructure/config/logger';
 import { connectRabbitMQ, closeRabbitMQ } from './infrastructure/config/rabbitmq';
+import { connectRedis, closeRedis } from './infrastructure/config/redis';
 import { errorHandler } from './infrastructure/http/middlewares/error.middleware';
 import authRoutes from './infrastructure/http/controllers/auth.controller';
 import threatRoutes from './infrastructure/http/controllers/threat.controller';
 import adminRoutes from './infrastructure/http/controllers/admin.controller';
 import incidentRoutes from './infrastructure/http/controllers/incident.controller';
 import { statisticsRouter } from './infrastructure/http/controllers/statistics.controller';
+import profileRoutes from './infrastructure/http/controllers/profile.controller';
+import { profileNotificationsRouter } from './infrastructure/http/controllers/profile-notifications.controller';
 
 const app = express();
 
@@ -50,11 +53,16 @@ app.use('/api/threats', threatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/statistics', statisticsRouter);
+app.use('/api/admin/profile', profileRoutes);
+app.use('/api/profile/notification-preferences', profileNotificationsRouter);
 
 app.use(errorHandler);
 
 async function startServer() {
   try {
+    await connectRedis();
+    logger.info('Redis connected successfully');
+
     await connectRabbitMQ();
     logger.info('RabbitMQ connected successfully');
 
@@ -70,6 +78,7 @@ async function startServer() {
 
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, closing server...');
+  await closeRedis();
   await closeRabbitMQ();
   process.exit(0);
 });

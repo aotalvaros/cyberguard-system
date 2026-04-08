@@ -1,16 +1,18 @@
 <div class="dashboard-container">
   <header class="dashboard-header">
     <div class="header-content">
-      <h1>🛡️ CyberGuard Dashboard</h1>
+      <h1>CyberGuard Dashboard</h1>
       <div class="user-info">
         <span>{{ user?.username }} ({{ user?.role }})</span>
-        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
       </div>
     </div>
   </header>
 
   <main class="dashboard-main">
     <app-statistics-widget />
+    @if (user?.role === 'admin') {
+      <app-notification-preferences />
+    }
 
     <div class="quick-actions">
       <a class="quick-action-card" [routerLink]="['/report-threat']">

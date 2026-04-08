@@ -19,11 +19,13 @@ const mockStats: ThreatStatistics = {
   criticalActive: 5,
 };
 
+
 describe('StatisticsRepositoryImpl', () => {
   let repo: StatisticsRepositoryImpl;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [

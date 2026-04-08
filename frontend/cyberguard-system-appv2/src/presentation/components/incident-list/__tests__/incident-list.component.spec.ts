@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
@@ -36,6 +36,7 @@ async function buildFixture(overrides: {
     ?? vi.fn().mockReturnValue(of({ incidents: [mockIncident], total: 1 }));
   const role = overrides.userRole ?? 'soc_analyst';
 
+  TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [IncidentListComponent],
     providers: [
@@ -245,6 +246,7 @@ describe('IncidentListComponent', () => {
 
     beforeEach(async () => {
       mockRouter = { navigate: vi.fn() };
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [IncidentListComponent],
         providers: [
@@ -333,6 +335,7 @@ describe('IncidentListComponent', () => {
   describe('onCreateIncident — invalid form', () => {
     it('should not call use case when threatId is missing', async () => {
       const createMock = vi.fn();
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [IncidentListComponent],
         providers: [
@@ -380,6 +383,7 @@ describe('IncidentListComponent', () => {
 
   describe('onCreateIncident — error', () => {
     it('should set error message on create failure', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [IncidentListComponent],
         providers: [
@@ -398,6 +402,7 @@ describe('IncidentListComponent', () => {
     });
 
     it('should use fallback error message when no message provided', async () => {
+      TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [IncidentListComponent],
         providers: [

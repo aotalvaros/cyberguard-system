@@ -1,6 +1,6 @@
 <nav class="sidebar" [class.sidebar--collapsed]="collapsed()">
 
-  <!-- Toggle button -->
+  
   <button
     class="sidebar__toggle"
     (click)="toggleCollapse()"
@@ -11,7 +11,7 @@
     <span class="toggle-icon">{{ collapsed() ? '»' : '«' }}</span>
   </button>
 
-  <!-- Brand -->
+  
   <div class="sidebar__brand">
     <span class="brand-icon">🛡️</span>
     @if (!collapsed()) {
@@ -19,7 +19,7 @@
     }
   </div>
 
-  <!-- Navigation items -->
+  
   <ul class="sidebar__nav" role="navigation" aria-label="Menú principal">
     @for (item of visibleItems(); track item.route) {
       <li class="sidebar__item">
@@ -38,5 +38,21 @@
       </li>
     }
   </ul>
+
+  
+  <div class="sidebar__footer">
+    @if (!collapsed()) {
+      <div class="user-info">
+        <span class="user-username">{{ currentUser()?.username }}</span>
+        <span class="user-role">{{ currentUser()?.role }}</span>
+      </div>
+    }
+    <button (click)="logout()" class="btn-logout" title="Cerrar Sesión">
+      <span aria-hidden="true">🚪</span>
+      @if (!collapsed()) {
+        <span>Cerrar Sesión</span>
+      }
+    </button>
+  </div>
 
 </nav>

@@ -6,12 +6,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { loadingInterceptor } from './loading.interceptor';
 import { LoadingService } from '../state/loading.service';
 
+
 describe('loadingInterceptor', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
   let loadingService: LoadingService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         LoadingService,

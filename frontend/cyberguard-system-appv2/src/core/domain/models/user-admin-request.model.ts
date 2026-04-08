@@ -1,4 +1,3 @@
-
 export interface CreateUserAdminRequest {
   email:    string;
   fullName: string;

@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, firstValueFrom } from 'rxjs';
 import { UpdateUserAdminUseCase } from '../update-user-admin.use-case';
 import { UserAdminRepository } from '../../../domain/ports/user-admin.repository';
 import { UpdateUserAdminRequest } from '../../../domain/models/user-admin-request.model';
 import { UserAdminItem } from '../../../domain/models/user-admin.model';
+
 
 describe('UpdateUserAdminUseCase', () => {
   let useCase: UpdateUserAdminUseCase;
@@ -23,6 +24,7 @@ describe('UpdateUserAdminUseCase', () => {
   beforeEach(() => {
     mockRepository = { updateUser: vi.fn().mockReturnValue(of({ success: true, user: updatedUser })) };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         UpdateUserAdminUseCase,

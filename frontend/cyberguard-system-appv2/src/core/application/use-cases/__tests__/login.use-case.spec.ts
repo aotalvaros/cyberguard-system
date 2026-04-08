@@ -5,11 +5,13 @@ import { of } from 'rxjs';
 import { LoginUseCase } from '../login.use-case';
 import { AuthRepository } from '../../../domain/ports/auth.repository';
 
+
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
   let mockAuthRepository: Partial<AuthRepository>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockAuthRepository = {
       login: vi.fn(),
       saveToken: vi.fn(),

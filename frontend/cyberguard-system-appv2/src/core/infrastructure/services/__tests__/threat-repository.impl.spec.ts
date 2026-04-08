@@ -9,6 +9,7 @@ import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
 import { firstValueFrom } from 'rxjs';
 
+
 describe('ThreatRepositoryImpl', () => {
   let repository: ThreatRepositoryImpl;
   let httpTestingController: HttpTestingController;
@@ -16,6 +17,7 @@ describe('ThreatRepositoryImpl', () => {
   const API_URL = 'http://localhost:3000/api/threats';
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         ThreatRepositoryImpl,

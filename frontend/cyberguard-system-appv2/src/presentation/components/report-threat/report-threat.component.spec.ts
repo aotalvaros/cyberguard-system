@@ -24,6 +24,7 @@ describe('ReportThreatComponent', () => {
     mockValidationFactory = { createValidator: vi.fn().mockReturnValue(mockValidator) };
     mockValidator.validate.mockReturnValue({ valid: true, errors: [] });
 
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [ReportThreatComponent],
       providers: [

@@ -9,6 +9,7 @@ import { LoginCredentials } from '../../../domain/models/login-credentials.model
 import { User } from '../../../domain/models/user.model';
 import { firstValueFrom } from 'rxjs';
 
+
 describe('AuthRepositoryImpl', () => {
   let repository: AuthRepositoryImpl;
   let httpTestingController: HttpTestingController;
@@ -21,6 +22,7 @@ describe('AuthRepositoryImpl', () => {
   const API_URL = 'http://localhost:3000/api/auth';
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockStorage = {
       set: vi.fn(),
       get: vi.fn(),

@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 import { UserAdminRepositoryImpl } from '../user-admin-repository.impl';
+
 
 describe('UserAdminRepositoryImpl', () => {
   let repository: UserAdminRepositoryImpl;
@@ -18,6 +19,7 @@ describe('UserAdminRepositoryImpl', () => {
   };
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [UserAdminRepositoryImpl, provideHttpClient(), provideHttpClientTesting()],
     });

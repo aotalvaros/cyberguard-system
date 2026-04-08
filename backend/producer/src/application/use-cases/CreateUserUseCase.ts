@@ -41,6 +41,7 @@ export class CreateUserUseCase {
       username:       input.username,
       email:          input.email,
       fullName:       input.fullName.trim(),
+      phone:          null,
       role:           input.role as UserRole,
       isActive:       true,
       isLocked:       false,

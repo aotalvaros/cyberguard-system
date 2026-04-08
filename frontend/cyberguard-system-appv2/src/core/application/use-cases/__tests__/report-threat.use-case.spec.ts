@@ -7,11 +7,13 @@ import { ThreatRepository } from '../../../domain/ports/threat.repository';
 import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
 
+
 describe('ReportThreatUseCase', () => {
   let useCase: ReportThreatUseCase;
   let mockThreatRepository: Partial<ThreatRepository>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockThreatRepository = {
       reportThreat: vi.fn(),
     };

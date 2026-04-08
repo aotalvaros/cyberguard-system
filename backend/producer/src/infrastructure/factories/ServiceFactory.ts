@@ -3,6 +3,10 @@ import { AuthService } from '../../application/services/AuthService';
 import { ListThreatsUseCase } from '../../application/use-cases/ListThreatsUseCase';
 import { DeleteThreatUseCase } from '../../application/use-cases/DeleteThreatUseCase';
 import { GetThreatStatisticsUseCase } from '../../application/use-cases/GetThreatStatisticsUseCase';
+import { GetNotificationPreferencesUseCase } from '../../application/use-cases/GetNotificationPreferencesUseCase';
+import { SaveNotificationPreferencesUseCase } from '../../application/use-cases/SaveNotificationPreferencesUseCase';
+import { GetAdminProfileUseCase } from '../../application/use-cases/GetAdminProfileUseCase';
+import { UpdateAdminProfileUseCase } from '../../application/use-cases/UpdateAdminProfileUseCase';
 import { CreateUserUseCase } from '../../application/use-cases/CreateUserUseCase';
 import { UpdateUserUseCase } from '../../application/use-cases/UpdateUserUseCase';
 import { ToggleUserStatusUseCase } from '../../application/use-cases/ToggleUserStatusUseCase';
@@ -17,10 +21,12 @@ import { PostgresThreatRepository } from '../persistence/PostgresThreatRepositor
 import { PostgresUserRepository } from '../persistence/PostgresUserRepository';
 import { PostgresAuditLogRepository } from '../persistence/PostgresAuditLogRepository';
 import { PostgresIncidentRepository } from '../persistence/PostgresIncidentRepository';
+import { RedisNotificationPreferencesRepository } from '../persistence/RedisNotificationPreferencesRepository';
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { UserRepository } from '../../domain/ports/UserRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
 import { IncidentRepository } from '../../domain/ports/IncidentRepository';
+import { NotificationPreferencesRepository } from '../../domain/ports/NotificationPreferencesRepository';
 import { ThreatClassifier } from '../../domain/services/ThreatClassifier';
 import {
   MalwareClassificationStrategy,
@@ -47,6 +53,11 @@ export class ServiceFactory {
   private static updateUserUseCase: UpdateUserUseCase | null = null;
   private static toggleUserStatusUseCase: ToggleUserStatusUseCase | null = null;
   private static listUsersUseCase: ListUsersUseCase | null = null;
+  private static notifPrefsRepository: NotificationPreferencesRepository | null = null;
+  private static getNotifPrefsUseCase: GetNotificationPreferencesUseCase | null = null;
+  private static saveNotifPrefsUseCase: SaveNotificationPreferencesUseCase | null = null;
+  private static getAdminProfileUseCase: GetAdminProfileUseCase | null = null;
+  private static updateAdminProfileUseCase: UpdateAdminProfileUseCase | null = null;
 
   static getThreatRepository(): ThreatRepository {
     if (!this.threatRepository) {
@@ -178,6 +189,44 @@ export class ServiceFactory {
     return new GetThreatStatisticsUseCase(repo);
   }
 
+  static getNotifPrefsRepository(): NotificationPreferencesRepository {
+    if (!this.notifPrefsRepository) {
+      this.notifPrefsRepository = new RedisNotificationPreferencesRepository();
+    }
+    return this.notifPrefsRepository;
+  }
+
+  static getGetNotifPrefsUseCase(): GetNotificationPreferencesUseCase {
+    if (!this.getNotifPrefsUseCase) {
+      this.getNotifPrefsUseCase = new GetNotificationPreferencesUseCase(this.getNotifPrefsRepository());
+    }
+    return this.getNotifPrefsUseCase;
+  }
+
+  static getSaveNotifPrefsUseCase(): SaveNotificationPreferencesUseCase {
+    if (!this.saveNotifPrefsUseCase) {
+      this.saveNotifPrefsUseCase = new SaveNotificationPreferencesUseCase(this.getNotifPrefsRepository());
+    }
+    return this.saveNotifPrefsUseCase;
+  }
+
+  static getGetAdminProfileUseCase(): GetAdminProfileUseCase {
+    if (!this.getAdminProfileUseCase) {
+      this.getAdminProfileUseCase = new GetAdminProfileUseCase(this.getUserRepository());
+    }
+    return this.getAdminProfileUseCase;
+  }
+
+  static getUpdateAdminProfileUseCase(): UpdateAdminProfileUseCase {
+    if (!this.updateAdminProfileUseCase) {
+      this.updateAdminProfileUseCase = new UpdateAdminProfileUseCase(
+        this.getUserRepository(),
+        this.getAuditLogRepository()
+      );
+    }
+    return this.updateAdminProfileUseCase;
+  }
+
   static resetForTesting(): void {
     this.threatRepository = null;
     this.threatService = null;
@@ -194,6 +243,11 @@ export class ServiceFactory {
     this.listUsersUseCase = null;
     this.createIncidentUseCase = null;
     this.listIncidentsUseCase = null;
+    this.notifPrefsRepository = null;
+    this.getNotifPrefsUseCase = null;
+    this.saveNotifPrefsUseCase = null;
+    this.getAdminProfileUseCase = null;
+    this.updateAdminProfileUseCase = null;
   }
 
   static getThreatClassifier(): ThreatClassifier {

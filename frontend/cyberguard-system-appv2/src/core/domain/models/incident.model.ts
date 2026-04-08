@@ -1,4 +1,3 @@
-
 export interface IncidentItem {
   readonly id:          string;
   readonly threatId:    string;

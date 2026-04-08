@@ -1,10 +1,11 @@
 // Tipo de prueba: Integración
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach} from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { noAuthGuard } from '../no-auth.guard';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';
+
 
 describe('noAuthGuard', () => {
   let mockAuthService: { isAuthenticated: ReturnType<typeof vi.fn> };
@@ -22,6 +23,7 @@ describe('noAuthGuard', () => {
     mockAuthService = { isAuthenticated: vi.fn() };
     mockRouter = { navigate: vi.fn() };
 
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: mockAuthService },

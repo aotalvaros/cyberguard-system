@@ -28,6 +28,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'profile',
+    loadComponent: () => import('../presentation/components/profile/profile.component')
+      .then(m => m.ProfileComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'users',
     loadComponent: () => import('../presentation/components/user-management/user-management.component')
       .then(m => m.UserManagementComponent),

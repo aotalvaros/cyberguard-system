@@ -17,6 +17,10 @@ import { DeleteThreatUseCase } from '../../../../application/use-cases/DeleteThr
 import { ThreatClassifier } from '../../../../domain/services/ThreatClassifier';
 import { CreateIncidentUseCase } from '../../../../application/use-cases/CreateIncidentUseCase';
 import { ListIncidentsUseCase } from '../../../../application/use-cases/ListIncidentsUseCase';
+import { GetNotificationPreferencesUseCase } from '../../../../application/use-cases/GetNotificationPreferencesUseCase';
+import { SaveNotificationPreferencesUseCase } from '../../../../application/use-cases/SaveNotificationPreferencesUseCase';
+import { GetAdminProfileUseCase } from '../../../../application/use-cases/GetAdminProfileUseCase';
+import { UpdateAdminProfileUseCase } from '../../../../application/use-cases/UpdateAdminProfileUseCase';
 
 
 describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
@@ -407,6 +411,76 @@ describe('ServiceFactory - Singleton Pattern & Dependency Injection', () => {
         expect(listUsers1).not.toBe(listUsers2);
         expect(createInc1).not.toBe(createInc2);
         expect(listInc1).not.toBe(listInc2);
+      });
+    });
+
+    // ── Notification Preferences & Admin Profile factory methods ──────────
+    describe('getNotifPrefsRepository()', () => {
+      it('should create and return a notification prefs repository', () => {
+        const repo = ServiceFactory.getNotifPrefsRepository();
+        expect(repo).toBeDefined();
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const repo1 = ServiceFactory.getNotifPrefsRepository();
+        const repo2 = ServiceFactory.getNotifPrefsRepository();
+        expect(repo1).toBe(repo2);
+      });
+    });
+
+    describe('getGetNotifPrefsUseCase()', () => {
+      it('should create and return a GetNotificationPreferencesUseCase', () => {
+        const uc = ServiceFactory.getGetNotifPrefsUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(GetNotificationPreferencesUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getGetNotifPrefsUseCase();
+        const uc2 = ServiceFactory.getGetNotifPrefsUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getSaveNotifPrefsUseCase()', () => {
+      it('should create and return a SaveNotificationPreferencesUseCase', () => {
+        const uc = ServiceFactory.getSaveNotifPrefsUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(SaveNotificationPreferencesUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getSaveNotifPrefsUseCase();
+        const uc2 = ServiceFactory.getSaveNotifPrefsUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getGetAdminProfileUseCase()', () => {
+      it('should create and return a GetAdminProfileUseCase', () => {
+        const uc = ServiceFactory.getGetAdminProfileUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(GetAdminProfileUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getGetAdminProfileUseCase();
+        const uc2 = ServiceFactory.getGetAdminProfileUseCase();
+        expect(uc1).toBe(uc2);
+      });
+    });
+
+    describe('getUpdateAdminProfileUseCase()', () => {
+      it('should create and return an UpdateAdminProfileUseCase', () => {
+        const uc = ServiceFactory.getUpdateAdminProfileUseCase();
+        expect(uc).toBeDefined();
+        expect(uc).toBeInstanceOf(UpdateAdminProfileUseCase);
+      });
+
+      it('should return same instance on multiple calls (Singleton)', () => {
+        const uc1 = ServiceFactory.getUpdateAdminProfileUseCase();
+        const uc2 = ServiceFactory.getUpdateAdminProfileUseCase();
+        expect(uc1).toBe(uc2);
       });
     });
   });

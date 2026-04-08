@@ -6,10 +6,12 @@ import { AlertMessage } from '../../models/alert-message.model';
 import { ThreatType } from '../../models/threat-type.enum';
 import { ThreatSeverity } from '../../models/threat-severity.enum';
 
+
 describe('AlertsDomainService', () => {
   let service: AlertsDomainService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [AlertsDomainService]
     });

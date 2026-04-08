@@ -3,10 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { LocalStorageAdapter } from '../local-storage.adapter';
 
+
 describe('LocalStorageAdapter', () => {
   let adapter: LocalStorageAdapter;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [LocalStorageAdapter]
     });

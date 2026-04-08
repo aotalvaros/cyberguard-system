@@ -1,7 +1,7 @@
 <div class="page-container">
   <header class="page-header">
     <div class="header-content">
-      <h1>👥 Gestión de Usuarios</h1>
+      <h1>Gestión de Usuarios</h1>
       <div class="user-info">
         <span>{{ currentUser?.username }} ({{ getRoleLabel(currentUser?.role ?? '') }})</span>
         <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
@@ -18,7 +18,7 @@
       <div class="alert alert-error">{{ error }}</div>
     }
 
-    <!-- Toolbar -->
+    
     <div class="toolbar">
       <h2>Usuarios ({{ total }})</h2>
       <button (click)="toggleCreateForm()" class="btn-primary">
@@ -26,7 +26,7 @@
       </button>
     </div>
 
-    <!-- Create user form -->
+    
     @if (showCreateForm) {
       <div class="form-card">
         <h3>Crear Usuario</h3>
@@ -79,7 +79,7 @@
       </div>
     }
 
-    <!-- Users table -->
+    
     @if (loading) {
       <div class="loading">Cargando usuarios...</div>
     } @else {
@@ -103,7 +103,7 @@
                 <td>{{ user.email }}</td>
                 <td>{{ user.fullName ?? '—' }}</td>
 
-                <!-- Inline edit form for role/fullName -->
+                
                 @if (editingUserId === user.id) {
                   <td colspan="2">
                     <form [formGroup]="editForm" (ngSubmit)="onUpdateUser(user.id)" class="inline-form">
@@ -131,12 +131,12 @@
                 <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
                 <td class="actions-cell">
                   @if (editingUserId !== user.id && user.username !== currentUser?.username) {
-                    <button class="btn-sm btn-edit" (click)="startEdit(user)">✏️ Editar</button>
+                    <button class="btn-sm btn-edit" (click)="startEdit(user)">Editar</button>
                     <button class="btn-sm"
                             [class.btn-deactivate]="user.isActive"
                             [class.btn-activate]="!user.isActive"
                             (click)="onToggleStatus(user)">
-                      {{ user.isActive ? '🔒 Desactivar' : '🔓 Activar' }}
+                      {{ user.isActive ? 'Desactivar' : 'Activar' }}
                     </button>
                   }
                   @if (user.username === currentUser?.username) {

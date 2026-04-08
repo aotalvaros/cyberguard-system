@@ -7,11 +7,13 @@ import { ReportThreatUseCase } from '../../../application/use-cases/report-threa
 import { ThreatType } from '../../../domain/models/threat-type.enum';
 import { ThreatSeverity } from '../../../domain/models/threat-severity.enum';
 
+
 describe('ThreatService', () => {
   let service: ThreatService;
   let mockReportThreatUseCase: Partial<ReportThreatUseCase>;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockReportThreatUseCase = { execute: vi.fn() };
 
     TestBed.configureTestingModule({
