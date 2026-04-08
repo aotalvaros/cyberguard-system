@@ -485,4 +485,104 @@ describe('PostgresUserRepository', () => {
       );
     });
   });
+
+  // ── updateProfile ─────────────────────────────────────────────────────────
+  describe('updateProfile()', () => {
+    it('should return updated UserRecord when phone is provided', async () => {
+      const updatedRow = { ...baseRow, phone: '+1234567890' };
+      mockQuery.mockResolvedValueOnce([updatedRow]);
+
+      const result = await repository.updateProfile('user-id-1', {
+        username: 'alice',
+        email: 'alice@new.com',
+        phone: '+1234567890',
+      });
+
+      expect(result.phone).toBe('+1234567890');
+      expect(logger.info).toHaveBeenCalledWith(
+        'Profile updated in PostgreSQL',
+        expect.objectContaining({ userId: 'user-id-1' }),
+      );
+      // Verify phoneProvided = true
+      const params = mockQuery.mock.calls[0]?.[1] as unknown[];
+      expect(params?.[3]).toBe(true);  // phoneProvided
+      expect(params?.[4]).toBe('+1234567890'); // phone value
+    });
+
+    it('should handle phone NOT being in data object', async () => {
+      const updatedRow = { ...baseRow, email: 'new@test.com' };
+      mockQuery.mockResolvedValueOnce([updatedRow]);
+
+      const result = await repository.updateProfile('user-id-1', {
+        username: 'alice',
+        email: 'new@test.com',
+      });
+
+      expect(result.email).toBe('new@test.com');
+      // Verify phoneProvided = false
+      const params = mockQuery.mock.calls[0]?.[1] as unknown[];
+      expect(params?.[3]).toBe(false); // phoneProvided
+      expect(params?.[4]).toBeNull();  // phone value = null when not provided
+    });
+
+    it('should handle phone explicitly set to null', async () => {
+      const updatedRow = { ...baseRow, phone: null };
+      mockQuery.mockResolvedValueOnce([updatedRow]);
+
+      const result = await repository.updateProfile('user-id-1', {
+        phone: null as unknown as string,
+      });
+
+      expect(result.phone).toBeNull();
+      const params = mockQuery.mock.calls[0]?.[1] as unknown[];
+      expect(params?.[3]).toBe(true);  // phoneProvided (key exists)
+      expect(params?.[4]).toBeNull();  // value is null via ?? null
+    });
+
+    it('should throw when no row is returned', async () => {
+      mockQuery.mockResolvedValueOnce([]);
+
+      await expect(
+        repository.updateProfile('nonexistent', { username: 'x' }),
+      ).rejects.toThrow('Failed to update profile: no row returned for userId nonexistent');
+    });
+
+    it('should propagate and log Error instance', async () => {
+      mockQuery.mockRejectedValueOnce(new Error('constraint violation'));
+
+      await expect(
+        repository.updateProfile('user-id-1', { email: 'dup@test.com' }),
+      ).rejects.toThrow('constraint violation');
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to update profile',
+        expect.objectContaining({ error: 'constraint violation' }),
+      );
+    });
+
+    it('should stringify non-Error thrown from updateProfile()', async () => {
+      mockQuery.mockRejectedValueOnce('crash' as never);
+
+      await expect(
+        repository.updateProfile('user-id-1', { email: 'x@y.com' }),
+      ).rejects.toBe('crash');
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to update profile',
+        expect.objectContaining({ error: 'crash' }),
+      );
+    });
+
+    it('should handle username and email both undefined (uses COALESCE null)', async () => {
+      const updatedRow = { ...baseRow };
+      mockQuery.mockResolvedValueOnce([updatedRow]);
+
+      const result = await repository.updateProfile('user-id-1', {});
+
+      expect(result.username).toBe('alice');
+      const params = mockQuery.mock.calls[0]?.[1] as unknown[];
+      expect(params?.[1]).toBeNull();  // username ?? null
+      expect(params?.[2]).toBeNull();  // email ?? null
+    });
+  });
 });

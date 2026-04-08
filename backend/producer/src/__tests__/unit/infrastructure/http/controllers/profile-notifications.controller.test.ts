@@ -85,6 +85,20 @@ describe('profile-notifications.controller', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Internal server error');
     });
+
+    it('should return 500 and stringify non-Error thrown value', async () => {
+      mockGetExecute.mockRejectedValueOnce('unexpected string error');
+
+      const res = await request(makeApp())
+        .get('/api/profile/notification-preferences');
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Internal server error');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'GetNotifPrefs error',
+        expect.objectContaining({ error: 'unexpected string error' }),
+      );
+    });
   });
 
   // ── PUT / ─────────────────────────────────────────────────────────────────
@@ -127,6 +141,36 @@ describe('profile-notifications.controller', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Internal server error');
+    });
+
+    it('should return 500 and stringify non-Error on save failure', async () => {
+      mockSaveExecute.mockRejectedValueOnce(42);
+
+      const res = await request(makeApp())
+        .put('/api/profile/notification-preferences')
+        .send({ emailEnabled: false, whatsappEnabled: false, email: '', phone: '' });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Internal server error');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'SaveNotifPrefs error',
+        expect.objectContaining({ error: '42' }),
+      );
+    });
+
+    it('should return 200 with all channels enabled and valid data', async () => {
+      mockSaveExecute.mockResolvedValueOnce(undefined);
+
+      const res = await request(makeApp())
+        .put('/api/profile/notification-preferences')
+        .send({
+          emailEnabled: true,
+          whatsappEnabled: true,
+          email: 'valid@test.com',
+          phone: '+1234567890',
+        });
+
+      expect(res.status).toBe(200);
     });
   });
 });
