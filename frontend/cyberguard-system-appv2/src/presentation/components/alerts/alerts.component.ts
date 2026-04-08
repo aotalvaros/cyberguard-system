@@ -46,6 +46,11 @@ export class AlertsComponent implements OnInit, OnDestroy {
   totalPages = 1;
 
   ngOnInit(): void {
+    // Ensure WebSocket is connected (defensive — handles race conditions on initial load)
+    if (!this.wsService.isConnected()) {
+      this.wsService.connect();
+    }
+
     this.subscription = this.wsService.getMessages$().subscribe(messages => {
       this.alerts = messages;
       this.applyFilters();
@@ -98,22 +103,25 @@ export class AlertsComponent implements OnInit, OnDestroy {
     if (!this.isAdmin) return;
 
     const threatId = alert.data?.threatId;
+    // Use threatId for deletion (matches Redis storage); fallback to eventId
+    const deleteId = threatId || alert.eventId;
+
     if (threatId) {
 
       this.deleteThreatUseCase.execute(threatId).subscribe({
         next: () => {
 
-          this.wsService.deleteMessage(alert.eventId);
+          this.wsService.deleteMessage(deleteId);
         },
         error: (err) => {
           console.error('Error al eliminar amenaza del backend:', err);
 
-          this.wsService.deleteMessage(alert.eventId);
+          this.wsService.deleteMessage(deleteId);
         }
       });
     } else {
 
-      this.wsService.deleteMessage(alert.eventId);
+      this.wsService.deleteMessage(deleteId);
     }
   }
 

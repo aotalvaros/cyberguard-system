@@ -14,6 +14,7 @@ jest.mock('../../redis', () => ({
   getHistoryFromRedis: jest.fn().mockResolvedValue([] as never),
   clearHistoryFromRedis: jest.fn().mockResolvedValue(undefined as never),
   removeHistoryItemById: jest.fn().mockResolvedValue(undefined as never),
+  removeHistoryItemByThreatId: jest.fn().mockResolvedValue(undefined as never),
 }));
 
 import { clearHistoryFromRedis, removeHistoryItemById } from '../../redis';

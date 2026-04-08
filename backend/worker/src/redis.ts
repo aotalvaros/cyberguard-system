@@ -10,7 +10,10 @@ const getMessageId = (payload: unknown): string | null => {
   const record = payload as Record<string, unknown>;
   if (record['eventId'] && typeof record['eventId'] === 'string') return record['eventId'];
   const data = record['data'] as Record<string, unknown> | undefined;
+  if (data?.['eventId'] && typeof data['eventId'] === 'string') return data['eventId'];
   if (data?.['threatId'] && typeof data['threatId'] === 'string') return data['threatId'];
+  const innerData = data?.['data'] as Record<string, unknown> | undefined;
+  if (innerData?.['threatId'] && typeof innerData['threatId'] === 'string') return innerData['threatId'];
   if (record['routingKey'] && record['receivedAt']) return `${String(record['routingKey'])}::${String(record['receivedAt'])}`;
   if (record['routing'] && record['timestamp']) return `${String(record['routing'])}::${String(record['timestamp'])}`;
   
@@ -120,10 +123,6 @@ export interface StoredNotifPreferences {
   phone: string;
 }
 
-/**
- * Retrieves all notification preferences stored by the producer.
- * Keys follow the pattern `notif:prefs:{username}`.
- */
 export const getAllNotifPreferences = async (): Promise<StoredNotifPreferences[]> => {
   if (!redisClient?.isOpen) return [];
   try {
@@ -144,4 +143,59 @@ export const getAllNotifPreferences = async (): Promise<StoredNotifPreferences[]
 
 export const closeRedis = async (): Promise<void> => {
   if (redisClient?.isOpen) await redisClient.quit();
+};
+
+const extractThreatId = (parsed: unknown): string | null => {
+  if (!parsed || typeof parsed !== 'object') return null;
+  const record = parsed as Record<string, unknown>;
+  // Direct: { threatId }
+  if (typeof record['threatId'] === 'string') return record['threatId'];
+  // { data: { threatId } }
+  const data = record['data'] as Record<string, unknown> | undefined;
+  if (data && typeof data['threatId'] === 'string') return data['threatId'];
+  // { data: { data: { threatId } } }  (handler wraps in { routingKey, data: originalEvent, receivedAt })
+  const innerData = data?.['data'] as Record<string, unknown> | undefined;
+  if (innerData && typeof innerData['threatId'] === 'string') return innerData['threatId'];
+  return null;
+};
+
+/**
+ * Removes history items that match the given threatId at any nesting level.
+ * Used by the threat.deleted RabbitMQ handler.
+ */
+export const removeHistoryItemByThreatId = async (threatId: string): Promise<void> => {
+  if (!redisClient?.isOpen) return;
+  try {
+    const items = await redisClient.lRange(HISTORY_KEY, 0, -1);
+    let found = false;
+    const remaining: string[] = [];
+
+    for (const item of items) {
+      try {
+        const parsed = JSON.parse(item);
+        if (extractThreatId(parsed) === threatId) {
+          found = true;
+        } else {
+          remaining.push(item);
+        }
+      } catch {
+        remaining.push(item);
+      }
+    }
+
+    if (found) {
+      const pipeline = redisClient.multi();
+      pipeline.del(HISTORY_KEY);
+      for (const r of remaining) {
+        pipeline.rPush(HISTORY_KEY, r);
+      }
+      await pipeline.exec();
+      logger.info('History item removed by threatId', { threatId });
+    } else {
+      logger.warn('History item not found by threatId', { threatId });
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Failed to remove history item by threatId', { error: message });
+  }
 };
