@@ -3,14 +3,12 @@ import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals
 import { WebSocketBroadcaster } from '../../infrastructure/websocket/WebSocketBroadcaster';
 import type { IEventRepository, StoredNotifPreferences } from '../../domain/ports/IEventRepository';
 
-const mockLogger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
-
 jest.mock('../../infrastructure/logging', () => ({
-  logger: mockLogger,
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 describe('WebSocketBroadcaster', () => {
@@ -22,13 +20,13 @@ describe('WebSocketBroadcaster', () => {
     jest.clearAllMocks();
 
     repository = {
-      connect: jest.fn(),
-      close: jest.fn(),
-      save: jest.fn(),
-      getHistory: jest.fn().mockResolvedValue([]),
-      clearHistory: jest.fn().mockResolvedValue(undefined),
-      removeById: jest.fn().mockResolvedValue(undefined),
-      removeByThreatId: jest.fn().mockResolvedValue(undefined),
+      connect: jest.fn<(url?: string) => Promise<void>>().mockResolvedValue(undefined),
+      close: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      save: jest.fn<(payload: unknown) => Promise<void>>().mockResolvedValue(undefined),
+      getHistory: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+      clearHistory: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      removeById: jest.fn<(id: string) => Promise<void>>().mockResolvedValue(undefined),
+      removeByThreatId: jest.fn<(id: string) => Promise<void>>().mockResolvedValue(undefined),
       getAllNotifPreferences: jest.fn<() => Promise<StoredNotifPreferences[]>>().mockResolvedValue([]),
     };
 

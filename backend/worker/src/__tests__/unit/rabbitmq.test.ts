@@ -2,16 +2,16 @@ import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals
 import type * as amqp from 'amqplib';
 import { RabbitMQConsumer } from '../../infrastructure/messaging/RabbitMQConsumer';
 
-
-const mockLogger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn()
-};
-
 jest.mock('../../infrastructure/logging', () => ({
-  logger: mockLogger
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
+
+import { logger } from '../../infrastructure/logging';
+const mockLogger = logger as unknown as Record<string, jest.Mock>;
 
 jest.mock('../../infrastructure/config', () => ({
   RABBITMQ_URL: 'amqp://localhost',
@@ -30,11 +30,17 @@ const mockChannelClose = jest.fn().mockResolvedValue(undefined as never);
 const mockCreateChannel = jest.fn();
 const mockConnectionClose = jest.fn().mockResolvedValue(undefined as never);
 const mockConnectionOn = jest.fn();
-const mockConnect = jest.fn();
 
-jest.mock('amqplib', () => ({
-  connect: mockConnect
-}));
+// mockConnect se define como variable de módulo y se referencia en jest.mock
+// Usar jest.fn directamente dentro del factory para evitar TDZ
+jest.mock('amqplib', () => {
+  const connect = jest.fn();
+  return { connect };
+});
+
+// Importar y capturar la referencia mockeada
+import amqplib from 'amqplib';
+const mockConnect = amqplib.connect as jest.Mock;
 
 interface MockMessage {
   content: Buffer;
