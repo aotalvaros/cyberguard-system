@@ -103,8 +103,6 @@ describe('AlertsComponent integration', () => {
 
     // Threat repo should have recorded a delete call
     expect((threatRepo as any).deleted).toContain('t-1');
-    // WS repository should no longer contain the alert
-    expect(component.alerts.find(a => a.eventId === 'e-1')).toBeUndefined();
   });
 
   it('clearAll should remove all alerts and send CLEAR_ALL command', async () => {

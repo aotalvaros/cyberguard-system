@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { DeleteThreatUseCase } from '../../../../application/use-cases/DeleteThreatUseCase';
 import { Threat, ThreatRepository } from '../../../../domain/ports/ThreatRepository';
+import { EventPublisher } from '../../../../domain/ports/EventPublisher';
 import { ThreatNotFoundException } from '../../../../domain/exceptions/ThreatNotFoundException';
 
 
@@ -19,6 +20,7 @@ import { logger } from '../../../../infrastructure/config/logger';
 describe('DeleteThreatUseCase', () => {
   let deleteThreatUseCase: DeleteThreatUseCase;
   let mockRepository: ThreatRepository;
+  let mockEventPublisher: EventPublisher;
 
   const existingThreat: Threat = {
     threatId: 'threat-123',
@@ -37,7 +39,11 @@ describe('DeleteThreatUseCase', () => {
       delete: jest.fn<() => Promise<boolean>>().mockResolvedValue(false as never)
     };
 
-    deleteThreatUseCase = new DeleteThreatUseCase(mockRepository);
+    mockEventPublisher = {
+      publish: jest.fn<() => Promise<void>>().mockResolvedValue(undefined as never)
+    };
+
+    deleteThreatUseCase = new DeleteThreatUseCase(mockRepository, mockEventPublisher);
     jest.spyOn(logger, 'error').mockRestore();
     jest.spyOn(logger, 'warn').mockRestore();
   });

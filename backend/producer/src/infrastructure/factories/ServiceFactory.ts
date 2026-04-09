@@ -83,7 +83,8 @@ export class ServiceFactory {
 
   static getDeleteThreatUseCase(): DeleteThreatUseCase {
     if (!this.deleteThreatUseCase) {
-      this.deleteThreatUseCase = new DeleteThreatUseCase(this.getThreatRepository());
+      const eventPublisher = new RabbitMQPublisher();
+      this.deleteThreatUseCase = new DeleteThreatUseCase(this.getThreatRepository(), eventPublisher);
     }
     return this.deleteThreatUseCase;
   }

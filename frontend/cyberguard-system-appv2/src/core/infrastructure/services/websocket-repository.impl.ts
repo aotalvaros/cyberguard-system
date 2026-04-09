@@ -52,6 +52,10 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   connect(): void {
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
+    // Reset reconnect attempts on explicit connect() call
+    this.clearReconnect();
+    this.connectionStatus$.next('CONNECTING');
+
     try {
       this.ws = this.wsFactory(this.WS_URL);
 
@@ -92,18 +96,22 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   }
 
   sendCommand(command: WebSocketCommand): void {
+    // Always update local state + localStorage, regardless of WebSocket connection
+    if (command.type === WS_COMMANDS.CLEAR_ALL) {
+      this.messages$.next([]);
+      this.saveToStorage([]);
+    } else if (command.type === WS_COMMANDS.DELETE_ONE && command.id) {
+      const current = this.messages$.value;
+      const filtered = current.filter(
+        m => m.eventId !== command.id && m.data?.threatId !== command.id
+      );
+      this.messages$.next(filtered);
+      this.saveToStorage(filtered);
+    }
+
+    // Send via WebSocket only when connected (for Redis cleanup via worker)
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(command));
-
-      if (command.type === WS_COMMANDS.CLEAR_ALL) {
-        this.messages$.next([]);
-        this.saveToStorage([]);
-      } else if (command.type === WS_COMMANDS.DELETE_ONE && command.id) {
-        const current = this.messages$.value;
-        const filtered = current.filter(m => m.eventId !== command.id);
-        this.messages$.next(filtered);
-        this.saveToStorage(filtered);
-      }
     }
   }
 
@@ -122,6 +130,26 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
   protected handleMessage(event: MessageEvent): void {
     try {
       const message = JSON.parse(event.data);
+
+      // Handle clear-all broadcast from worker
+      if (message.type === WS_COMMANDS.CLEAR_ALL) {
+        this.messages$.next([]);
+        this.saveToStorage([]);
+        return;
+      }
+
+      // Handle delete-one broadcast from worker (triggered by threat.deleted RabbitMQ event)
+      if (message.type === WS_COMMANDS.DELETE_ONE && message.id) {
+        const current = this.messages$.value;
+        const filtered = current.filter(
+          m => m.eventId !== message.id && m.data?.threatId !== message.id
+        );
+        if (filtered.length !== current.length) {
+          this.messages$.next(filtered);
+          this.saveToStorage(filtered);
+        }
+        return;
+      }
 
       if (message.data && message.data.eventId && message.data.data) {
         const alert: AlertMessage = {

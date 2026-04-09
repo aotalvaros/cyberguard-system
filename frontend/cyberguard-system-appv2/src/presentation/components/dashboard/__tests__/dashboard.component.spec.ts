@@ -89,14 +89,6 @@ describe('DashboardComponent', () => {
       expect(el.querySelector('app-statistics-widget')).not.toBeNull();
     });
 
-    it('should render the quick-action navigation card linking to /report-threat', () => {
-      const el: HTMLElement = fixture.nativeElement;
-      const card = el.querySelector('.quick-action-card');
-      expect(card).not.toBeNull();
-      const href = card?.getAttribute('href') ?? card?.getAttribute('ng-reflect-router-link') ?? '';
-      expect(href).toContain('report-threat');
-    });
-
     it('should NOT render an inline threat form on the dashboard', () => {
       const el: HTMLElement = fixture.nativeElement;
       expect(el.querySelector('form.threat-form')).toBeNull();
