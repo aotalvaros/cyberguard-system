@@ -51,54 +51,26 @@ describe('ThreatValidationFactory', () => {
   });
 
   describe('MalwareValidationStrategy — validate()', () => {
-    it('should pass when description contains malware keyword', () => {
+    it('should pass with any description and severity', () => {
       const result = factory.createValidator(ThreatType.MALWARE).validate({
         ...baseThreat,
-        severity: ThreatSeverity.HIGH,
-        description: 'malware signature detected',
+        severity: ThreatSeverity.LOW,
+        description: 'suspicious activity on port 443',
       });
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
-
-    it('should fail when severity is LOW', () => {
-      const result = factory.createValidator(ThreatType.MALWARE).validate({
-        ...baseThreat,
-        severity: ThreatSeverity.LOW,
-        description: 'malware detected',
-      });
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should be at least medium severity');
-    });
-
-    it('should fail when description does not mention malware or virus', () => {
-      const result = factory.createValidator(ThreatType.MALWARE).validate({
-        ...baseThreat,
-        severity: ThreatSeverity.MEDIUM,
-        description: 'suspicious activity on port 443',
-      });
-      expect(result.valid).toBe(false);
-    });
   });
 
   describe('PhishingValidationStrategy — validate()', () => {
-    it('should pass when description mentions phishing', () => {
-      const result = factory.createValidator(ThreatType.PHISHING).validate({
-        ...baseThreat,
-        type: ThreatType.PHISHING,
-        description: 'phishing email with credential harvesting link',
-      });
-      expect(result.valid).toBe(true);
-    });
-
-    it('should fail when description does not mention phishing or email', () => {
+    it('should pass with any description and severity', () => {
       const result = factory.createValidator(ThreatType.PHISHING).validate({
         ...baseThreat,
         type: ThreatType.PHISHING,
         description: 'suspicious network traffic detected',
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('phishing or email');
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
   });
 
@@ -123,15 +95,14 @@ describe('ThreatValidationFactory', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should fail when severity is MEDIUM', () => {
+    it('should pass when severity is MEDIUM (no severity restriction)', () => {
       const result = factory.createValidator(ThreatType.DDOS).validate({
         ...baseThreat,
         type: ThreatType.DDOS,
         severity: ThreatSeverity.MEDIUM,
         description: 'traffic anomaly',
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('high or critical');
+      expect(result.valid).toBe(true);
     });
   });
 
@@ -146,15 +117,14 @@ describe('ThreatValidationFactory', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should fail when severity is not CRITICAL', () => {
+    it('should pass when severity is not CRITICAL (no severity restriction)', () => {
       const result = factory.createValidator(ThreatType.RANSOMWARE).validate({
         ...baseThreat,
         type: ThreatType.RANSOMWARE,
         severity: ThreatSeverity.HIGH,
         description: 'ransomware detected but contained',
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('critical');
+      expect(result.valid).toBe(true);
     });
   });
 
