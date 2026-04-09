@@ -1,6 +1,7 @@
 import { WorkerServiceFactory } from './infrastructure/WorkerServiceFactory';
-import { WS_PORT } from './config';
-import { logger } from './logger';
+import { WS_PORT } from './infrastructure/config';
+import { logger } from './infrastructure/logging';
+import { ThreatEventProcessorService } from './application/services/ThreatEventProcessorService';
 
 /**
  * Bootstrap — punto de entrada del Worker.
@@ -14,17 +15,12 @@ async function main() {
 
   const processThreat = WorkerServiceFactory.getProcessThreatEventUseCase();
   const processDeleted = WorkerServiceFactory.getProcessDeletedThreatUseCase();
+  const threatEventProcessorService = new ThreatEventProcessorService(processThreat, processDeleted);
 
   await repository.connect();
   broadcaster.start(WS_PORT);
 
-  await consumer.consume(async (data, routingKey) => {
-    if (routingKey.startsWith('threat.deleted')) {
-      await processDeleted.execute(data, routingKey);
-    } else {
-      await processThreat.execute(data, routingKey);
-    }
-  });
+  await consumer.consume(async (data, routingKey) => threatEventProcessorService.process(data, routingKey));
 
   // Graceful Shutdown — cierra en orden: broker → persistencia → websocket
   process.on('SIGINT', async () => {

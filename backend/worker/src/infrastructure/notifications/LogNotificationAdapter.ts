@@ -1,4 +1,4 @@
-import { logger } from '../../logger';
+import { logger } from '../logging';
 import type { INotificationService, NotifPayload, NotifResult } from '../../domain/ports/INotificationService';
 
 /**

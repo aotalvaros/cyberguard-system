@@ -1,7 +1,7 @@
 import WebSocket, { Server } from 'ws';
 import type { IBroadcaster } from '../../domain/ports/IBroadcaster';
 import type { IEventRepository } from '../../domain/ports/IEventRepository';
-import { logger } from '../../logger';
+import { logger } from '../logging';
 
 type WebSocketMessage = {
   type: 'clear-all' | 'delete-one';

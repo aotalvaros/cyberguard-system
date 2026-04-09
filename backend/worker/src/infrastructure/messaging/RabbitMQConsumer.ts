@@ -1,7 +1,7 @@
 import * as amqp from 'amqplib';
 import type { IMessageConsumer } from '../../domain/ports/IMessageConsumer';
-import { logger } from '../../logger';
-import { RABBITMQ_URL, EXCHANGE, TOPIC } from '../../config';
+import { logger } from '../logging';
+import { RABBITMQ_URL, EXCHANGE, TOPIC } from '../config';
 
 /**
  * Adaptador de RabbitMQ.

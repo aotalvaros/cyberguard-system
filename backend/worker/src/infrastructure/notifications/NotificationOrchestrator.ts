@@ -1,7 +1,7 @@
 import type { INotificationService, NotifPayload, NotifResult } from '../../domain/ports/INotificationService';
 import type { INotificationOrchestrator } from '../../domain/ports/INotificationOrchestrator';
 import type { StoredNotifPreferences } from '../../domain/ports/IEventRepository';
-import { logger } from '../../logger';
+import { logger } from '../logging';
 
 /** @deprecated Usar StoredNotifPreferences desde domain/ports/IEventRepository */
 export type NotifPreferences = StoredNotifPreferences;

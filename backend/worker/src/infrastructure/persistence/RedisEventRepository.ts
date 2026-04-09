@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
 import type { IEventRepository, StoredNotifPreferences } from '../../domain/ports/IEventRepository';
-import { logger } from '../../logger';
+import { logger } from '../logging';
 
 const HISTORY_KEY = 'cg:ws:history';
 const MAX_HISTORY = 200;

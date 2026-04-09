@@ -7,7 +7,7 @@ import { LogNotificationAdapter } from './notifications/LogNotificationAdapter';
 import { NotificationOrchestrator } from './notifications/NotificationOrchestrator';
 import { ProcessThreatEventUseCase } from '../application/use-cases/ProcessThreatEventUseCase';
 import { ProcessDeletedThreatUseCase } from '../application/use-cases/ProcessDeletedThreatUseCase';
-import { logger } from '../logger';
+import { logger } from './logging';
 
 /**
  * Composition Root del Worker.

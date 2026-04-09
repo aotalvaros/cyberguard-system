@@ -1,5 +1,5 @@
-import { WhatsAppAdapter } from '../../notifications/whatsapp.adapter';
-import type { NotifPayload } from '../../notifications/notification.types';
+import { WhatsAppAdapter } from '../../infrastructure/notifications/WhatsAppAdapter';
+import type { NotifPayload } from '../../domain/ports/INotificationService';
 import axios from 'axios';
 
 jest.mock('axios');

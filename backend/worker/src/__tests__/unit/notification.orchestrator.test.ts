@@ -1,5 +1,5 @@
-import { NotificationOrchestrator } from '../../notifications/notification.orchestrator';
-import type { INotificationService, NotifPayload, NotifResult } from '../../notifications/notification.types';
+import { NotificationOrchestrator } from '../../infrastructure/notifications/NotificationOrchestrator';
+import type { INotificationService, NotifPayload, NotifResult } from '../../domain/ports/INotificationService';
 
 const mockPayload: NotifPayload = {
   eventId: 'evt-orch-01',

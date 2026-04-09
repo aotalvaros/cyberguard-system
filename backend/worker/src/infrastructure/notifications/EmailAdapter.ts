@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import { logger } from '../../logger';
+import { logger } from '../logging';
 import { selectTemplate, renderTemplate } from './CategoryTemplateStrategy';
 import type { INotificationService, NotifPayload, NotifResult } from '../../domain/ports/INotificationService';
 

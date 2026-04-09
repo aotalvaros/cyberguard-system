@@ -3,14 +3,14 @@
 ## Índice
 
 1. [Proceso de Implementación de la Épica](#1-proceso-de-implementación-de-la-épica)
-2. [Patrones de Diseño Aplicados por Feature](#2-patrones-de-diseño-aplicados-por-feature)
+2. [Patrones de Diseño Nuevos en la Épica](#2-patrones-de-diseño-nuevos-en-la-épica)
 3. [Trazabilidad Arquitectónica (Diseño a Código)](#3-trazabilidad-arquitectónica-diseño-a-código)
 4. [Cohesión y Desacoplamiento (SOLID)](#4-cohesión-y-desacoplamiento-solid)
 5. [Resolución de Complejidad (Patrones)](#5-resolución-de-complejidad-patrones)
-   - 5.1–5.6: Patrones en Arquitectura Hexagonal (Strategy, Factory, Repository, Composition Root)
-   - [5.7: Arquitectura Orientada a Eventos (EDA)](#57-arquitectura-orientada-a-eventos-eda--patrones)
+   - [5.1: Arquitectura Orientada a Eventos (EDA)](#51-arquitectura-orientada-a-eventos-eda--patrones)
 6. [Refinamiento Sintáctico (Anti-Smells)](#6-refinamiento-sintáctico-anti-smells)
 7. [Evidencia por Archivo](#7-evidencia-por-archivo)
+8. [Resumen de Patrones Nuevos de la Épica](#resumen-de-patrones-nuevos-de-la-épica)
 
 ---
 
@@ -81,74 +81,18 @@ Presentation Layer — controllers (backend) / components (frontend)
 
 ---
 
-## 2. Patrones de Diseño Aplicados por Feature
+## 2. Patrones de Diseño Nuevos en la Épica
 
-### 2.1 Mapa de Features y Épicas
+### 2.1 Alcance de la Épica
 
-El sistema CyberGuard se desarrolló en cuatro features principales, cada una con sus propias historias de usuario. A continuación se documenta **qué patrones de diseño se aplicaron en cada una** y en qué archivos concretos se materializan.
+La épica F4 (Notificaciones y Perfil) es la feature principal del sprint. Se construye **sobre** la infraestructura ya existente (hexagonal, Pub/Sub, Repository, etc.) e introduce patrones nuevos enfocados en:
+- **EP-01**: Gestión de datos personales y preferencias de notificación
+- **EP-02**: Notificación en tiempo real dentro de la plataforma (Worker + WebSocket)
+- **EP-03**: Notificación externa multicanal (Email vía SendGrid, WhatsApp vía Twilio)
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                    ÉPICAS DEL SISTEMA CYBERGUARD                            │
-│                                                                              │
-│  ┌────────────────────────────────────┐  ┌──────────────────────────────┐   │
-│  │ F1: Sistema Base de Amenazas       │  │ F2: Gestión de Usuarios IRMS │   │
-│  │ (threat detection & management)    │  │ (SPEC-001)                   │   │
-│  │ Preexistente                       │  │ CRUD + toggle status         │   │
-│  └────────────────────────────────────┘  └──────────────────────────────┘   │
-│                                                                              │
-│  ┌────────────────────────────────────┐  ┌──────────────────────────────┐   │
-│  │ F3: Creación de Incidentes         │  │ F4: Notificaciones y Perfil  │   │
-│  │ (SPEC-002)                         │  │ (EP-01, EP-02, EP-03)        │   │
-│  │ Escalar amenaza → incidente        │  │ Feature principal de la épica│   │
-│  └────────────────────────────────────┘  └──────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+> **Nota**: Patrones como Hexagonal Architecture, Strategy (clasificación de amenazas), Factory Method (`Threat.create()`), Repository (amenazas, usuarios, incidentes), Composition Root, Pub/Sub, Publisher Confirms, Event Envelope y Singleton ya existían antes de esta épica y no se documentan aquí.
 
-### 2.2 F1: Sistema Base de Amenazas — Patrones Aplicados
-
-El sistema base de detección y gestión de amenazas es la fundación sobre la cual se construyeron las demás features.
-
-| Patrón | Dónde se aplica | Archivo(s) clave | Problema que resolvió |
-|--------|----------------|-------------------|----------------------|
-| **Hexagonal Architecture** | Todo el backend + frontend | `domain/`, `application/`, `infrastructure/` | Aislar el dominio de frameworks y tecnologías |
-| **Strategy Pattern** | Clasificación de amenazas por tipo | `ThreatClassifier.ts`, `ThreatClassificationStrategies.ts` | 5 tipos de amenaza con reglas radicalmente distintas sin `if/else` |
-| **Factory Method** | Creación de entidades con validación | `Threat.create()` (constructor privado) | Garantizar defaults y estado válido al instanciar |
-| **Repository Pattern** | Persistencia de amenazas | `ThreatRepository` (puerto) → `PostgresThreatRepository` (adaptador) | Desacoplar SQL de la lógica de negocio |
-| **Composition Root** | Wiring de dependencias | `ServiceFactory.ts` | Único punto que conoce implementaciones concretas |
-| **Pub/Sub (Topic Exchange)** | Publicación de eventos de amenaza | `RabbitMQPublisher.ts` → exchange `cyberguard.events` | Desacoplamiento Producer ↔ Worker |
-| **Publisher Confirms** | Garantía de entrega al broker | `RabbitMQConnection.publishEvent()` | At-least-once delivery |
-| **Event Envelope** | Estructura estándar de eventos | `ThreatService.reportThreat()` → `{eventId, eventType, timestamp, data}` | Trazabilidad entre servicios |
-| **Singleton** | Conexiones a infraestructura | `RabbitMQConnection.getInstance()` | Reutilización de conexiones sin duplicados |
-
-### 2.3 F2: Gestión de Usuarios IRMS (SPEC-001) — Patrones Aplicados
-
-Feature para crear, editar, listar y activar/desactivar usuarios del sistema de gestión de incidentes.
-
-| Patrón | Dónde se aplica | Archivo(s) clave | Problema que resolvió |
-|--------|----------------|-------------------|----------------------|
-| **Repository Pattern** | Persistencia de usuarios | `UserRepository` (puerto) → `PostgresUserRepository` (adaptador) | CRUD desacoplado de PostgreSQL |
-| **Use Case Pattern** | Operaciones de negocio | `CreateUserUseCase`, `UpdateUserUseCase`, `ToggleUserStatusUseCase`, `ListUsersUseCase` | SRP: cada operación en su propia clase |
-| **Value Object** | Roles del sistema | `UserRole` enum con validación | Encapsular valores válidos del dominio |
-| **Audit Log Pattern** | Trazabilidad de cambios | `AuditLogRepository.log()` en cada use case | Registrar quién hizo qué y cuándo |
-| **Domain Exception Hierarchy** | Errores de negocio tipados | `UserNotFoundError`, `UserAlreadyExistsError`, `SelfModificationForbiddenError`, `RoleModificationNotAllowedException` | Errores específicos → HTTP status codes precisos |
-| **Lazy Singleton** | Instanciación bajo demanda | `ServiceFactory.getCreateUserUseCase()`, etc. | Evitar instanciar dependencias no usadas |
-| **Idempotent Toggle** | Activar/desactivar usuario | `ToggleUserStatusUseCase` — verifica estado actual antes de cambiar | Evitar operaciones redundantes |
-
-### 2.4 F3: Creación de Incidentes (SPEC-002) — Patrones Aplicados
-
-Feature para escalar amenazas de alta severidad a incidentes de seguridad con asignación y seguimiento.
-
-| Patrón | Dónde se aplica | Archivo(s) clave | Problema que resolvió |
-|--------|----------------|-------------------|----------------------|
-| **Factory Method** | Creación de incidentes con reglas | `Incident.create()` (constructor privado), `IncidentFactory.createFromThreat()` | Validar severidad y duplicados antes de crear |
-| **Value Object** | Estado del incidente | `IncidentStatus` enum (`open`, `in_progress`, `resolved`, `closed`) | Lifecycle states con transiciones controladas |
-| **Repository Pattern** | Persistencia de incidentes | `IncidentRepository` → `PostgresIncidentRepository` | Abstracción de SQL + índice único parcial |
-| **Idempotent Consumer** | Prevención de duplicados | Índice parcial en PostgreSQL `(threat_id) WHERE status IN ('open','in_progress')` | Garantizar que una amenaza no genere 2 incidentes activos |
-| **Domain Exception Hierarchy** | Reglas de negocio como excepciones | `ThreatNotFoundException`, `InvalidIncidentCreationError`, `DuplicateIncidentError` | Cada regla rota → excepción específica con código |
-| **Audit Log Pattern** | Registro de creación | `AuditLogRepository.log({ action: 'INCIDENT_CREATED' })` | Trazabilidad para auditoría |
-
-### 2.5 F4: Notificaciones y Perfil (EP-01, EP-02, EP-03) — Patrones Aplicados
+### 2.2 F4: Notificaciones y Perfil (EP-01, EP-02, EP-03) — Patrones Nuevos
 
 **Feature principal de la épica.** Sistema de notificaciones multicanal + gestión de perfil y preferencias del administrador.
 
@@ -179,39 +123,6 @@ EP-03: Notificación externa multicanal (HU-04, HU-05)
 | **Graceful Shutdown** | EP-02/03 | Cierre ordenado | `SIGINT` → `closeRabbit → closeRedis → closeWebSocket` | Prevenir mensajes huérfanos y puertos ocupados |
 | **CQRS-like Separation** | EP-02/03 | Procesos separados | Producer (write) vs Worker (read/react) | Escalar Producer y Worker independientemente |
 | **Queue-Based Load Leveling** | EP-02/03 | Absorción de picos | RabbitMQ entre Producer y Worker | Picos de amenazas no saturan al Worker |
-| **Strategy + Factory (FE)** | EP-01 | Validación de amenazas FE | `ThreatValidationFactory` → 5 estrategias de validación | Reglas de validación distintas por tipo de amenaza |
-
-### 2.6 Resumen Consolidado: Patrones por Feature
-
-```
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │                         F1: SISTEMA BASE                              │
-  │  Hexagonal · Strategy · Factory · Repository · Composition Root      │
-  │  Pub/Sub · Publisher Confirms · Event Envelope · Singleton            │
-  └───────────────────────────────┬────────────────────────────────────────┘
-                                  │ se construye sobre
-  ┌───────────────────────────────▼────────────────────────────────────────┐
-  │                                                                        │
-  │  ┌─────────────────────────┐    ┌─────────────────────────────────┐   │
-  │  │ F2: GESTIÓN USUARIOS    │    │ F3: CREACIÓN INCIDENTES         │   │
-  │  │ Repository · Use Case   │    │ Factory · Value Object          │   │
-  │  │ Value Object · Audit Log│    │ Repository · Idempotent Consumer│   │
-  │  │ Domain Exceptions       │    │ Domain Exceptions · Audit Log   │   │
-  │  │ Lazy Singleton          │    │                                 │   │
-  │  └─────────────────────────┘    └─────────────────────────────────┘   │
-  │                                                                        │
-  │  ┌────────────────────────────────────────────────────────────────┐    │
-  │  │ F4: NOTIFICACIONES Y PERFIL (Feature principal de la épica)   │    │
-  │  │                                                                │    │
-  │  │ NUEVOS:  Adapter · Observer · Orchestrator · Strategy (tmpl)  │    │
-  │  │          Retry+Backoff · Graceful Degradation · DLX · Pipeline│    │
-  │  │          Fan-out · Auto-reconnect · Event History · CQRS-like │    │
-  │  │          Queue-Based Load Leveling · Back-pressure · ACK/NACK │    │
-  │  │                                                                │    │
-  │  │ REUSAN: Repository · Use Case · Pub/Sub · Graceful Shutdown   │    │
-  │  └────────────────────────────────────────────────────────────────┘    │
-  └────────────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -308,117 +219,105 @@ Los puertos del frontend usan `abstract class` (requerido por el DI de Angular) 
 
 **Cada clase tiene una única razón para cambiar.**
 
-| Clase | Responsabilidad Única |
+| Clase (nueva en la épica) | Responsabilidad Única |
 |-------|----------------------|
-| `CreateIncidentUseCase` | Orquestar la creación de un incidente a partir de una amenaza |
-| `PostgresThreatRepository` | Persistir y recuperar amenazas en PostgreSQL |
-| `ThreatClassifier` | Delegar la clasificación al strategy correcto |
-| `IncidentFactory` | Validar reglas de negocio y construir el record del incidente |
-| `ThreatValidationFactory` | Instanciar la estrategia de validación según el tipo |
+| `ProcessThreatEventUseCase` | Pipeline: sanitizar → persistir → broadcast → despachar notificaciones |
+| `ProcessDeletedThreatUseCase` | Eliminar evento del historial y notificar por WebSocket |
+| `NotificationOrchestrator` | Coordinar despacho paralelo a múltiples canales |
+| `EmailAdapter` | Enviar notificación por SendGrid con retry |
+| `WhatsAppAdapter` | Enviar notificación por Twilio con retry |
+| `WebSocketBroadcaster` | Gestionar conexiones WS y enviar payloads a clientes |
+| `RedisEventRepository` | Persistir y consultar historial de eventos en Redis |
+| `RabbitMQConsumer` | Consumir mensajes del broker con ACK/NACK manual |
+| `WorkerServiceFactory` | Composition Root del Worker — único lugar que instancia concretas |
 
-**Evidencia concreta — `CreateIncidentUseCase`:**
+**Evidencia concreta — `ProcessThreatEventUseCase`:**
 
 ```typescript
-// application/use-cases/CreateIncidentUseCase.ts
-export class CreateIncidentUseCase {
+// application/use-cases/ProcessThreatEventUseCase.ts
+export class ProcessThreatEventUseCase {
   constructor(
-    private readonly threatRepository: ThreatRepository,     // puerto
-    private readonly incidentRepository: IncidentRepository, // puerto
-    private readonly auditLogRepository: AuditLogRepository, // puerto
+    private readonly repository: IEventRepository,              // puerto
+    private readonly broadcaster: IBroadcaster,                 // puerto
+    private readonly orchestrator: INotificationOrchestrator,   // puerto
   ) {}
 
-  async execute(input: CreateIncidentInput): Promise<CreateIncidentOutput> {
-    // 1. Buscar amenaza
-    const threat = await this.threatRepository.findById(input.threatId);
-    if (!threat) throw new ThreatNotFoundForIncidentError(input.threatId);
-
-    // 2. Validar severidad (regla de negocio del dominio)
-    if (threat.severity !== 'high' && threat.severity !== 'critical')
-      throw new InvalidIncidentCreationError(input.threatId, threat.severity);
-
-    // 3. Verificar duplicados
-    const existing = await this.incidentRepository.findActiveByThreatId(input.threatId);
-    if (existing) throw new DuplicateIncidentError(input.threatId);
-
-    // 4. Crear y persistir
-    const incident = Incident.create({ /* ... */ });
-    const saved = await this.incidentRepository.save(/* record */);
-
-    // 5. Auditoría
-    await this.auditLogRepository.log({ action: 'INCIDENT_CREATED', /* ... */ });
-
-    return { incident: saved };
+  async execute(data: unknown, routingKey: string): Promise<void> {
+    const payload = buildPayload(data, routingKey);   // 1. Sanitizar
+    await this.repository.save(payload);               // 2. Persistir
+    this.broadcaster.broadcast(payload);               // 3. Broadcast WS
+    // 4. Notificar — fan-out a todos los usuarios con prefs activas
+    const allPrefs = await this.repository.getAllNotifPreferences();
+    for (const prefs of allPrefs) {
+      await this.orchestrator.dispatch(notifPayload, prefs);
+    }
   }
 }
 ```
 
-Este use case **no sabe** si la base de datos es PostgreSQL, MongoDB o un mock en memoria. Solo habla con puertos.
+Este use case **no sabe** si el repository es Redis o DynamoDB, si el broadcaster es WebSocket o SSE, ni si el orchestrator usa SendGrid o Mailgun. Solo habla con puertos.
 
 ### 4.2 O — Open/Closed Principle (OCP)
 
 **Abierto para extensión, cerrado para modificación.**
 
-El patrón Strategy implementado en `ThreatClassifier` permite agregar nuevos tipos de amenaza sin modificar código existente:
+El patrón Adapter implementado en `INotificationService` permite agregar nuevos canales de notificación sin modificar código existente:
 
 ```
                     ┌─────────────────────────┐
-                    │    ThreatClassifier      │
-                    │  (Contexto Strategy)     │
+                    │  INotificationService    │
+                    │  (Puerto)               │
                     │                         │
-                    │  strategies: Map<Type>   │
-                    │  classify(context) ──────┼──► delega al strategy correcto
+                    │  send(payload): Result   │
                     └─────────────────────────┘
                                │
               ┌────────────────┼────────────────┐
               │                │                │
     ┌─────────▼──────┐ ┌──────▼───────┐ ┌──────▼──────────┐
-    │   Malware      │ │  Phishing    │ │  Ransomware     │
-    │   Strategy     │ │  Strategy    │ │  Strategy       │
+    │  EmailAdapter   │ │WhatsAppAdapter│ │LogNotification  │
+    │  (SendGrid)     │ │(Twilio)       │ │Adapter (fallback│
     └────────────────┘ └──────────────┘ └─────────────────┘
 ```
 
-Para agregar un nuevo tipo (ej: `zero-day`):
-1. Crear `ZeroDayClassificationStrategy` implementando `ThreatClassificationStrategy`
-2. Registrarlo en `ServiceFactory.getThreatClassifier()`
-3. **No se modifica** ni `ThreatClassifier` ni las estrategias existentes
+Para agregar un nuevo canal (ej: Telegram):
+1. Crear `TelegramAdapter` implementando `INotificationService`
+2. Registrarlo en `WorkerServiceFactory`
+3. **No se modifica** ni `EmailAdapter`, ni `WhatsAppAdapter`, ni `NotificationOrchestrator` (OCP)
 
 ### 4.3 L — Liskov Substitution Principle (LSP)
 
 **Cualquier implementación es sustituible por su interfaz.**
 
-Ejemplo concreto: `StatisticsMockRepositoryImpl` puede reemplazar transparentemente a `StatisticsRepositoryImpl` porque ambas extienden `StatisticsRepository`:
+Ejemplo concreto: `LogNotificationAdapter` puede reemplazar transparentemente a `EmailAdapter` porque ambas implementan `INotificationService`:
 
 ```typescript
 // Puerto (abstracción)
-export abstract class StatisticsRepository {
-  abstract getStatistics(): Observable<ThreatStatistics>;
-  abstract getStatisticsSafe(): Observable<ThreatStatistics>;
+export interface INotificationService {
+  send(payload: NotifPayload): Promise<NotifResult>;
 }
 
 // Implementación real
-@Injectable({ providedIn: 'root' })
-export class StatisticsRepositoryImpl extends StatisticsRepository { /* HTTP */ }
+export class EmailAdapter implements INotificationService { /* SendGrid API */ }
 
-// Implementación mock (sustituible)
-@Injectable()
-export class StatisticsMockRepositoryImpl extends StatisticsRepository { /* datos fijos */ }
+// Implementación fallback (sustituible)
+export class LogNotificationAdapter implements INotificationService { /* solo logging */ }
 ```
 
-En tests, se inyecta el mock sin cambiar el código del componente consumidor.
+En el `WorkerServiceFactory`, cuando no hay credenciales de SendGrid, se sustituye `EmailAdapter` por `LogNotificationAdapter` sin que el `NotificationOrchestrator` note la diferencia.
 
 ### 4.4 I — Interface Segregation Principle (ISP)
 
 **Interfaces pequeñas y enfocadas, sin métodos innecesarios.**
 
-| Puerto | Métodos | Propósito |
+| Puerto (nuevo en la épica) | Métodos | Propósito |
 |--------|---------|-----------|
-| `EventPublisher` | 1 (`publish`) | Solo publicar eventos |
-| `AuditLogRepository` | 1 (`log`) | Solo registrar auditoría |
-| `TokenService` | 2 (`generateToken`, `verifyToken`) | Solo gestión de JWT |
-| `AuthProvider` | 1-2 (`authenticate`, `createUser?`) | Solo autenticación |
-| `ThreatClassificationStrategy` | 1 (`analyze`) + 1 prop (`supportedType`) | Solo clasificar |
+| `INotificationService` | 1 (`send`) | Solo enviar una notificación |
+| `INotificationOrchestrator` | 1 (`dispatch`) | Solo coordinar multi-canal |
+| `IBroadcaster` | 3 (`start`, `broadcast`, `close`) | Solo gestionar WebSocket |
+| `IMessageConsumer` | 2 (`consume`, `close`) | Solo consumir del broker |
+| `IEventRepository` | 8 métodos cohesivos | Solo gestionar historial de eventos |
 
-Ningún consumidor se ve obligado a depender de métodos que no usa. Compárese con una hipotética interfaz monolítica `ISecurityService` con 30 métodos — aquí cada puerto tiene entre 1 y 13 métodos, todos cohesivos.
+Ningún consumidor se ve obligado a depender de métodos que no usa. El `NotificationOrchestrator` solo ve `INotificationService.send()`, no sabe nada de `IEventRepository` ni de `IBroadcaster`.
 
 ### 4.5 D — Dependency Inversion Principle (DIP)
 
@@ -426,280 +325,62 @@ Ningún consumidor se ve obligado a depender de métodos que no usa. Compárese 
 
 ```
   ┌─────────────────────────────────────────────────────────┐
-  │                    DOMAIN (centro)                      │
-  │   Entities, Ports (interfaces), Value Objects           │
+  │              DOMAIN (centro) — Worker                   │
+  │   Ports: IBroadcaster, IEventRepository,               │
+  │          IMessageConsumer, INotificationService,        │
+  │          INotificationOrchestrator                      │
   │   ► NO depende de NADA externo                         │
   └────────────────────────┬────────────────────────────────┘
                            │ define contratos
   ┌────────────────────────▼────────────────────────────────┐
   │                   APPLICATION                           │
-  │   Use Cases reciben puertos por constructor             │
+  │   ProcessThreatEventUseCase, ProcessDeletedThreatUseCase│
   │   ► Depende SOLO de domain/ports                       │
   └────────────────────────┬────────────────────────────────┘
                            │ implementa contratos
   ┌────────────────────────▼────────────────────────────────┐
   │                  INFRASTRUCTURE                         │
-  │   PostgresXxxRepository, FirebaseAuthProvider, etc.     │
-  │   ServiceFactory (composition root) conecta todo        │
+  │   RedisEventRepository, RabbitMQConsumer,               │
+  │   WebSocketBroadcaster, EmailAdapter, WhatsAppAdapter   │
+  │   WorkerServiceFactory (composition root)               │
   │   ► Conoce las implementaciones concretas              │
   └─────────────────────────────────────────────────────────┘
 ```
 
-**Evidencia — `ServiceFactory` como Composition Root:**
+**Evidencia — `WorkerServiceFactory` como Composition Root:**
 
 ```typescript
-// infrastructure/factories/ServiceFactory.ts
-static getCreateIncidentUseCase(): CreateIncidentUseCase {
-  return new CreateIncidentUseCase(
-    this.getThreatRepository(),    // → retorna ThreatRepository (interfaz)
-    this.getIncidentRepository(),  // → retorna IncidentRepository (interfaz)
-    this.getAuditLogRepository(),  // → retorna AuditLogRepository (interfaz)
+// infrastructure/WorkerServiceFactory.ts
+static getProcessThreatEventUseCase(): ProcessThreatEventUseCase {
+  return new ProcessThreatEventUseCase(
+    this.getRepository(),      // → retorna IEventRepository (puerto)
+    this.getBroadcaster(),     // → retorna IBroadcaster (puerto)
+    this.getOrchestrator(),    // → retorna INotificationOrchestrator (puerto)
   );
 }
 
 // Internamente:
-static getThreatRepository(): ThreatRepository {
-  if (!this.threatRepository) {
-    this.threatRepository = new PostgresThreatRepository(); // ← ÚNICO lugar que sabe de Postgres
+static getRepository(): RedisEventRepository {
+  if (!this.repository) {
+    this.repository = new RedisEventRepository(); // ← ÚNICO lugar que sabe de Redis
   }
-  return this.threatRepository; // ← Retorna la INTERFAZ, no la implementación
+  return this.repository;
 }
 ```
 
-El `CreateIncidentUseCase` nunca ve `PostgresThreatRepository`. Solo ve `ThreatRepository`. Si mañana migramos a MongoDB, cambiamos UNA línea en `ServiceFactory` y el use case no se entera.
-
-**Evidencia — Frontend Angular DI:**
-
-```typescript
-// app.config.ts — providers registran la relación abstract → concrete
-providers: [
-  { provide: ThreatRepository, useClass: ThreatRepositoryImpl },
-  { provide: WebSocketRepository, useClass: WebSocketRepositoryImpl },
-  { provide: AuthRepository, useClass: AuthRepositoryImpl },
-]
-```
-
-Los componentes y use cases inyectan `ThreatRepository` (abstracta), Angular resuelve a `ThreatRepositoryImpl` en runtime.
+El `ProcessThreatEventUseCase` nunca ve `RedisEventRepository`. Solo ve `IEventRepository`. Si mañana migramos a DynamoDB, cambiamos UNA línea en `WorkerServiceFactory` y el use case no se entera.
 
 ---
 
-## 5. Resolución de Complejidad (Patrones)
+## 5. Resolución de Complejidad (Patrones Nuevos)
 
-### 5.1 Strategy Pattern — Clasificación de Amenazas (Backend)
+> Los patrones preexistentes (Strategy para clasificación, Factory para entidades, Repository genérico, Composition Root del Producer) no se detallan aquí porque ya existían antes de la épica. Esta sección documenta únicamente los patrones **introducidos** en F4.
 
-**Complejidad que resuelve**: Cada tipo de amenaza (malware, phishing, DDoS, ransomware, intrusion) tiene reglas de clasificación radicalmente diferentes: distintos umbrales de riesgo, distintas condiciones de auto-bloqueo, distintas escalaciones de severidad. Sin Strategy, esto sería un bloque monolítico de `if/else` de 200+ líneas.
-
-#### Implementación en 3 capas:
-
-**1. Puerto (contrato) — `domain/ports/ThreatClassificationStrategy.ts`:**
-
-```typescript
-export interface ThreatClassificationStrategy {
-  readonly supportedType: ThreatType;
-  analyze(context: ThreatContext): ThreatAnalysisResult;
-}
-
-export interface ThreatAnalysisResult {
-  riskScore: number;              // 0-100
-  recommendedSeverity: string;
-  tags: string[];
-  autoBlock: boolean;
-}
-```
-
-**2. Contexto (orquestador) — `domain/services/ThreatClassifier.ts`:**
-
-```typescript
-export class ThreatClassifier {
-  private readonly strategies: ReadonlyMap<ThreatType, ThreatClassificationStrategy>;
-
-  constructor(strategies: readonly ThreatClassificationStrategy[]) {
-    const strategyMap = new Map<ThreatType, ThreatClassificationStrategy>();
-    for (const strategy of strategies) {
-      strategyMap.set(strategy.supportedType, strategy);
-    }
-    this.strategies = strategyMap;
-  }
-
-  classify(context: ThreatContext): ThreatAnalysisResult {
-    const strategy = this.strategies.get(context.type);
-    if (!strategy) return this.defaultAnalysis(context);
-    return strategy.analyze(context);
-  }
-}
-```
-
-**3. Estrategias concretas — `infrastructure/classification/ThreatClassificationStrategies.ts`:**
-
-| Estrategia | Tipo | Auto-bloqueo | Escalación de Severidad |
-|------------|------|--------------|------------------------|
-| `MalwareClassificationStrategy` | malware | riskScore ≥ 90 | riskScore ≥ 80 → critical |
-| `IntrusionClassificationStrategy` | intrusion | autoDetected o riskScore ≥ 85 | riskScore ≥ 75 → critical |
-| `PhishingClassificationStrategy` | phishing | riskScore ≥ 80 | Preserva original |
-| `DdosClassificationStrategy` | ddos | **Siempre** | riskScore ≥ 70 → critical |
-| `RansomwareClassificationStrategy` | ransomware | **Siempre** | **Siempre** critical |
-
-**¿Por qué es escalable?** Para agregar soporte para un nuevo tipo de amenaza `zero-day`:
-1. Crear `ZeroDayClassificationStrategy` implementando `ThreatClassificationStrategy`
-2. Agregarla al array en `ServiceFactory.getThreatClassifier()`
-3. Las 5 estrategias existentes y `ThreatClassifier` quedan intactos (OCP)
-
-### 5.2 Strategy + Factory Pattern — Validación de Amenazas (Frontend)
-
-**Complejidad que resuelve**: La validación en el formulario de reporte de amenazas varía según el tipo seleccionado. Cada tipo tiene reglas específicas sobre campos requeridos, severidad mínima y contenido de la descripción.
-
-**Factory Method — `ThreatValidationFactory`:**
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class ThreatValidationFactory {
-  createValidator(type: ThreatType): ThreatValidationStrategy {
-    switch (type) {
-      case ThreatType.MALWARE:     return new MalwareValidationStrategy();
-      case ThreatType.PHISHING:    return new PhishingValidationStrategy();
-      case ThreatType.DDOS:        return new DdosValidationStrategy();
-      case ThreatType.RANSOMWARE:  return new RansomwareValidationStrategy();
-      default:                     return new DefaultValidationStrategy();
-    }
-  }
-}
-```
-
-**Estrategias de validación:**
-
-| Estrategia | Reglas de Negocio |
-|------------|-------------------|
-| `MalwareValidationStrategy` | Descripción debe mencionar "malware" o "virus"; severidad ≥ medium |
-| `PhishingValidationStrategy` | Descripción debe mencionar "phishing" o "email" |
-| `DdosValidationStrategy` | Severidad debe ser high o critical |
-| `RansomwareValidationStrategy` | Severidad debe ser critical siempre |
-| `DefaultValidationStrategy` | Descripción ≥ 10 caracteres, formato de IP válido |
-
-### 5.3 Factory Pattern — Creación de Entidades de Dominio
-
-**Complejidad que resuelve**: Las entidades de dominio requieren validación y defaults consistentes al momento de la creación. El constructor está privatizado para forzar el uso del factory method.
-
-```typescript
-// domain/entities/Threat.ts
-export class Threat {
-  private constructor(/* readonly props */) {}
-
-  static create(props: ThreatProps): Threat {
-    return new Threat(
-      props.threatId || uuidv4(),                         // ID auto-generado
-      props.type,
-      props.severity,
-      props.sourceIp,
-      props.description,
-      props.targetIp,
-      props.metadata,
-      props.timestamp || new Date().toISOString()          // timestamp default
-    );
-  }
-
-  // Comportamiento de dominio (no getters/setters vacíos)
-  isHighSeverity(): boolean { return this.severity === 'high' || this.severity === 'critical'; }
-  isCritical(): boolean { return this.severity === 'critical'; }
-}
-```
-
-### 5.4 Factory Pattern — `IncidentFactory` con Reglas de Negocio
-
-```typescript
-// domain/services/IncidentFactory.ts
-export class IncidentFactory {
-  constructor(private readonly deps: IncidentFactoryDeps) {}
-
-  async createFromThreat(threat: Threat, threatDbId: number): Promise<NewIncidentRecord> {
-    // Regla 1: Solo amenazas de alta severidad generan incidentes
-    if (!threat.isHighSeverity()) {
-      throw new InvalidIncidentCreationError(threatDbId, threat.severity);
-    }
-    // Regla 2: No duplicar incidentes activos para la misma amenaza
-    const alreadyExists = await this.deps.checkExistingIncident(threatDbId);
-    if (alreadyExists) throw new DuplicateIncidentError(threatDbId);
-
-    return { /* construye record validado */ };
-  }
-}
-```
-
-### 5.5 Repository Pattern — Abstracción de Persistencia
-
-**Complejidad que resuelve**: Desacoplar la lógica de negocio de la tecnología de almacenamiento.
-
-```
-┌──────────────────┐         ┌───────────────────────┐
-│   Use Case       │────────►│  ThreatRepository     │ (puerto/interfaz)
-│  (application)   │         │   save()              │
-└──────────────────┘         │   findAll()           │
-                             │   findById()          │
-                             │   delete()            │
-                             └───────────┬───────────┘
-                                         │ implementa
-                             ┌───────────▼───────────┐
-                             │ PostgresThreatRepo     │ (adaptador)
-                             │  → SQL queries         │
-                             │  → Connection pool     │
-                             └───────────────────────┘
-```
-
-**Backend — 6 implementaciones de repositorio:**
-
-| Puerto (Interfaz) | Adaptador (Implementación) | Storage |
-|--------------------|-----------------------------|---------|
-| `ThreatRepository` | `PostgresThreatRepository` | PostgreSQL |
-| `UserRepository` | `PostgresUserRepository` | PostgreSQL |
-| `IncidentRepository` | `PostgresIncidentRepository` | PostgreSQL |
-| `AuditLogRepository` | `PostgresAuditLogRepository` | PostgreSQL |
-| `ThreatStatisticsRepository` | `PostgresThreatStatisticsRepository` | PostgreSQL |
-| `NotificationPreferencesRepository` | `RedisNotificationPreferencesRepository` | Redis |
-
-**Frontend — 8 implementaciones:**
-
-| Puerto (Abstract Class) | Adaptador | Medio |
-|--------------------------|-----------|-------|
-| `ThreatRepository` | `ThreatRepositoryImpl` | HTTP API |
-| `AuthRepository` | `AuthRepositoryImpl` | HTTP + LocalStorage |
-| `IncidentRepository` | `IncidentRepositoryImpl` | HTTP API |
-| `StatisticsRepository` | `StatisticsRepositoryImpl` | HTTP API |
-| `UserAdminRepository` | `UserAdminRepositoryImpl` | HTTP API |
-| `WebSocketRepository` | `WebSocketRepositoryImpl` | WebSocket nativo |
-| `AdminProfileRepository` | `AdminProfileRepositoryImpl` | HTTP API |
-| `NotificationPreferencesRepository` | `NotificationPreferencesRepositoryImpl` | HTTP API |
-
-### 5.6 Composition Root / Service Locator — `ServiceFactory`
-
-**Complejidad que resuelve**: Centralizar el wiring de dependencias en un único punto. Sin un contenedor de DI externo (como NestJS), `ServiceFactory` actúa como Composition Root manual con lazy initialization y singleton caching.
-
-Características clave:
-- **Lazy Singleton**: cada dependencia se instancia una sola vez, bajo demanda
-- **Tipo de retorno = puerto**: los métodos retornan la interfaz, no la clase concreta
-- **`resetForTesting()`**: permite limpiar el estado para tests unitarios aislados
-
-```typescript
-// ÚNICO archivo que conoce implementaciones concretas
-static getThreatClassifier(): ThreatClassifier {
-  if (!this.threatClassifier) {
-    this.threatClassifier = new ThreatClassifier([
-      new MalwareClassificationStrategy(),
-      new IntrusionClassificationStrategy(),
-      new PhishingClassificationStrategy(),
-      new DdosClassificationStrategy(),
-      new RansomwareClassificationStrategy(),
-    ]);
-  }
-  return this.threatClassifier;
-}
-```
-
----
-
-### 5.7 Arquitectura Orientada a Eventos (EDA) — Patrones
+### 5.1 Arquitectura Orientada a Eventos (EDA) — Patrones
 
 El sistema CyberGuard implementa una **arquitectura orientada a eventos** (Event-Driven Architecture) donde el **Producer** genera eventos de amenazas detectadas y el **Worker** los consume, procesa y reacciona de forma asíncrona. RabbitMQ actúa como broker de mensajes entre ambos servicios.
 
-### 5.7.1 Visión General del Flujo de Eventos
+### 5.1.1 Visión General del Flujo de Eventos
 
 ```
   ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -754,81 +435,7 @@ El sistema CyberGuard implementa una **arquitectura orientada a eventos** (Event
   └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.7.2 Publisher/Subscriber con Topic Exchange
-
-**Complejidad que resuelve**: El Producer no necesita saber quién consume sus eventos ni cuántos consumidores hay. El Topic Exchange permite enrutar por routing key sin acoplamiento.
-
-**Evidencia — Producer publica al exchange topic:**
-
-```typescript
-// infrastructure/config/rabbitmq.ts
-const EXCHANGE = 'cyberguard.events';
-await this.channel.assertExchange(EXCHANGE, 'topic', { durable: true });
-
-// application/services/threat.service.ts — routing key dinámico
-const routingKey = `threat.detected.${threat.type}`;
-await this.eventPublisher.publish(routingKey, event);
-```
-
-**Evidencia — Worker se suscribe con wildcard `#`:**
-
-```typescript
-// worker/src/config.ts
-export const TOPIC = process.env.WORKER_TOPIC || '#';   // escucha todo
-
-// worker/src/rabbitmq.ts
-await ch.bindQueue(q.queue, EXCHANGE, TOPIC);            // bind wildcard
-```
-
-El Worker recibe **todos** los eventos (`#`), pero si mañana se necesita un Worker especializado solo en `threat.detected.malware`, basta con crear otro consumidor con topic `threat.detected.malware`.
-
-### 5.7.3 Event Envelope (Sobre de Evento)
-
-**Complejidad que resuelve**: Sin una estructura estándar, cada evento tendría un formato diferente, dificultando el logging, la trazabilidad y el debugging.
-
-```typescript
-// application/services/threat.service.ts
-const event = {
-  eventId:   uuidv4(),                                    // ID único del evento
-  eventType: 'threat.detected',                           // tipo semántico
-  timestamp: threat.timestamp || new Date().toISOString(), // cuándo ocurrió
-  data: {                                                  // payload específico
-    threatId, type, severity, sourceIp, description, metadata
-  }
-};
-```
-
-Cada evento que entra al broker tiene: **quién** (eventId), **qué** (eventType), **cuándo** (timestamp) y **qué datos** (data). Esto permite correlacionar eventos entre Producer y Worker.
-
-### 5.7.4 Publisher Confirms
-
-**Complejidad que resuelve**: Sin confirmación, el Producer no sabe si el mensaje llegó al broker. Con Publisher Confirms, se obtiene una garantía **at-least-once delivery**.
-
-```typescript
-// infrastructure/config/rabbitmq.ts
-const ch = await conn.createConfirmChannel();   // ← canal con confirmación
-
-async publishEvent(routingKey: string, data: Record<string, unknown>): Promise<void> {
-  const ch = this.getChannel();
-  return new Promise<void>((resolve, reject) => {
-    ch.publish(EXCHANGE, routingKey, message, { persistent: true },
-      (err: unknown) => {
-        if (err) {
-          logger.error('Event NACK - not confirmed by RabbitMQ', { routingKey });
-          reject(err);
-        } else {
-          logger.info('Event published and confirmed', { routingKey });
-          resolve();
-        }
-      }
-    );
-  });
-}
-```
-
-Si el broker rechaza el mensaje (NACK), el error se propaga al caller para que pueda decidir si reintentar.
-
-### 5.7.5 Dead Letter Exchange (DLX)
+### 5.1.2 Dead Letter Exchange (DLX)
 
 **Complejidad que resuelve**: Los mensajes que fallan el procesamiento no deben perderse ni re-encolarse infinitamente. El DLX los captura en una cola aparte para análisis post-mortem.
 
@@ -850,7 +457,7 @@ Evento → Exchange (topic) → Worker Queue → NACK → DLX Exchange (direct) 
 
 Los mensajes en `failed.messages` pueden inspeccionarse manualmente o procesarse con un Worker de recuperación.
 
-### 5.7.6 Back-pressure y Drain
+### 5.1.3 Back-pressure y Drain
 
 **Complejidad que resuelve**: Cuando el Producer envía eventos más rápido de lo que RabbitMQ puede aceptar, el buffer del canal se llena. Sin manejo de back-pressure, se pierden mensajes o el proceso se bloquea.
 
@@ -866,7 +473,7 @@ if (!published) {
 }
 ```
 
-### 5.7.7 Manual ACK/NACK con Auto-reconnect
+### 5.1.4 Manual ACK/NACK con Auto-reconnect
 
 **Complejidad que resuelve**: Con `autoAck`, un mensaje se pierde si el Worker falla a mitad del procesamiento. Con ACK manual, el mensaje solo se elimina de la cola cuando el Worker confirma que lo procesó correctamente.
 
@@ -892,7 +499,7 @@ connection.on('close', () => {
 });
 ```
 
-### 5.7.8 Adapter Pattern — Canales de Notificación
+### 5.1.5 Adapter Pattern — Canales de Notificación
 
 **Complejidad que resuelve**: El Worker necesita enviar notificaciones por múltiples canales (email, WhatsApp) cada uno con su propia API. Sin abstracción, el código de despacho estaría lleno de condicionales y duplicación.
 
@@ -948,7 +555,7 @@ export class LogNotificationAdapter implements INotificationService {
 2. Registrarlo en `buildOrchestrator()`
 3. **No se modifica** `EmailAdapter`, `WhatsAppAdapter` ni `NotificationOrchestrator` (OCP)
 
-### 5.7.9 Orchestrator Pattern — Coordinación de Notificaciones
+### 5.1.6 Orchestrator Pattern — Coordinación de Notificaciones
 
 **Complejidad que resuelve**: Despachar a múltiples canales en paralelo sin que el fallo de uno afecte a los demás. `Promise.allSettled` garantiza que todos los canales se intentan sin importar errores individuales.
 
@@ -976,7 +583,7 @@ export class NotificationOrchestrator {
 }
 ```
 
-### 5.7.10 Graceful Degradation — Fallback a Logging
+### 5.1.7 Graceful Degradation — Fallback a Logging
 
 **Complejidad que resuelve**: Si las credenciales de SendGrid o Twilio no están configuradas, el Worker no debe fallar. En su lugar, usa un adaptador que solo loguea la notificación.
 
@@ -993,7 +600,7 @@ const whatsappService = twSid && twToken
 
 Esto permite que el Worker funcione en **modo degradado** en ambientes de desarrollo o CI donde no hay credenciales de APIs externas.
 
-### 5.7.11 Retry con Exponential Backoff
+### 5.1.8 Retry con Exponential Backoff
 
 **Complejidad que resuelve**: Las APIs externas (SendGrid, Twilio) pueden tener fallos transitorios (rate limits, timeouts). Sin reintentos, una notificación se pierde ante un error temporal.
 
@@ -1016,7 +623,7 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
 }
 ```
 
-### 5.7.12 Strategy Pattern — Templates de Notificación
+### 5.1.9 Strategy Pattern — Templates de Notificación
 
 **Complejidad que resuelve**: Cada tipo de amenaza requiere un mensaje diferente en las notificaciones. Sin Strategy, habría un `switch` con bloques de texto duplicados.
 
@@ -1034,7 +641,7 @@ export function selectTemplate(type: string) { return TEMPLATES[type] ?? TEMPLAT
 export function renderTemplate(template: string, vars: Record<string, string>) { /* replace placeholders */ }
 ```
 
-### 5.7.13 Pipeline de Procesamiento (Worker)
+### 5.1.10 Pipeline de Procesamiento (Worker)
 
 **Complejidad que resuelve**: Cada mensaje pasa por etapas secuenciales bien definidas. Si una etapa falla, el mensaje se rechaza globalmente (NACK). Esto crea un flujo predecible y auditable.
 
@@ -1063,7 +670,7 @@ export function renderTemplate(template: string, vars: Record<string, string>) {
     ch.ack(msg) ← procesamiento completado
 ```
 
-### 5.7.14 Graceful Shutdown
+### 5.1.11 Graceful Shutdown
 
 **Complejidad que resuelve**: Sin shutdown ordenado, las conexiones a RabbitMQ, Redis y WebSocket quedan abiertas, los mensajes en procesamiento se pierden y los puertos quedan ocupados.
 
@@ -1085,7 +692,7 @@ async close(): Promise<void> {
 }
 ```
 
-### 5.7.15 Separación CQRS-like (Producer vs Worker)
+### 5.1.12 Separación CQRS-like (Producer vs Worker)
 
 **Complejidad que resuelve**: Mezclar la escritura de datos con la reacción a eventos crea un monolito difícil de escalar. Con procesos separados, cada servicio puede escalar independientemente.
 
@@ -1190,91 +797,65 @@ const threat = new Threat(/* ... */); // Error: constructor is private
 
 ## 7. Evidencia por Archivo
 
-### 7.1 Domain Layer (Cero dependencias de infraestructura)
+### 7.1 Domain Layer — Puertos Nuevos (Worker)
 
-| Archivo | Imports externos | Frameworks | Lógica de negocio |
-|---------|------------------|------------|-------------------|
-| `domain/entities/Threat.ts` | `uuid` | Ninguno | `isHighSeverity()`, `isCritical()`, factory `create()` |
-| `domain/entities/Incident.ts` | `uuid` | Ninguno | `isActive()`, factory `create()` |
-| `domain/ports/ThreatRepository.ts` | Ninguno | Ninguno | Contrato puro |
-| `domain/ports/UserRepository.ts` | Ninguno | Ninguno | Contrato puro con 13 operaciones |
-| `domain/ports/EventPublisher.ts` | Ninguno | Ninguno | Contrato con 1 método |
-| `domain/services/ThreatClassifier.ts` | Ninguno | Ninguno | Strategy context + Map |
-| `domain/services/IncidentFactory.ts` | Ninguno | Ninguno | Validación + construcción |
-| `domain/exceptions/DomainError.ts` | Ninguno | Ninguno | Base abstracta con `code` |
-| `domain/value-objects/IncidentStatus.ts` | Ninguno | Ninguno | Enum + lifecycle helpers |
-| `domain/value-objects/UserRole.ts` | Ninguno | Ninguno | Enum + validation |
+| Archivo | Imports externos | Frameworks | Contrato |
+|---------|------------------|------------|----------|
+| `domain/ports/IBroadcaster.ts` | Ninguno | Ninguno | `start`, `broadcast`, `close` |
+| `domain/ports/IEventRepository.ts` | Ninguno | Ninguno | `connect`, `save`, `getHistory`, `clearHistory`, `removeById`, `removeByThreatId`, `getAllNotifPreferences`, `close` |
+| `domain/ports/IMessageConsumer.ts` | Ninguno | Ninguno | `consume`, `close` |
+| `domain/ports/INotificationService.ts` | Ninguno | Ninguno | `send(payload): Promise<NotifResult>` |
+| `domain/ports/INotificationOrchestrator.ts` | Ninguno | Ninguno | `dispatch(payload, prefs): Promise<NotifResult[]>` |
+| `domain/services/MessageHandler.ts` | Ninguno | Ninguno | `buildPayload`, `handleMessage` — sanitización y validación |
 
-### 7.2 Application Layer (Solo depende de puertos)
+### 7.2 Application Layer — Use Cases Nuevos
 
-| Archivo | Depende de | NO depende de |
+| Archivo | Depende de (puertos) | NO depende de |
 |---------|-----------|---------------|
-| `CreateIncidentUseCase` | `ThreatRepository`, `IncidentRepository`, `AuditLogRepository` | PostgreSQL, Express, Redis |
-| `ListThreatsUseCase` | `ThreatRepository` | PostgreSQL, Express |
-| `CreateUserUseCase` | `UserRepository`, `AuditLogRepository` | PostgreSQL, Firebase |
-| `ToggleUserStatusUseCase` | `UserRepository`, `AuditLogRepository`, `IncidentRepository` | PostgreSQL |
+| `ProcessThreatEventUseCase` | `IEventRepository`, `IBroadcaster`, `INotificationOrchestrator` | Redis, WebSocket, SendGrid, Twilio |
+| `ProcessDeletedThreatUseCase` | `IEventRepository`, `IBroadcaster` | Redis, WebSocket |
+| `ThreatEventProcessorService` | Use cases anteriores + `MessageHandler` | Infraestructura |
+| `GetAdminProfileUseCase` (Producer) | `UserRepository` | PostgreSQL |
+| `UpdateAdminProfileUseCase` (Producer) | `UserRepository` | PostgreSQL |
+| `GetNotificationPreferencesUseCase` (Producer) | `NotificationPreferencesRepository` | Redis |
+| `SaveNotificationPreferencesUseCase` (Producer) | `NotificationPreferencesRepository` | Redis |
 
-### 7.3 Infrastructure Layer (Implementa puertos)
+### 7.3 Infrastructure Layer — Adaptadores Nuevos
 
 | Archivo | Implementa | Usa tecnología |
 |---------|-----------|----------------|
-| `PostgresThreatRepository` | `ThreatRepository` | PostgreSQL (pg) |
-| `PostgresUserRepository` | `UserRepository` | PostgreSQL (pg) |
-| `RedisNotificationPreferencesRepository` | `NotificationPreferencesRepository` | Redis (ioredis) |
-| `RabbitMQPublisher` | `EventPublisher` | amqplib |
-| `FirebaseAuthProvider` | `AuthProvider` | firebase-admin |
-| `JWTTokenService` | `TokenService` | jsonwebtoken |
-| `ServiceFactory` | Composition Root | Todas las concretas |
-
-### 7.4 Resumen de Cobertura de Tests
-
-| Suite | Archivos | Tests | Estado |
-|-------|----------|-------|--------|
-| Frontend (Vitest) | 57 | 550 | ✅ 100% passed |
-| Backend Producer (Jest) | 48 | 911 | ✅ 100% passed |
-| Backend Worker (Jest) | 10 | 151 | ✅ 100% passed |
-| **Total** | **115** | **1,612** | **✅ All green** |
+| `RedisEventRepository` | `IEventRepository` | Redis (LPUSH/LTRIM) |
+| `RabbitMQConsumer` | `IMessageConsumer` | amqplib (ACK/NACK manual) |
+| `WebSocketBroadcaster` | `IBroadcaster` | ws (WebSocket server) |
+| `EmailAdapter` | `INotificationService` | SendGrid (@sendgrid/mail) |
+| `WhatsAppAdapter` | `INotificationService` | Twilio (axios REST) |
+| `LogNotificationAdapter` | `INotificationService` | Winston (fallback) |
+| `NotificationOrchestrator` | `INotificationOrchestrator` | Promise.allSettled |
+| `CategoryTemplateStrategy` | Strategy (templates por tipo) | Mapeo estático |
+| `WorkerServiceFactory` | Composition Root del Worker | Todas las concretas |
+| `RedisNotificationPreferencesRepository` (Producer) | `NotificationPreferencesRepository` | Redis (ioredis) |
 
 ---
 
-## Resumen de Patrones y Principios
+## Resumen de Patrones Nuevos de la Épica
 
-### Patrones en Arquitectura Hexagonal y SOLID
+> Solo patrones **introducidos** en F4 (Notificaciones y Perfil). No se listan patrones preexistentes como Hexagonal Architecture, Strategy (clasificación de amenazas), Factory Method (entidades), Repository (amenazas/usuarios/incidentes), Pub/Sub, Publisher Confirms, Event Envelope ni Singleton.
 
-| Patrón / Principio | Dónde se aplica | Problema que resuelve |
+| Patrón | Dónde se aplica | Problema que resuelve |
 |--------------------|-----------------|-----------------------|
-| **Hexagonal Architecture** | Todo el sistema (BE + FE) | Aislamiento del dominio de frameworks |
-| **Strategy Pattern** | Clasificación de amenazas (BE), Validación (FE) | Eliminar `if/else` monolíticos; extensibilidad OCP |
-| **Factory Method** | `ThreatValidationFactory`, `Threat.create()`, `Incident.create()` | Creación controlada de objetos con validación |
-| **Repository Pattern** | 6 repos BE + 8 repos FE | Abstracción de persistencia/comunicación |
-| **Composition Root** | `ServiceFactory` (BE), `app.config.ts` (FE) | Centralizar el wiring; DIP estricto |
-| **Value Object** | `IncidentStatus`, `UserRole` | Encapsular estado válido del dominio |
-| **Domain Exception Hierarchy** | `DomainError` → 10 subclases | Manejo de errores tipado y estructurado |
-| **SRP** | 13 use cases, 10 puertos, 6 repos | Cada clase tiene una razón de cambio |
-| **OCP** | Strategy pattern, Repository pattern | Extensible sin modificar código existente |
-| **LSP** | Mock repos sustituyen reales en tests | Sustitución transparente de implementaciones |
-| **ISP** | Puertos con 1-3 métodos promedio | Sin interfaces infladas |
-| **DIP** | Use cases → puertos; Factory → concretas | High-level no depende de low-level |
-
-### Patrones en Arquitectura Orientada a Eventos (EDA)
-
-| Patrón / Principio | Dónde se aplica | Problema que resuelve |
-|--------------------|-----------------|-----------------------|
-| **Publisher/Subscriber (Topic Exchange)** | Producer → RabbitMQ → Worker | Desacoplamiento total entre el generador del evento y sus consumidores |
-| **Event Envelope** | `ThreatService.reportThreat()` | Estructura estándar (`eventId`, `eventType`, `timestamp`, `data`) para trazabilidad |
-| **Publisher Confirms** | `RabbitMQConnection.publishEvent()` | Garantía de que el broker recibió el mensaje (at-least-once delivery) |
-| **Dead Letter Exchange (DLX)** | `cyberguard.dlx` + `failed.messages` queue | Captura de mensajes que fallan el procesamiento sin perderlos |
-| **Manual ACK/NACK** | Worker `rabbitmq.ts` — `noAck: false` | Control explícito de cuándo un mensaje se considera procesado |
-| **Back-pressure (Drain)** | `RabbitMQConnection.publishEvent()` | Previene overflow del buffer cuando el broker está saturado |
-| **Auto-reconnect** | Worker `rabbitmq.ts` — `setTimeout(2s)` | Resiliencia ante caídas temporales de RabbitMQ |
-| **Wildcard Subscription** | Worker `config.ts` — topic `#` | Suscripción a todos los eventos sin acoplarse a routing keys específicos |
 | **Adapter Pattern** | `INotificationService` → `EmailAdapter`, `WhatsAppAdapter`, `LogNotificationAdapter` | Intercambio transparente de canales de notificación |
-| **Orchestrator Pattern** | `NotificationOrchestrator.dispatch()` | Coordinación paralela de múltiples canales con `Promise.allSettled` |
-| **Strategy Pattern (Templates)** | `category-template.strategy.ts` | Selección de contenido de notificación según tipo de amenaza |
-| **Retry con Exponential Backoff** | `EmailAdapter`, `WhatsAppAdapter` | Tolerancia a fallos transitorios de APIs externas |
-| **Graceful Degradation** | `buildOrchestrator()` → `LogNotificationAdapter` | Funcionamiento sin APIs configuradas (fallback a logging) |
-| **Pipeline de Procesamiento** | Worker `index.ts` → `handleMessage → saveToRedis → broadcast → dispatch` | Flujo secuencial y predecible para cada mensaje |
-| **Event History (Cache)** | Worker `redis.ts` — lista `cg:ws:history` (cap 200) | Re-envío de historial a nuevos clientes WebSocket |
-| **Fan-out a Usuarios** | Worker `index.ts` — loop sobre `allPrefs` | Cada evento notifica a todos los usuarios con preferencias activas |
-| **Graceful Shutdown** | `SIGINT` handler en ambos servicios | Cierre ordenado de conexiones (RabbitMQ → Redis → WebSocket) |
-| **Separación CQRS-like** | Producer (write) vs Worker (read/react) | Procesos independientes para escritura de datos y reacción a eventos |
+| **Orchestrator Pattern** | `NotificationOrchestrator.dispatch()` con `Promise.allSettled` | Coordinación paralela de múltiples canales sin fallo cascada |
+| **Strategy Pattern (Templates)** | `CategoryTemplateStrategy` — templates por tipo de amenaza | Contenido personalizado sin `switch` monolítico |
+| **Retry + Exponential Backoff** | `EmailAdapter`, `WhatsAppAdapter` — 3 intentos, 1s→2s→4s | Tolerancia a fallos transitorios de APIs externas |
+| **Graceful Degradation** | `WorkerServiceFactory` → `LogNotificationAdapter` | Worker funciona sin credenciales de APIs externas |
+| **Dead Letter Exchange (DLX)** | `cyberguard.dlx` + `failed.messages` queue | Mensajes fallidos capturados sin pérdida |
+| **Manual ACK/NACK** | `RabbitMQConsumer` — `noAck: false`, `ch.ack()`, `ch.nack()` | Solo eliminar mensaje tras procesamiento exitoso |
+| **Back-pressure (Drain)** | `RabbitMQConnection.publishEvent()` | Previene overflow del buffer bajo alta carga |
+| **Pipeline de Procesamiento** | `sanitize → save → broadcast → dispatch notifications` | Flujo secuencial y predecible para cada mensaje |
+| **Observer Pattern** | Worker consume eventos via callback `onMessage` | Reacción a eventos sin acoplamiento |
+| **Event History (Cache)** | Redis lista `cg:ws:history` (LPUSH + LTRIM cap=200) | Re-envío de historial a clientes WebSocket que reconectan |
+| **Fan-out a Usuarios** | Loop sobre `getAllNotifPreferences()` | Cada evento notifica a todos los usuarios con prefs activas |
+| **Auto-reconnect** | `connection.on('close', () => setTimeout(reconnect, 2000))` | Reconexión automática al broker |
+| **Graceful Shutdown** | `SIGINT` → `closeConsumer → closeRepository → closeBroadcaster` | Cierre ordenado de conexiones |
+| **CQRS-like Separation** | Producer (write) vs Worker (read/react) | Escalar servicios independientemente |
+| **Queue-Based Load Leveling** | RabbitMQ entre Producer y Worker | Picos de amenazas no saturan al Worker |

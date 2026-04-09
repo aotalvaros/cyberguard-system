@@ -1,6 +1,6 @@
 import type { IEventRepository } from '../../domain/ports/IEventRepository';
 import type { IBroadcaster } from '../../domain/ports/IBroadcaster';
-import { logger } from '../../logger';
+import { logger } from '../../infrastructure/logging';
 
 /**
  * Maneja el evento threat.deleted:

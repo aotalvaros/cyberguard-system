@@ -2,7 +2,7 @@ import type { IEventRepository } from '../../domain/ports/IEventRepository';
 import type { IBroadcaster } from '../../domain/ports/IBroadcaster';
 import type { NotifPayload } from '../../domain/ports/INotificationService';
 import type { INotificationOrchestrator } from '../../domain/ports/INotificationOrchestrator';
-import { logger } from '../../logger';
+import { logger } from '../../infrastructure/logging';
 
 type ThreatPayload = Readonly<{
   routingKey: string;
