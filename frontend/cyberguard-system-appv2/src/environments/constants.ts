@@ -16,7 +16,8 @@ export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
 
 export const WS_COMMANDS = {
   CLEAR_ALL: 'clear-all',
-  DELETE_ONE: 'delete-one'
+  DELETE_ONE: 'delete-one',
+  HISTORY_SYNC: 'history-sync'
 } as const;
 
 export type WsCommandType = typeof WS_COMMANDS[keyof typeof WS_COMMANDS];

@@ -1,6 +1,7 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { ListIncidentsUseCase } from '../../../../application/use-cases/ListIncidentsUseCase';
 import { IncidentRepository, IncidentRecord } from '../../../../domain/ports/IncidentRepository';
+import { UserRepository, UserRecord } from '../../../../domain/ports/UserRepository';
 import { IncidentStatus } from '../../../../domain/value-objects/IncidentStatus';
 
 const makeRecord = (overrides?: Partial<IncidentRecord>): IncidentRecord => ({
@@ -19,9 +20,26 @@ const makeRecord = (overrides?: Partial<IncidentRecord>): IncidentRecord => ({
   ...overrides,
 });
 
+const makeUser = (overrides?: Partial<UserRecord>): UserRecord => ({
+  id:             'user-1',
+  username:       'admin',
+  email:          'admin@cyberguard.com',
+  role:           'admin',
+  fullName:       'Administrador',
+  phone:          null,
+  isActive:       true,
+  isLocked:       false,
+  failedAttempts: 0,
+  lastLogin:      null,
+  createdAt:      new Date('2026-01-01'),
+  updatedAt:      new Date('2026-01-01'),
+  ...overrides,
+});
+
 describe('ListIncidentsUseCase', () => {
   let useCase: ListIncidentsUseCase;
   let mockRepo: jest.Mocked<IncidentRepository>;
+  let mockUserRepo: jest.Mocked<UserRepository>;
 
   beforeEach(() => {
     mockRepo = {
@@ -33,13 +51,61 @@ describe('ListIncidentsUseCase', () => {
       unassignByUserId:           jest.fn(),
     } as unknown as jest.Mocked<IncidentRepository>;
 
-    useCase = new ListIncidentsUseCase(mockRepo);
+    mockUserRepo = {
+      findById:              jest.fn().mockResolvedValue(makeUser() as never),
+      findByUsername:         jest.fn(),
+      findByEmail:           jest.fn(),
+      findAll:               jest.fn(),
+      findAllActive:         jest.fn(),
+      save:                  jest.fn(),
+      update:                jest.fn(),
+      updateProfile:         jest.fn(),
+      delete:                jest.fn(),
+      resetFailedAttempts:   jest.fn(),
+      updateLastLogin:       jest.fn(),
+      incrementFailedAttempts: jest.fn(),
+      lockUser:              jest.fn(),
+    } as unknown as jest.Mocked<UserRepository>;
+
+    useCase = new ListIncidentsUseCase(mockRepo, mockUserRepo);
   });
 
   it('should return incidents list and correct total', async () => {
     const result = await useCase.execute();
     expect(result.incidents).toHaveLength(1);
     expect(result.total).toBe(1);
+  });
+
+  it('should resolve createdByName from UserRepository', async () => {
+    const result = await useCase.execute();
+    expect(result.incidents[0].createdByName).toBe('Administrador');
+    expect(mockUserRepo.findById).toHaveBeenCalledWith('user-1');
+  });
+
+  it('should set assignedToName to null when assignedTo is null', async () => {
+    const result = await useCase.execute();
+    expect(result.incidents[0].assignedToName).toBeNull();
+  });
+
+  it('should resolve assignedToName when assignedTo is set', async () => {
+    mockRepo.findAll.mockResolvedValueOnce([makeRecord({ assignedTo: 'handler-1' })] as never);
+    mockUserRepo.findById
+      .mockResolvedValueOnce(makeUser() as never)                                          // createdBy
+      .mockResolvedValueOnce(makeUser({ id: 'handler-1', username: 'handler', fullName: 'Incident Handler' }) as never); // assignedTo
+    const result = await useCase.execute();
+    expect(result.incidents[0].assignedToName).toBe('Incident Handler');
+  });
+
+  it('should fallback to username when fullName is null', async () => {
+    mockUserRepo.findById.mockResolvedValueOnce(makeUser({ fullName: null }) as never);
+    const result = await useCase.execute();
+    expect(result.incidents[0].createdByName).toBe('admin');
+  });
+
+  it('should set name to null when user is not found', async () => {
+    mockUserRepo.findById.mockResolvedValueOnce(null as never);
+    const result = await useCase.execute();
+    expect(result.incidents[0].createdByName).toBeNull();
   });
 
   it('should call findAll with undefined when invoked without filters', async () => {

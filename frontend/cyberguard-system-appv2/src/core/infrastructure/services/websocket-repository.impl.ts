@@ -151,6 +151,24 @@ export class WebSocketRepositoryImpl extends WebSocketRepository {
         return;
       }
 
+      // Handle history-sync: full state replacement from Redis (eliminates localStorage ghosts)
+      if (message.type === WS_COMMANDS.HISTORY_SYNC && Array.isArray(message.items)) {
+        const synced: AlertMessage[] = [];
+        for (const item of message.items) {
+          const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+          if (parsed?.data?.eventId && parsed?.data?.data) {
+            synced.push({
+              eventId: parsed.data.eventId,
+              data: parsed.data.data,
+              timestamp: Date.now(),
+            });
+          }
+        }
+        this.messages$.next(synced);
+        this.saveToStorage(synced);
+        return;
+      }
+
       if (message.data && message.data.eventId && message.data.data) {
         const alert: AlertMessage = {
           eventId: message.data.eventId,

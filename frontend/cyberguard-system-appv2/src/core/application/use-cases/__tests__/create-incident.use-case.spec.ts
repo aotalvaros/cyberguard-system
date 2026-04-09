@@ -18,7 +18,7 @@ describe('CreateIncidentUseCase', () => {
       id: 'inc-new', threatId: 'thr-uuid-high', title: 'malware desde 10.0.0.1',
       status: 'open', severity: 'high', type: 'malware',
       sourceIp: '10.0.0.1', description: 'Malware detected',
-      createdBy: 'user-admin', assignedTo: null,
+      createdBy: 'user-admin', createdByName: 'Admin User', assignedTo: null, assignedToName: null,
       createdAt: '2026-04-02T10:00:00Z', updatedAt: '2026-04-02T10:00:00Z',
     },
   };

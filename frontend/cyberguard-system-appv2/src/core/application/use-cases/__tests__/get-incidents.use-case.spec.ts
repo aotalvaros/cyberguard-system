@@ -16,7 +16,7 @@ describe('GetIncidentsUseCase', () => {
         id: 'inc-1', threatId: 'thr-1', title: 'malware desde 10.0.0.1',
         status: 'open', severity: 'high', type: 'malware',
         sourceIp: '10.0.0.1', description: 'Malware detected',
-        createdBy: 'user-1', assignedTo: null,
+        createdBy: 'user-1', createdByName: 'User One', assignedTo: null, assignedToName: null,
         createdAt: '2026-04-02T10:00:00Z', updatedAt: '2026-04-02T10:00:00Z',
       },
     ],

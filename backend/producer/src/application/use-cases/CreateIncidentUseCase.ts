@@ -1,6 +1,7 @@
 import { ThreatRepository } from '../../domain/ports/ThreatRepository';
 import { IncidentRepository, IncidentRecord } from '../../domain/ports/IncidentRepository';
 import { AuditLogRepository } from '../../domain/ports/AuditLogRepository';
+import { UserRepository } from '../../domain/ports/UserRepository';
 import { Incident } from '../../domain/entities/Incident';
 import { IncidentStatus } from '../../domain/value-objects/IncidentStatus';
 import { SeverityLevel, ThreatType } from '../../domain/entities/Threat';
@@ -25,6 +26,7 @@ export class CreateIncidentUseCase {
     private readonly threatRepository:    ThreatRepository,
     private readonly incidentRepository:  IncidentRepository,
     private readonly auditLogRepository:  AuditLogRepository,
+    private readonly userRepository:      UserRepository,
   ) {}
 
   async execute(input: CreateIncidentInput): Promise<CreateIncidentOutput> {
@@ -44,8 +46,9 @@ export class CreateIncidentUseCase {
       throw new DuplicateIncidentError(threatId);
     }
 
-    const title    = `${threat.type} desde ${threat.sourceIp}`;
-    const incident = Incident.create({
+    const title      = `${threat.type} desde ${threat.sourceIp}`;
+    const assignedTo = await this.pickAvailableHandler();
+    const incident   = Incident.create({
       threatId,
       title,
       severity:    threat.severity as SeverityLevel,
@@ -54,7 +57,7 @@ export class CreateIncidentUseCase {
       description: threat.description,
       status:      IncidentStatus.OPEN,
       createdBy,
-      assignedTo:  null,
+      assignedTo,
     });
 
     const record: IncidentRecord = {
@@ -88,5 +91,33 @@ export class CreateIncidentUseCase {
     logger.info('Incident created', { incidentId: saved.id, threatId, createdBy });
 
     return { incident: saved };
+  }
+
+  /**
+   * Finds the active incident_handler with the fewest open incidents (load balancing).
+   * Returns null if no active handlers exist — incident is created unassigned.
+   */
+  private async pickAvailableHandler(): Promise<string | null> {
+    try {
+      const allActive = await this.userRepository.findAllActive();
+      const handlers  = allActive.filter(u => u.role === 'incident_handler');
+      if (handlers.length === 0) return null;
+
+      const workloads = await Promise.all(
+        handlers.map(async h => ({
+          id:   h.id,
+          load: (await this.incidentRepository.findActiveByAssignedUserId(h.id)).length,
+        }))
+      );
+
+      const least = workloads.reduce((min, h) => h.load < min.load ? h : min);
+      logger.info('Incident auto-assigned to handler', { handlerId: least.id, load: least.load });
+      return least.id;
+    } catch (err: unknown) {
+      logger.warn('Could not auto-assign incident handler — creating unassigned', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    }
   }
 }

@@ -154,6 +154,7 @@ export class ServiceFactory {
         this.getThreatRepository(),
         this.getIncidentRepository(),
         this.getAuditLogRepository(),
+        this.getUserRepository(),
       );
     }
     return this.createIncidentUseCase;
@@ -161,7 +162,10 @@ export class ServiceFactory {
 
   static getListIncidentsUseCase(): ListIncidentsUseCase {
     if (!this.listIncidentsUseCase) {
-      this.listIncidentsUseCase = new ListIncidentsUseCase(this.getIncidentRepository());
+      this.listIncidentsUseCase = new ListIncidentsUseCase(
+        this.getIncidentRepository(),
+        this.getUserRepository(),
+      );
     }
     return this.listIncidentsUseCase;
   }

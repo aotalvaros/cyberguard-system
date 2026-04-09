@@ -50,6 +50,7 @@ services:
       - ./backend/producer/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
       - ./backend/producer/migrations/002_incidents_and_roles.sql:/docker-entrypoint-initdb.d/002_incidents_and_roles.sql
       - ./backend/producer/migrations/003_add_phone_to_users.sql:/docker-entrypoint-initdb.d/003_add_phone_to_users.sql
+      - ./backend/producer/migrations/004_seed_irms_roles.sql:/docker-entrypoint-initdb.d/004_seed_irms_roles.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cyberguard -d cyberguard_db"]
       interval: 10s

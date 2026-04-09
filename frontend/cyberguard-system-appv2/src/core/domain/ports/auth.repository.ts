@@ -1,8 +1,10 @@
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { LoginCredentials } from '../models/login-credentials.model';
 import { AuthResponse } from '../models/auth-response.model';
 import { User } from '../models/user.model';
 
+@Injectable()
 export abstract class AuthRepository {
   abstract login(credentials: LoginCredentials): Observable<AuthResponse>;
   abstract saveToken(token: string): void;

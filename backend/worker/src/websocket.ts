@@ -27,13 +27,14 @@ export const startWebSocket = (port: number): Server => {
 
     try {
       const history = await getHistoryFromRedis();
-      if (history.length > 0) {
-        history.reverse().forEach(item => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify(item));
-          }
-        });
-        logger.info('Sent history to new client', { count: history.length });
+      // Send full history as a single sync message so the client can
+      // replace stale localStorage data instead of merging into it.
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'history-sync',
+          items: history.reverse(),
+        }));
+        logger.info('Sent history-sync to new client', { count: history.length });
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';

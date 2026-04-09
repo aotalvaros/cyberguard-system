@@ -105,8 +105,8 @@
                 </td>
                 <td>{{ incident.type }}</td>
                 <td>{{ incident.sourceIp ?? '—' }}</td>
-                <td>{{ incident.createdBy | slice:0:8 }}…</td>
-                <td>{{ incident.assignedTo ? (incident.assignedTo | slice:0:8) + '…' : '—' }}</td>
+                <td title="{{ incident.createdBy }}">{{ incident.createdByName || (incident.createdBy | slice:0:8) + '…' }}</td>
+                <td title="{{ incident.assignedTo }}">{{ incident.assignedToName || (incident.assignedTo ? (incident.assignedTo | slice:0:8) + '…' : '—') }}</td>
                 <td>{{ incident.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
               </tr>
             } @empty {

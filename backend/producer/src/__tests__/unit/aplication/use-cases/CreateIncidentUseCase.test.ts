@@ -4,6 +4,7 @@ import { CreateIncidentUseCase } from '../../../../application/use-cases/CreateI
 import { ThreatRepository } from '../../../../domain/ports/ThreatRepository';
 import { IncidentRepository, IncidentRecord } from '../../../../domain/ports/IncidentRepository';
 import { AuditLogRepository } from '../../../../domain/ports/AuditLogRepository';
+import { UserRepository, UserRecord } from '../../../../domain/ports/UserRepository';
 import { InvalidIncidentCreationError, DuplicateIncidentError, ThreatNotFoundForIncidentError } from '../../../../domain/exceptions/IrmsExceptions';
 import { IncidentStatus } from '../../../../domain/value-objects/IncidentStatus';
 
@@ -12,6 +13,14 @@ describe('CreateIncidentUseCase', () => {
   let mockThreatRepo:    jest.Mocked<ThreatRepository>;
   let mockIncidentRepo:  jest.Mocked<IncidentRepository>;
   let mockAuditRepo:     jest.Mocked<AuditLogRepository>;
+  let mockUserRepo:      jest.Mocked<UserRepository>;
+
+  const handlerUser: UserRecord = {
+    id: 'handler-uuid-1', username: 'handler1', email: 'handler@cyberguard.com',
+    role: 'incident_handler', fullName: 'Handler One', phone: null,
+    isActive: true, isLocked: false, failedAttempts: 0, lastLogin: null,
+    createdAt: new Date(), updatedAt: new Date(),
+  };
 
   const highThreat = {
     threatId:    'threat-uuid-high',
@@ -62,7 +71,23 @@ describe('CreateIncidentUseCase', () => {
       log: jest.fn().mockResolvedValue(undefined as never),
     } as jest.Mocked<AuditLogRepository>;
 
-    useCase = new CreateIncidentUseCase(mockThreatRepo, mockIncidentRepo, mockAuditRepo);
+    mockUserRepo = {
+      findById:               jest.fn().mockResolvedValue(null as never),
+      findByUsername:         jest.fn().mockResolvedValue(null as never),
+      findByEmail:            jest.fn().mockResolvedValue(null as never),
+      findAll:                jest.fn().mockResolvedValue([] as never),
+      findAllActive:          jest.fn().mockResolvedValue([] as never),  // no handlers by default
+      save:                   jest.fn().mockResolvedValue({} as never),
+      update:                 jest.fn().mockResolvedValue({} as never),
+      updateProfile:          jest.fn().mockResolvedValue({} as never),
+      delete:                 jest.fn().mockResolvedValue(true as never),
+      resetFailedAttempts:    jest.fn().mockResolvedValue(undefined as never),
+      updateLastLogin:        jest.fn().mockResolvedValue(undefined as never),
+      incrementFailedAttempts:jest.fn().mockResolvedValue(undefined as never),
+      lockUser:               jest.fn().mockResolvedValue(undefined as never),
+    } as jest.Mocked<UserRepository>;
+
+    useCase = new CreateIncidentUseCase(mockThreatRepo, mockIncidentRepo, mockAuditRepo, mockUserRepo);
   });
 
   // ── HAPPY PATH ─────────────────────────────────────────────────────────────
@@ -107,13 +132,57 @@ describe('CreateIncidentUseCase', () => {
       expect(result.incident.title).toBe('malware desde 192.168.1.100');
     });
 
-    it('should set assignedTo to null on creation', async () => {
+    it('should set assignedTo to null when no active incident_handler exists', async () => {
+      // mockUserRepo.findAllActive returns [] by default → no handlers
       const result = await useCase.execute({
         threatId:  'threat-uuid-high',
         createdBy: 'user-admin-uuid',
       });
 
       expect(result.incident.assignedTo).toBeNull();
+    });
+
+    it('CRITERIO-AUTO-ASSIGN: should auto-assign to available incident_handler', async () => {
+      jest.mocked(mockUserRepo.findAllActive).mockResolvedValueOnce([handlerUser] as never);
+      jest.mocked(mockIncidentRepo.findActiveByAssignedUserId).mockResolvedValueOnce([] as never);
+      const assignedIncident = { ...savedIncident, assignedTo: 'handler-uuid-1' };
+      jest.mocked(mockIncidentRepo.save).mockResolvedValueOnce(assignedIncident as never);
+
+      const result = await useCase.execute({
+        threatId:  'threat-uuid-high',
+        createdBy: 'user-admin-uuid',
+      });
+
+      expect(result.incident.assignedTo).toBe('handler-uuid-1');
+    });
+
+    it('CRITERIO-AUTO-ASSIGN: should assign to handler with fewest active incidents', async () => {
+      const handler2: UserRecord = { ...handlerUser, id: 'handler-uuid-2', username: 'handler2', email: 'h2@cyberguard.com' };
+      jest.mocked(mockUserRepo.findAllActive).mockResolvedValueOnce([handlerUser, handler2] as never);
+      // handler1 has 2 active incidents, handler2 has 0
+      jest.mocked(mockIncidentRepo.findActiveByAssignedUserId)
+        .mockResolvedValueOnce([savedIncident, savedIncident] as never)  // handler1 workload=2
+        .mockResolvedValueOnce([] as never);                              // handler2 workload=0
+      const assignedIncident = { ...savedIncident, assignedTo: 'handler-uuid-2' };
+      jest.mocked(mockIncidentRepo.save).mockResolvedValueOnce(assignedIncident as never);
+
+      const result = await useCase.execute({
+        threatId:  'threat-uuid-high',
+        createdBy: 'user-admin-uuid',
+      });
+
+      expect(result.incident.assignedTo).toBe('handler-uuid-2');
+    });
+
+    it('CRITERIO-AUTO-ASSIGN: should create unassigned if userRepository fails', async () => {
+      jest.mocked(mockUserRepo.findAllActive).mockRejectedValueOnce(new Error('DB error') as never);
+
+      const result = await useCase.execute({
+        threatId:  'threat-uuid-high',
+        createdBy: 'user-admin-uuid',
+      });
+
+      expect(result.incident).toBeDefined(); // incident still created
     });
 
     it('should set createdBy from input parameter', async () => {

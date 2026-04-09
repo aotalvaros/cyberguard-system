@@ -17,7 +17,7 @@ const mockIncident = {
   id: 'inc-1', threatId: 'thr-1', title: 'malware desde 10.0.0.1',
   status: 'open', severity: 'high', type: 'malware',
   sourceIp: '10.0.0.1', description: 'Malware detected',
-  createdBy: 'u1', assignedTo: null,
+  createdBy: 'u1', createdByName: 'User One', assignedTo: null, assignedToName: null,
   createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
 };
 

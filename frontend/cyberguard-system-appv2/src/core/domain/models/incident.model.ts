@@ -1,16 +1,18 @@
 export interface IncidentItem {
-  readonly id:          string;
-  readonly threatId:    string;
-  readonly title:       string;
-  readonly status:      string;
-  readonly severity:    string;
-  readonly type:        string;
-  readonly sourceIp:    string | null;
-  readonly description: string | null;
-  readonly createdBy:   string;
-  readonly assignedTo:  string | null;
-  readonly createdAt:   string;
-  readonly updatedAt:   string;
+  readonly id:             string;
+  readonly threatId:       string;
+  readonly title:          string;
+  readonly status:         string;
+  readonly severity:       string;
+  readonly type:           string;
+  readonly sourceIp:       string | null;
+  readonly description:    string | null;
+  readonly createdBy:      string;
+  readonly createdByName:  string | null;
+  readonly assignedTo:     string | null;
+  readonly assignedToName: string | null;
+  readonly createdAt:      string;
+  readonly updatedAt:      string;
 }
 
 export interface IncidentList {

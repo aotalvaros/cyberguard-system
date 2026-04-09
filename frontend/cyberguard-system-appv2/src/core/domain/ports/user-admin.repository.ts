@@ -1,3 +1,4 @@
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   UserAdminItem,
@@ -9,6 +10,7 @@ import {
   ToggleUserStatusRequest,
 } from '../models/user-admin-request.model';
 
+@Injectable()
 export abstract class UserAdminRepository {
   abstract getUsers(): Observable<UserAdminList>;
   abstract getUserById(id: string): Observable<UserAdminItem>;

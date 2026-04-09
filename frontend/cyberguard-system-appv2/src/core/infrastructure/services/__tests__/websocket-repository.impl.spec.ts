@@ -591,4 +591,106 @@ describe('WebSocketRepositoryImpl', () => {
       consoleSpy.mockRestore();
     });
   });
+
+  describe('history-sync', () => {
+    it('should replace all messages when receiving history-sync', async () => {
+      // Pre-populate with a "stale" message
+      repository.testAddMessage({
+        eventId: 'stale-1',
+        timestamp: Date.now(),
+        data: { threatId: 'threat-stale', type: 'malware', severity: 'high', sourceIp: '10.0.0.1', description: 'Stale' },
+      });
+
+      repository.connect();
+      mockWs.simulateOpen();
+
+      // Worker sends history-sync with only one fresh item (the stale one was deleted in Redis)
+      mockWs.simulateMessage({
+        type: 'history-sync',
+        items: [
+          {
+            routingKey: 'threat.detected.ddos',
+            data: {
+              eventId: 'fresh-1',
+              eventType: 'threat.detected',
+              data: {
+                threatId: 'threat-fresh',
+                type: 'ddos',
+                severity: 'critical',
+                sourceIp: '192.168.1.1',
+                description: 'Fresh alert',
+              },
+            },
+            receivedAt: new Date().toISOString(),
+          },
+        ],
+      });
+
+      const messages = await firstValueFrom(repository.getMessages$());
+      expect(messages).toHaveLength(1);
+      expect(messages[0].eventId).toBe('fresh-1');
+      expect(messages[0].data.threatId).toBe('threat-fresh');
+      // Stale message must be gone
+      expect(messages.some(m => m.eventId === 'stale-1')).toBe(false);
+    });
+
+    it('should clear all messages when receiving empty history-sync', async () => {
+      // Pre-populate with a stale message
+      repository.testAddMessage({
+        eventId: 'stale-1',
+        timestamp: Date.now(),
+        data: { threatId: 'threat-stale', type: 'malware', severity: 'high', sourceIp: '10.0.0.1', description: 'Stale' },
+      });
+
+      repository.connect();
+      mockWs.simulateOpen();
+
+      // Worker sends empty history-sync (Redis is clean)
+      mockWs.simulateMessage({ type: 'history-sync', items: [] });
+
+      const messages = await firstValueFrom(repository.getMessages$());
+      expect(messages).toHaveLength(0);
+    });
+
+    it('should update localStorage after history-sync', () => {
+      repository.connect();
+      mockWs.simulateOpen();
+
+      mockWs.simulateMessage({
+        type: 'history-sync',
+        items: [
+          {
+            data: {
+              eventId: 'sync-1',
+              data: { threatId: 't-1', type: 'malware', severity: 'low', sourceIp: '1.2.3.4', description: 'Test' },
+            },
+          },
+        ],
+      });
+
+      expect(mockStorage.setItem).toHaveBeenCalled();
+      const lastCall = (mockStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.at(-1);
+      const stored = JSON.parse(lastCall?.[1] ?? '[]');
+      expect(stored).toHaveLength(1);
+      expect(stored[0].eventId).toBe('sync-1');
+    });
+
+    it('should skip items with invalid structure in history-sync', async () => {
+      repository.connect();
+      mockWs.simulateOpen();
+
+      mockWs.simulateMessage({
+        type: 'history-sync',
+        items: [
+          { data: { eventId: 'valid-1', data: { threatId: 't-1', type: 'malware', severity: 'low', sourceIp: '1.2.3.4', description: 'Valid' } } },
+          { foo: 'bar' },                      // no data.eventId
+          { data: { eventId: 'no-inner' } },   // no data.data
+        ],
+      });
+
+      const messages = await firstValueFrom(repository.getMessages$());
+      expect(messages).toHaveLength(1);
+      expect(messages[0].eventId).toBe('valid-1');
+    });
+  });
 });
