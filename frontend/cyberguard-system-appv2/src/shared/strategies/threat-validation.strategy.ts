@@ -1,5 +1,4 @@
 import { ThreatRequest } from '../../core/domain/models/threat-request.model';
-import { ThreatSeverity } from '../../core/domain/models/threat-severity.enum';
 
 export interface ThreatValidationStrategy {
   validate(threat: ThreatRequest): ValidationResult;
@@ -11,56 +10,26 @@ export interface ValidationResult {
 }
 
 export class MalwareValidationStrategy implements ThreatValidationStrategy {
-  validate(threat: ThreatRequest): ValidationResult {
-    const errors: string[] = [];
-
-    if (!threat.description.toLowerCase().includes('malware') &&
-        !threat.description.toLowerCase().includes('virus')) {
-      errors.push('Malware threats should mention malware or virus');
-    }
-
-    if (threat.severity === ThreatSeverity.LOW) {
-      errors.push('Malware threats should be at least medium severity');
-    }
-
-    return { valid: errors.length === 0, errors };
+  validate(_threat: ThreatRequest): ValidationResult {
+    return { valid: true, errors: [] };
   }
 }
 
 export class PhishingValidationStrategy implements ThreatValidationStrategy {
-  validate(threat: ThreatRequest): ValidationResult {
-    const errors: string[] = [];
-
-    if (!threat.description.toLowerCase().includes('phishing') &&
-        !threat.description.toLowerCase().includes('email')) {
-      errors.push('Phishing threats should mention phishing or email');
-    }
-
-    return { valid: errors.length === 0, errors };
+  validate(_threat: ThreatRequest): ValidationResult {
+    return { valid: true, errors: [] };
   }
 }
 
 export class DdosValidationStrategy implements ThreatValidationStrategy {
-  validate(threat: ThreatRequest): ValidationResult {
-    const errors: string[] = [];
-
-    if (threat.severity !== ThreatSeverity.CRITICAL && threat.severity !== ThreatSeverity.HIGH) {
-      errors.push('DDoS attacks should be high or critical severity');
-    }
-
-    return { valid: errors.length === 0, errors };
+  validate(_threat: ThreatRequest): ValidationResult {
+    return { valid: true, errors: [] };
   }
 }
 
 export class RansomwareValidationStrategy implements ThreatValidationStrategy {
-  validate(threat: ThreatRequest): ValidationResult {
-    const errors: string[] = [];
-
-    if (threat.severity !== ThreatSeverity.CRITICAL) {
-      errors.push('Ransomware should always be critical severity');
-    }
-
-    return { valid: errors.length === 0, errors };
+  validate(_threat: ThreatRequest): ValidationResult {
+    return { valid: true, errors: [] };
   }
 }
 

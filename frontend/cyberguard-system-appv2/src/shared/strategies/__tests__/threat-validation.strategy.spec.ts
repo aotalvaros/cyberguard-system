@@ -19,55 +19,29 @@ describe('ThreatValidationStrategies', () => {
       strategy = new MalwareValidationStrategy();
     });
 
-    it('should validate malware threat with correct description', () => {
+    it('should accept any malware threat without restrictions', () => {
       const threat: ThreatRequest = {
         type: ThreatType.MALWARE,
-        severity: ThreatSeverity.HIGH,
+        severity: ThreatSeverity.LOW,
+        sourceIp: '192.168.1.1',
+        description: 'Some suspicious activity'
+      };
+
+      const result = strategy.validate(threat);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should accept malware with any severity', () => {
+      const threat: ThreatRequest = {
+        type: ThreatType.MALWARE,
+        severity: ThreatSeverity.CRITICAL,
         sourceIp: '192.168.1.1',
         description: 'Detected malware in system files'
       };
 
       const result = strategy.validate(threat);
       expect(result.valid).toBe(true);
-      expect(result.errors.length).toBe(0);
-    });
-
-    it('should validate malware threat with virus in description', () => {
-      const threat: ThreatRequest = {
-        type: ThreatType.MALWARE,
-        severity: ThreatSeverity.HIGH,
-        sourceIp: '192.168.1.1',
-        description: 'Detected virus in system files'
-      };
-
-      const result = strategy.validate(threat);
-      expect(result.valid).toBe(true);
-    });
-
-    it('should reject malware with low severity', () => {
-      const threat: ThreatRequest = {
-        type: ThreatType.MALWARE,
-        severity: ThreatSeverity.LOW,
-        sourceIp: '192.168.1.1',
-        description: 'Malware detected'
-      };
-
-      const result = strategy.validate(threat);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should be at least medium severity');
-    });
-
-    it('should reject malware without malware/virus keyword', () => {
-      const threat: ThreatRequest = {
-        type: ThreatType.MALWARE,
-        severity: ThreatSeverity.HIGH,
-        sourceIp: '192.168.1.1',
-        description: 'Some suspicious activity'
-      };
-
-      const result = strategy.validate(threat);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Malware threats should mention malware or virus');
     });
   });
 
@@ -90,7 +64,7 @@ describe('ThreatValidationStrategies', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should reject DDoS with medium severity', () => {
+    it('should accept DDoS with any severity', () => {
       const threat: ThreatRequest = {
         type: ThreatType.DDOS,
         severity: ThreatSeverity.MEDIUM,
@@ -99,7 +73,19 @@ describe('ThreatValidationStrategies', () => {
       };
 
       const result = strategy.validate(threat);
-      expect(result.valid).toBe(false);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept DDoS with low severity', () => {
+      const threat: ThreatRequest = {
+        type: ThreatType.DDOS,
+        severity: ThreatSeverity.LOW,
+        sourceIp: '192.168.1.1',
+        description: 'DDoS attack'
+      };
+
+      const result = strategy.validate(threat);
+      expect(result.valid).toBe(true);
     });
   });
 
@@ -122,7 +108,7 @@ describe('ThreatValidationStrategies', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should reject ransomware with non-critical severity', () => {
+    it('should accept ransomware with any severity', () => {
       const threat: ThreatRequest = {
         type: ThreatType.RANSOMWARE,
         severity: ThreatSeverity.HIGH,
@@ -131,8 +117,19 @@ describe('ThreatValidationStrategies', () => {
       };
 
       const result = strategy.validate(threat);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Ransomware should always be critical severity');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept ransomware with low severity', () => {
+      const threat: ThreatRequest = {
+        type: ThreatType.RANSOMWARE,
+        severity: ThreatSeverity.LOW,
+        sourceIp: '192.168.1.1',
+        description: 'Ransomware detected'
+      };
+
+      const result = strategy.validate(threat);
+      expect(result.valid).toBe(true);
     });
   });
 
@@ -143,31 +140,7 @@ describe('ThreatValidationStrategies', () => {
       strategy = new PhishingValidationStrategy();
     });
 
-    it('should validate phishing threat with phishing keyword', () => {
-      const threat: ThreatRequest = {
-        type: ThreatType.PHISHING,
-        severity: ThreatSeverity.MEDIUM,
-        sourceIp: '192.168.1.1',
-        description: 'Phishing attempt detected'
-      };
-
-      const result = strategy.validate(threat);
-      expect(result.valid).toBe(true);
-    });
-
-    it('should validate phishing threat with email keyword', () => {
-      const threat: ThreatRequest = {
-        type: ThreatType.PHISHING,
-        severity: ThreatSeverity.HIGH,
-        sourceIp: '192.168.1.1',
-        description: 'Suspicious email detected'
-      };
-
-      const result = strategy.validate(threat);
-      expect(result.valid).toBe(true);
-    });
-
-    it('should reject phishing without phishing/email keyword', () => {
+    it('should accept any phishing threat without restrictions', () => {
       const threat: ThreatRequest = {
         type: ThreatType.PHISHING,
         severity: ThreatSeverity.MEDIUM,
@@ -176,8 +149,20 @@ describe('ThreatValidationStrategies', () => {
       };
 
       const result = strategy.validate(threat);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Phishing threats should mention phishing or email');
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should accept phishing with any severity', () => {
+      const threat: ThreatRequest = {
+        type: ThreatType.PHISHING,
+        severity: ThreatSeverity.LOW,
+        sourceIp: '192.168.1.1',
+        description: 'Suspicious email detected'
+      };
+
+      const result = strategy.validate(threat);
+      expect(result.valid).toBe(true);
     });
   });
 
