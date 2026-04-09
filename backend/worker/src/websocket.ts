@@ -1,89 +1,35 @@
-import WebSocket, { Server } from 'ws';
-import { logger } from './logger';
-import { getHistoryFromRedis, clearHistoryFromRedis, removeHistoryItemById, removeHistoryItemByThreatId } from './redis';
+/**
+ * @deprecated Compatibility shim — la implementación vive en infrastructure/websocket/WebSocketBroadcaster.ts
+ */
+import type { Server } from 'ws';
+import { WebSocketBroadcaster } from './infrastructure/websocket/WebSocketBroadcaster';
+import type { IEventRepository } from './domain/ports/IEventRepository';
+import * as redisShim from './redis';
 
-type WebSocketMessage = {
-  type: 'clear-all' | 'delete-one';
-  id?: string;
+/**
+ * Adapter que envuelve el shim redis.ts para satisfacer IEventRepository.
+ * Garantiza que los mocks de tests en ../../redis sean respetados.
+ */
+const redisAsRepository: IEventRepository = {
+  connect: (url) => redisShim.connectRedis(url),
+  close: () => redisShim.closeRedis(),
+  save: (p) => redisShim.saveToRedis(p),
+  getHistory: () => redisShim.getHistoryFromRedis(),
+  clearHistory: () => redisShim.clearHistoryFromRedis(),
+  removeById: (id) => redisShim.removeHistoryItemById(id),
+  removeByThreatId: (id) => redisShim.removeHistoryItemByThreatId(id),
+  getAllNotifPreferences: () => redisShim.getAllNotifPreferences(),
 };
 
-const isValidMessage = (obj: unknown): obj is WebSocketMessage => {
-  if (typeof obj !== 'object' || obj === null) return false;
-  const msg = obj as Record<string, unknown>;
-  return typeof msg['type'] === 'string' &&
-         ['clear-all', 'delete-one'].includes(msg['type']) &&
-         (msg['type'] !== 'delete-one' || typeof msg['id'] === 'string');
+let _broadcaster: WebSocketBroadcaster | null = null;
+const getInstance = (): WebSocketBroadcaster => {
+  if (!_broadcaster) _broadcaster = new WebSocketBroadcaster(redisAsRepository);
+  return _broadcaster;
 };
 
-let wss: Server | null = null;
-
-export const startWebSocket = (port: number): Server => {
-  wss = new Server({ port });
-
-  wss.on('listening', () => logger.info(`WebSocket listening on ws://localhost:${port}`));
-
-  wss.on('connection', async (socket: WebSocket) => {
-    logger.info('WebSocket client connected');
-
-    try {
-      const history = await getHistoryFromRedis();
-      if (history.length > 0) {
-        history.reverse().forEach(item => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify(item));
-          }
-        });
-        logger.info('Sent history to new client', { count: history.length });
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      logger.error('Failed to send history', { error: message });
-    }
-
-    socket.on('message', async (raw) => {
-      try {
-        const msg = JSON.parse(raw.toString());
-
-        if (!isValidMessage(msg)) {
-          logger.warn('Invalid WebSocket message format', { msg });
-          return;
-        }
-
-        if (msg.type === 'clear-all') {
-          await clearHistoryFromRedis();
-          broadcast({ type: 'clear-all', clearedAt: new Date().toISOString() });
-          return;
-        }
-
-        if (msg.type === 'delete-one' && msg.id) {
-          // Try both: by eventId (message ID) and by threatId (domain ID)
-          await removeHistoryItemById(msg.id);
-          await removeHistoryItemByThreatId(msg.id);
-          broadcast({ type: 'delete-one', id: msg.id, deletedAt: new Date().toISOString() });
-        }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        logger.warn('WebSocket message ignored', { error: message });
-      }
-    });
-
-    socket.on('close', () => logger.info('WebSocket client disconnected'));
-    socket.on('error', (err: Error) => logger.error('WebSocket client error', { error: err.message }));
-  });
-
-  return wss;
-};
-
-export const broadcast = (payload: unknown): void => {
-  if (!wss) return;
-  const str = JSON.stringify(payload);
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(str);
-    }
-  });
-};
-
-export const closeWebSocket = (): Promise<void> => {
-  return new Promise(resolve => wss?.close(() => resolve()) ?? resolve());
+export const startWebSocket = (port: number): Server => getInstance().start(port) as Server;
+export const broadcast = (payload: unknown): void => getInstance().broadcast(payload);
+export const closeWebSocket = async (): Promise<void> => {
+  await getInstance().close();
+  _broadcaster = null; // reset para que el próximo test cree una instancia fresca
 };
