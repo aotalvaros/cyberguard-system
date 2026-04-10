@@ -1,7 +1,7 @@
 // Tipo de prueba: Integración
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { App } from '../../app';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/infrastructure/services/auth.service';

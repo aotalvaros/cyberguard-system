@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { ReportThreatComponent } from './report-threat.component';
+import { ReportThreatComponent } from '../../report-threat.component';
 import { ReportThreatUseCase } from '../../../../../core/application/use-cases/report-threat.use-case';
 import { ThreatValidationFactory } from '../../../../../shared/factories/threat-validation.factory';
 import { Router } from '@angular/router';
