@@ -1,4 +1,4 @@
-import { logger } from '../../logger';
+import { logger } from '../../infrastructure/logging';
 
 describe('logger', () => {
   it('should export a valid winston logger instance', () => {

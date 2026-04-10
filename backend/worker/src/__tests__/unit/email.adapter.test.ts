@@ -1,5 +1,5 @@
-import { EmailAdapter } from '../../notifications/email.adapter';
-import type { NotifPayload } from '../../notifications/notification.types';
+import { EmailAdapter } from '../../infrastructure/notifications/EmailAdapter';
+import type { NotifPayload } from '../../domain/ports/INotificationService';
 
 jest.mock('@sendgrid/mail', () => ({
   setApiKey: jest.fn(),

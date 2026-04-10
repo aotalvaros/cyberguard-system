@@ -1,7 +1,7 @@
-import { buildPayload, handleMessage } from '../../handler';
+import { buildPayload, handleMessage } from '../../domain/services/MessageHandler';
 import { describe, it, expect, jest } from '@jest/globals';
 
-jest.mock('../../logger', () => ({
+jest.mock('../../infrastructure/logging', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -9,7 +9,7 @@ jest.mock('../../logger', () => ({
   },
 }));
 
-import { logger } from '../../logger';
+import { logger } from '../../infrastructure/logging';
 
 describe('Handler', () => {
   

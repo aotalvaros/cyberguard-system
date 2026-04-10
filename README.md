@@ -9,6 +9,47 @@ Sistema distribuido de ciberseguridad con detección de amenazas en tiempo real 
 
 **Patrón**: Monorepo con Hexagonal Architecture + Event-Driven Architecture
 
+## 🚨 Notificaciones Multicanal y Personalización (Patrón Strategy)
+
+El sistema implementa notificaciones automáticas por **email** (SendGrid) y **WhatsApp** (Meta/Twilio) para alertar al administrador ante nuevas amenazas.
+
+- **Patrón Strategy:** Cada categoría de alerta (`malware`, `phishing`, `ddos`, `intrusion`, `other`) utiliza un template de asunto y cuerpo diferente, tanto para email como para WhatsApp. Esto permite mensajes personalizados y relevantes según el tipo de amenaza.
+- **Implementación:**
+  - Archivo: `backend/worker/src/infrastructure/notifications/CategoryTemplateStrategy.ts`
+  - Usado por: `EmailAdapter` y `WhatsAppAdapter`.
+  - Ejemplo de template:
+    - `malware`: "CyberGuard: Malware Detectado" + detalles técnicos.
+    - `phishing`: "CyberGuard: Intento de Phishing" + detalles.
+  - El subject y body se interpolan dinámicamente con los datos de la alerta.
+- **Extensible:** Agregar una nueva categoría solo requiere añadir un template en el strategy.
+
+**Flujo de notificación:**
+1. El Worker recibe una alerta desde RabbitMQ.
+2. Consulta preferencias del usuario en Redis (`notif:prefs:<username>`).
+3. Si el canal está habilitado, selecciona el template según la categoría y envía la notificación personalizada.
+4. Todos los intentos y resultados quedan registrados en logs.
+
+**Troubleshooting:**
+- Si el email no llega, revisar que el remitente esté verificado en SendGrid y que la variable `SENDGRID_FROM_EMAIL` coincida.
+- Si WhatsApp no llega, verificar que el número no haya bloqueado al remitente oficial (`+14155238886`) y que WhatsApp esté activo en el dispositivo.
+- Los logs del worker muestran el resultado de cada intento de envío y el canal utilizado.
+
+---
+
+## 📝 Ejemplo de Templates por Categoría (Strategy)
+
+```
+malware:
+  subject: 'CyberGuard: Malware Detectado'
+  body: 'Se ha detectado actividad de malware en el sistema. Severidad: {{severity}}. IP origen: {{sourceIp}}. {{description}}.'
+phishing:
+  subject: 'CyberGuard: Intento de Phishing'
+  body: 'Se ha detectado un intento de phishing. Severidad: {{severity}}. IP origen: {{sourceIp}}. {{description}}.'
+...etc
+```
+
+El subject y body se interpolan automáticamente con los datos de la alerta recibida.
+
 ```
 cyberguard-system/
 ├── frontend/

@@ -1,4 +1,4 @@
-import { selectTemplate } from '../../notifications/category-template.strategy';
+import { selectTemplate } from '../../infrastructure/notifications/CategoryTemplateStrategy';
 
 describe('CategoryTemplateStrategy', () => {
   it('should return malware template for "malware"', () => {
