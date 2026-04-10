@@ -8,7 +8,6 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:unit": "vitest run --config vitest.unit.config.ts",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "ng test --coverage",
     "test:ci": "ng test --no-watch --coverage",
     "coverage:open": "open coverage/cyberguard-system-app/index.html || xdg-open coverage/cyberguard-system-app/index.html"
