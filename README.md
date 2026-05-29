@@ -1,6 +1,26 @@
 # 🛡️ CyberGuard System
 
-Sistema distribuido de alertas de ciberseguridad en tiempo real con arquitectura de microservicios y comunicación asíncrona.
+## 📋 ¿Qué es CyberGuard System?
+
+**CyberGuard System** es un **MVP de sistema distribuido de ciberseguridad** basado en **microservicios**, comunicación **asíncrona con RabbitMQ** y arquitectura **AI-First**. 
+
+### 🎯 Propósito Principal
+El sistema **detecta, procesa y notifica amenazas de ciberseguridad en tiempo real**:
+
+1. 🔍 **Ingesta de Amenazas**: Recibe reportes de amenazas (malware, intrusions, phishing, DDoS, ransomware) desde múltiples fuentes vía API REST
+2. 📨 **Procesamiento Asíncrono**: Publica eventos en RabbitMQ para procesamiento desacoplado
+3. ⚡ **Entrega en Tiempo Real**: Un worker consume los eventos y transmite alertas vía WebSocket a clientes conectados
+4. 📊 **Panel de Control**: Dashboard web (Angular) donde administradores visualizan, filtran y gestionan amenazas
+5. 🔐 **Autenticación y Control de Roles**: Sistema de roles (admin, analyst, viewer) con auditoría completa
+
+### 💡 Caso de Uso
+Ideal para SOCs (Security Operations Centers), equipos de infraestructura y empresas que necesitan:
+- Centralizar alertas de seguridad desde múltiples sensores/IDS
+- Correlacionar y priorizar amenazas
+- Visualizar amenazas activas en tiempo real
+- Auditar y reportar incidentes
+
+---
 
 ## 👥 Equipo
 
@@ -66,7 +86,7 @@ cyberguard-system/
 
 #### 1. Clonar el repositorio
 ```bash
-git clone <[repo-url](https://github.com/aotalvaros/cyberguard-system)>
+git clone <https://github.com/aotalvaros/cyberguard-system>
 cd cyberguard-system
 ```
 
